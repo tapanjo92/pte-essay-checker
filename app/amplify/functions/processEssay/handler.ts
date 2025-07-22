@@ -79,7 +79,9 @@ export const handler: Handler = async (event) => {
     const prompt = createAnalysisPrompt(args.topic, args.content);
     
     // 3. Call Bedrock AI for analysis
+    console.log('Calling Bedrock AI...');
     const aiResponse = await callBedrockAI(prompt);
+    console.log('AI Response received:', JSON.stringify(aiResponse, null, 2));
     
     // 4. Parse AI response and calculate scores
     const scoringResult = parseAIResponse(aiResponse);
@@ -181,7 +183,13 @@ async function callBedrockAI(prompt: string): Promise<any> {
   const response = await bedrockClient.send(command);
   
   const responseBody = JSON.parse(new TextDecoder().decode(response.body));
-  return JSON.parse(responseBody.content[0].text);
+  const responseText = responseBody.content[0].text;
+  
+  // Remove markdown code blocks if present
+  const jsonMatch = responseText.match(/```json\s*([\s\S]*?)\s*```/);
+  const cleanJson = jsonMatch ? jsonMatch[1] : responseText;
+  
+  return JSON.parse(cleanJson);
 }
 
 function parseAIResponse(aiResponse: any): ScoringResult {
