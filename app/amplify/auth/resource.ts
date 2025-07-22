@@ -14,12 +14,5 @@ export const auth = defineAuth({
       required: false,
     },
   },
-  passwordPolicy: {
-    minLength: 8,
-    requireLowercase: true,
-    requireUppercase: true,
-    requireNumbers: true,
-    requireSymbols: true,
-  },
   accountRecovery: 'EMAIL_ONLY',
 });

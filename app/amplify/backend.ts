@@ -30,10 +30,3 @@ backend.data.resources.tables["Essay"].grantReadWriteData(
 backend.data.resources.tables["Result"].grantReadWriteData(
   backend.processEssay.resources.lambda
 );
-
-// Pass table names to Lambda
-const essayTableName = backend.data.resources.tables["Essay"].tableName;
-const resultTableName = backend.data.resources.tables["Result"].tableName;
-
-backend.processEssay.resources.lambda.addEnvironment("ESSAY_TABLE_NAME", essayTableName);
-backend.processEssay.resources.lambda.addEnvironment("RESULT_TABLE_NAME", resultTableName);
