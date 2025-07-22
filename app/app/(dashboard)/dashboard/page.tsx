@@ -80,12 +80,14 @@ export default function DashboardPage() {
         wordCount: wordCount,
       });
 
-      setProcessingStatus('Essay processed successfully!');
+      setProcessingStatus('Essay processed successfully! Check your email for detailed results.');
       
-      // Redirect to results page after a short delay
+      // Clear form after successful submission
       setTimeout(() => {
-        window.location.href = `/dashboard/results/${essayId}`;
-      }, 1500);
+        setEssayContent('');
+        setWordCount(0);
+        setProcessingStatus('Your results have been sent to your email. Write another essay to continue practicing!');
+      }, 3000);
 
     } catch (error) {
       console.error('Error submitting essay:', error);

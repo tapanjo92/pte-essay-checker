@@ -23,6 +23,14 @@ backend.processEssay.resources.lambda.addToRolePolicy(
   })
 );
 
+// Grant the processEssay function access to SES for sending emails
+backend.processEssay.resources.lambda.addToRolePolicy(
+  new PolicyStatement({
+    actions: ['ses:SendEmail', 'ses:SendRawEmail'],
+    resources: ['*'],
+  })
+);
+
 // Grant the processEssay function access to data
 backend.data.resources.tables["Essay"].grantReadWriteData(
   backend.processEssay.resources.lambda

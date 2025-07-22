@@ -2,6 +2,7 @@ import { Handler } from 'aws-lambda';
 import { BedrockRuntimeClient, InvokeModelCommand } from '@aws-sdk/client-bedrock-runtime';
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import { DynamoDBDocumentClient, GetCommand, UpdateCommand, PutCommand } from '@aws-sdk/lib-dynamodb';
+import { SESClient, SendEmailCommand } from '@aws-sdk/client-ses';
 
 // Initialize clients
 const bedrockClient = new BedrockRuntimeClient({ 
@@ -10,6 +11,7 @@ const bedrockClient = new BedrockRuntimeClient({
 
 const dynamoClient = new DynamoDBClient({});
 const docClient = DynamoDBDocumentClient.from(dynamoClient);
+const sesClient = new SESClient({ region: process.env.AWS_REGION || 'ap-south-1' });
 
 // PTE scoring criteria
 const PTE_CRITERIA = {
@@ -89,7 +91,15 @@ export const handler: Handler = async (event) => {
     // 5. Save results to DynamoDB
     const resultId = await saveResults(args.essayId, args.userId || 'anonymous', scoringResult);
     
-    // 6. Update essay status to COMPLETED
+    // 6. Get user email
+    const userEmail = await getUserEmail(args.userId);
+    
+    // 7. Send email with results
+    if (userEmail) {
+      await sendResultEmail(userEmail, args.essayId, resultId, scoringResult, args.topic);
+    }
+    
+    // 8. Update essay status to COMPLETED
     await updateEssayStatus(args.essayId, 'COMPLETED', resultId);
     
     return {
@@ -280,4 +290,92 @@ async function saveResults(essayId: string, userId: string, scoringResult: Scori
   
   await docClient.send(new PutCommand(params));
   return resultId;
+}
+
+async function getUserEmail(userId: string): Promise<string | null> {
+  if (!userId || userId === 'anonymous') return null;
+  
+  try {
+    const params = {
+      TableName: process.env.USER_TABLE_NAME || 'User-xrc6izm2mfejziqhuhlhya7ome-NONE',
+      Key: { id: userId }
+    };
+    
+    const response = await docClient.send(new GetCommand(params));
+    return response.Item?.email || null;
+  } catch (error) {
+    console.error('Error fetching user email:', error);
+    return null;
+  }
+}
+
+async function sendResultEmail(
+  userEmail: string, 
+  essayId: string, 
+  resultId: string, 
+  scoringResult: ScoringResult,
+  topic: string
+) {
+  const appUrl = process.env.APP_URL || 'http://3.109.164.76:3000';
+  const resultUrl = `${appUrl}/results/${essayId}`;
+  
+  const emailParams = {
+    Source: 'noreply@pte-essay-checker.com', // You'll need to verify this email in SES
+    Destination: {
+      ToAddresses: [userEmail]
+    },
+    Message: {
+      Subject: {
+        Data: `Your PTE Essay Results - Score: ${scoringResult.overallScore}/90`
+      },
+      Body: {
+        Html: {
+          Data: `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+              <h2 style="color: #333;">Your PTE Essay Results Are Ready!</h2>
+              
+              <div style="background-color: #f5f5f5; padding: 20px; border-radius: 8px; margin: 20px 0;">
+                <h3 style="color: #333; margin-top: 0;">Overall Score: ${scoringResult.overallScore}/90</h3>
+                <p><strong>Topic:</strong> ${topic}</p>
+              </div>
+              
+              <div style="margin: 20px 0;">
+                <h4>Score Breakdown:</h4>
+                <ul style="list-style: none; padding: 0;">
+                  <li>📝 Task Response: ${scoringResult.taskResponseScore}/90</li>
+                  <li>🔗 Coherence & Cohesion: ${scoringResult.coherenceScore}/90</li>
+                  <li>📚 Vocabulary: ${scoringResult.vocabularyScore}/90</li>
+                  <li>✏️ Grammar: ${scoringResult.grammarScore}/90</li>
+                </ul>
+              </div>
+              
+              <div style="margin: 30px 0;">
+                <a href="${resultUrl}" style="background-color: #4CAF50; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; display: inline-block;">
+                  View Detailed Results
+                </a>
+              </div>
+              
+              <p style="color: #666; font-size: 14px;">
+                Click the button above to see detailed feedback, suggestions for improvement, and your complete essay analysis.
+              </p>
+              
+              <hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;">
+              
+              <p style="color: #999; font-size: 12px;">
+                This is an automated email from PTE Essay Checker. Please do not reply to this email.
+              </p>
+            </div>
+          `
+        }
+      }
+    }
+  };
+  
+  try {
+    await sesClient.send(new SendEmailCommand(emailParams));
+    console.log('Email sent successfully to:', userEmail);
+  } catch (error) {
+    console.error('Error sending email:', error);
+    // Don't throw - we don't want to fail the whole process if email fails
+  }
 }
