@@ -36,51 +36,45 @@ export default function ResultsPage() {
   const [essay, setEssay] = useState<any>(null);
   const [result, setResult] = useState<Result | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [client, setClient] = useState<any>(null);
 
   useEffect(() => {
-    // Initialize client after component mounts
-    const dataClient = generateClient<Schema>();
-    setClient(dataClient);
-  }, []);
+    if (!essayId) return;
 
-  useEffect(() => {
-    if (essayId && client) {
-      fetchResults();
-    }
-  }, [essayId, client]);
-
-  const fetchResults = async () => {
-    if (!client) return;
-    
-    try {
-      // Fetch essay data
-      const essayResponse = await client.models.Essay.get({ id: essayId });
-      if (!essayResponse.data) {
-        throw new Error('Essay not found');
-      }
-      setEssay(essayResponse.data);
-
-      // Fetch result data
-      if (essayResponse.data.resultId) {
-        const resultResponse = await client.models.Result.get({ 
-          id: essayResponse.data.resultId 
-        });
-        if (resultResponse.data) {
-          setResult(resultResponse.data as any);
+    const fetchResults = async () => {
+      try {
+        // Initialize client inside the async function
+        const client = generateClient<Schema>();
+        
+        // Fetch essay data
+        const essayResponse = await client.models.Essay.get({ id: essayId });
+        if (!essayResponse.data) {
+          throw new Error('Essay not found');
         }
-      } else if (essayResponse.data.status === 'PROCESSING') {
-        // Poll for results if still processing
-        setTimeout(fetchResults, 2000);
-        return;
+        setEssay(essayResponse.data);
+
+        // Fetch result data
+        if (essayResponse.data.resultId) {
+          const resultResponse = await client.models.Result.get({ 
+            id: essayResponse.data.resultId 
+          });
+          if (resultResponse.data) {
+            setResult(resultResponse.data as any);
+          }
+        } else if (essayResponse.data.status === 'PROCESSING') {
+          // Poll for results if still processing
+          setTimeout(() => fetchResults(), 2000);
+          return;
+        }
+      } catch (err: any) {
+        console.error('Error fetching results:', err);
+        setError(err.message || 'Failed to fetch results');
+      } finally {
+        setLoading(false);
       }
-    } catch (err: any) {
-      console.error('Error fetching results:', err);
-      setError(err.message || 'Failed to fetch results');
-    } finally {
-      setLoading(false);
-    }
-  };
+    };
+
+    fetchResults();
+  }, [essayId]);
 
   const getScoreColor = (score: number) => {
     if (score >= 79) return 'text-green-600';
@@ -127,7 +121,7 @@ export default function ResultsPage() {
           <CardContent className="pt-6">
             <p className="text-center">Essay is still being processed. Please wait...</p>
             <div className="mt-4 text-center">
-              <Button onClick={fetchResults}>Refresh</Button>
+              <Button onClick={() => window.location.reload()}>Refresh</Button>
             </div>
           </CardContent>
         </Card>
