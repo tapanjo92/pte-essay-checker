@@ -131,7 +131,7 @@ Please evaluate the essay on these criteria:
 3. Vocabulary (0-90): Range, accuracy, and appropriateness of vocabulary
 4. Grammar (0-90): Grammatical accuracy, sentence variety, and complexity
 
-Provide your response in the following JSON format:
+Provide your response as a valid JSON object (no markdown, no code blocks, just pure JSON) in the following format:
 {
   "scores": {
     "taskResponse": <score>,
@@ -185,11 +185,36 @@ async function callBedrockAI(prompt: string): Promise<any> {
   const responseBody = JSON.parse(new TextDecoder().decode(response.body));
   const responseText = responseBody.content[0].text;
   
-  // Remove markdown code blocks if present
-  const jsonMatch = responseText.match(/```json\s*([\s\S]*?)\s*```/);
-  const cleanJson = jsonMatch ? jsonMatch[1] : responseText;
+  console.log('Raw AI response:', responseText.substring(0, 500) + '...');
   
-  return JSON.parse(cleanJson);
+  // Try multiple patterns to extract JSON
+  let cleanJson = responseText;
+  
+  // Pattern 1: Look for ```json blocks
+  const codeBlockMatch = responseText.match(/```json\s*\n?([\s\S]*?)\n?```/);
+  if (codeBlockMatch) {
+    cleanJson = codeBlockMatch[1].trim();
+  } else {
+    // Pattern 2: Look for any ``` blocks
+    const anyCodeBlock = responseText.match(/```\s*\n?([\s\S]*?)\n?```/);
+    if (anyCodeBlock) {
+      cleanJson = anyCodeBlock[1].trim();
+    } else {
+      // Pattern 3: Try to find JSON object pattern
+      const jsonObjectMatch = responseText.match(/\{[\s\S]*\}/);
+      if (jsonObjectMatch) {
+        cleanJson = jsonObjectMatch[0];
+      }
+    }
+  }
+  
+  try {
+    return JSON.parse(cleanJson);
+  } catch (parseError) {
+    console.error('Failed to parse JSON:', cleanJson);
+    console.error('Parse error:', parseError);
+    throw new Error(`Failed to parse AI response as JSON: ${parseError.message}`);
+  }
 }
 
 function parseAIResponse(aiResponse: any): ScoringResult {
