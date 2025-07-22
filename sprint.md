@@ -1,129 +1,244 @@
 # PTE Essay Checker - Sprint Implementation Plan
 
 ## Overview
-Day-wise implementation plan for PTE Essay Checker using AWS Amplify Gen 2 and CDK for infrastructure deployment.
+Optimized day-wise implementation plan for PTE Essay Checker using AWS Amplify Gen 2 with integrated backend-as-code approach.
 
 ### Prerequisites
-- ✅ AWS Account already created
-- ✅ AWS CLI configured with appropriate credentials
-- ✅ Node.js 20.x and npm/yarn installed
+- ✅ AWS Account already created with appropriate IAM permissions
+- ✅ AWS CLI configured (`aws configure`)
+- ✅ Node.js 20.x and npm installed
 - ✅ Git repository initialized
+
+### Key Principles
+- **Amplify Gen 2 First**: Use Amplify's built-in capabilities before adding external infrastructure
+- **Type-Safe Development**: TypeScript everywhere with generated types
+- **Backend-as-Code**: Define infrastructure in TypeScript, not YAML
+- **Integrated Deployment**: Single `npx ampx sandbox` deploys everything
 
 ---
 
-## Week 1: Foundation & Infrastructure Setup
+## Week 1: Foundation & Core Backend
 
-### Day 1: Project Initialization & Amplify Setup
+### Day 1: Complete Backend Setup (Critical Day)
 **Morning (4 hours)**
-- [ ] Initialize Next.js 14 project with TypeScript
+- [ ] Initialize Next.js + Amplify Gen 2 project
   ```bash
-  npx create-next-app@latest pte-essay-checker --typescript --tailwind --app
+  npx create-next-app@latest pte-essay-checker --typescript --tailwind --app --no-src-dir
   cd pte-essay-checker
-  ```
-- [ ] Install AWS Amplify Gen 2
-  ```bash
   npm install @aws-amplify/backend @aws-amplify/backend-cli aws-amplify
   ```
-- [ ] Initialize Amplify project
+
+- [ ] Create complete Amplify backend structure
   ```bash
-  npx amplify sandbox
+  mkdir -p amplify/{auth,data,storage,functions/processEssay,functions/generateFeedback}
+  touch amplify/{backend.ts,auth/resource.ts,data/resource.ts,storage/resource.ts}
   ```
 
 **Afternoon (4 hours)**
-- [ ] Create base Amplify backend structure
-  ```
-  amplify/
-  ├── backend.ts
-  ├── auth/
-  │   └── resource.ts
-  ├── data/
-  │   └── resource.ts
-  └── functions/
-  ```
-- [ ] Configure Cognito authentication
-- [ ] Set up environment variables structure
-- [ ] Create initial deployment pipeline
+- [ ] Implement authentication configuration
+  ```typescript
+  // amplify/auth/resource.ts
+  import { defineAuth } from '@aws-amplify/backend';
 
-### Day 2: Database Schema & GraphQL API
-**Morning (4 hours)**
-- [ ] Define DynamoDB schema in `amplify/data/resource.ts`
-  - User table
-  - Essay table
-  - Result table
-  - Subscription table
-- [ ] Create GraphQL schema with AppSync
+  export const auth = defineAuth({
+    loginWith: {
+      email: true,
+    },
+    userAttributes: {
+      preferredUsername: {
+        mutable: true,
+        required: false,
+      },
+    },
+  });
+  ```
+
+- [ ] Define complete data schema
   ```typescript
   // amplify/data/resource.ts
+  import { type ClientSchema, a, defineData } from '@aws-amplify/backend';
+
+  const schema = a.schema({
+    User: a.model({
+      id: a.id(),
+      email: a.string().required(),
+      subscription: a.belongsTo('Subscription'),
+      essays: a.hasMany('Essay'),
+    }).authorization(allow => [allow.owner()]),
+    
+    Essay: a.model({
+      id: a.id(),
+      userId: a.string(),
+      topic: a.string().required(),
+      content: a.string(),
+      wordCount: a.integer(),
+      user: a.belongsTo('User'),
+      result: a.hasOne('Result'),
+      status: a.enum(['PENDING', 'PROCESSING', 'COMPLETED', 'FAILED']),
+    }).authorization(allow => [allow.owner()]),
+    
+    Result: a.model({
+      id: a.id(),
+      essayId: a.string(),
+      essay: a.belongsTo('Essay'),
+      overallScore: a.float(),
+      grammarScore: a.float(),
+      vocabularyScore: a.float(),
+      coherenceScore: a.float(),
+      feedback: a.json(),
+    }).authorization(allow => [allow.owner()]),
+  });
+
   export const data = defineData({
-    schema: /* GraphQL schema */,
+    schema,
     authorizationModes: {
       defaultAuthorizationMode: 'userPool',
     },
   });
   ```
 
-**Afternoon (4 hours)**
-- [ ] Implement GraphQL resolvers
-- [ ] Set up data access patterns
-- [ ] Configure indexes for query optimization
-- [ ] Test GraphQL API with AWS AppSync console
-
-### Day 3: CDK Infrastructure Setup
+### Day 2: Storage, Functions & AI Integration
 **Morning (4 hours)**
-- [ ] Initialize CDK project for additional infrastructure
-  ```bash
-  mkdir infrastructure && cd infrastructure
-  npx cdk init app --language typescript
-  ```
-- [ ] Create CDK stacks:
-  - Storage stack (S3 buckets)
-  - Compute stack (Lambda layers)
-  - Monitoring stack (CloudWatch dashboards)
-
-**Afternoon (4 hours)**
-- [ ] Implement S3 bucket for essay storage
-- [ ] Set up CloudFront distribution
-- [ ] Configure WAF rules
-- [ ] Deploy CDK stacks
-  ```bash
-  npm run cdk deploy --all
-  ```
-
-### Day 4: Lambda Functions & AI Integration
-**Morning (4 hours)**
-- [ ] Create Lambda function for essay processing
+- [ ] Configure storage for essays
   ```typescript
-  // amplify/functions/process-essay/handler.ts
+  // amplify/storage/resource.ts
+  import { defineStorage } from '@aws-amplify/backend';
+
+  export const storage = defineStorage({
+    name: 'essayStorage',
+    access: (allow) => ({
+      'essays/*': [
+        allow.authenticated.to(['read', 'write']),
+      ],
+    }),
+  });
   ```
-- [ ] Integrate AWS Bedrock for AI analysis
-- [ ] Set up IAM roles for Bedrock access
-- [ ] Create Lambda layers for shared dependencies
+
+- [ ] Create essay processing Lambda
+  ```typescript
+  // amplify/functions/processEssay/handler.ts
+  import { BedrockRuntimeClient, InvokeModelCommand } from '@aws-sdk/client-bedrock-runtime';
+  
+  export const handler = async (event) => {
+    const bedrock = new BedrockRuntimeClient({ region: 'us-east-1' });
+    // Processing logic
+  };
+  ```
 
 **Afternoon (4 hours)**
-- [ ] Implement essay scoring algorithm
-- [ ] Create feedback generation logic
-- [ ] Set up error handling and retry logic
-- [ ] Configure Lambda environment variables
-
-### Day 5: Frontend Foundation
-**Morning (4 hours)**
-- [ ] Set up Amplify client configuration
+- [ ] Set up function resources and permissions
   ```typescript
-  // app/amplify-config.ts
+  // amplify/functions/processEssay/resource.ts
+  import { defineFunction } from '@aws-amplify/backend';
+
+  export const processEssay = defineFunction({
+    name: 'processEssay',
+    runtime: 20,
+    timeoutSeconds: 300,
+    environment: {
+      BEDROCK_MODEL_ID: 'anthropic.claude-3-sonnet-20240229-v1:0',
+    },
+  });
+  ```
+
+- [ ] Wire everything in backend.ts
+  ```typescript
+  // amplify/backend.ts
+  import { defineBackend } from '@aws-amplify/backend';
+  import { auth } from './auth/resource';
+  import { data } from './data/resource';
+  import { storage } from './storage/resource';
+  import { processEssay } from './functions/processEssay/resource';
+  import { PolicyStatement } from 'aws-cdk-lib/aws-iam';
+
+  const backend = defineBackend({
+    auth,
+    data,
+    storage,
+    processEssay,
+  });
+
+  // Grant Bedrock permissions
+  backend.processEssay.resources.lambda.addToRolePolicy(
+    new PolicyStatement({
+      actions: ['bedrock:InvokeModel'],
+      resources: ['*'],
+    })
+  );
+  ```
+
+- [ ] Deploy and test backend
+  ```bash
+  npx ampx sandbox
+  ```
+
+### Day 3: Frontend Foundation & Auth UI
+**Morning (4 hours)**
+- [ ] Configure Amplify in Next.js
+  ```typescript
+  // app/providers.tsx
+  'use client';
   import { Amplify } from 'aws-amplify';
-  import config from '@/amplifyconfiguration.json';
+  import outputs from '@/amplify_outputs.json';
+  
+  Amplify.configure(outputs);
   ```
-- [ ] Install UI dependencies
+
+- [ ] Install and setup UI components
   ```bash
-  npm install @radix-ui/react-* tailwindcss-animate class-variance-authority
+  npm install @aws-amplify/ui-react @radix-ui/react-dialog @radix-ui/react-dropdown-menu
+  npx shadcn-ui@latest init
   ```
-- [ ] Configure Tailwind CSS and shadcn/ui
+
+- [ ] Create authentication components
+  ```typescript
+  // app/components/auth/AuthenticatedLayout.tsx
+  import { Authenticator } from '@aws-amplify/ui-react';
+  ```
 
 **Afternoon (4 hours)**
-- [ ] Create base layout components
-- [ ] Implement authentication flow UI
-- [ ] Set up routing structure
-- [ ] Create loading and error states
+- [ ] Build essay submission form
+- [ ] Implement real-time status updates
+- [ ] Create results display component
+- [ ] Test end-to-end flow
+
+### Day 4: Advanced Features & Testing
+**Morning (4 hours)**
+- [ ] Add subscription checking
+  ```typescript
+  // amplify/data/resource.ts - add custom query
+  processEssay: a.mutation({
+    arguments: { essayId: a.string() },
+    returns: a.ref('Result'),
+    handler: a.handler.function(processEssay),
+  }).authorization(allow => [allow.authenticated()]),
+  ```
+
+- [ ] Implement rate limiting
+- [ ] Add caching layer
+
+**Afternoon (4 hours)**
+- [ ] Write integration tests
+- [ ] Performance optimization
+- [ ] Security hardening
+- [ ] Prepare for production
+
+### Day 5: Production Setup & CDK (Only if needed)
+**Morning (4 hours)**
+- [ ] Set up production branch
+  ```bash
+  npx ampx generate outputs --branch main --app-id YOUR_APP_ID
+  ```
+
+- [ ] Configure custom domain
+- [ ] Set up monitoring
+
+**Afternoon (4 hours)**
+- [ ] Only now consider CDK for:
+  - WAF rules
+  - Advanced CloudWatch dashboards
+  - Custom alarms
+  - If needed at all
 
 ---
 
