@@ -66,15 +66,17 @@ interface ScoringResult {
   }>;
 }
 
-export const handler: Handler<EssayProcessingEvent> = async (event) => {
-  console.log('Processing essay:', { essayId: event.essayId, wordCount: event.wordCount });
+export const handler: Handler = async (event) => {
+  // AppSync passes arguments in the 'arguments' field
+  const args = event.arguments as EssayProcessingEvent;
+  console.log('Processing essay:', { essayId: args.essayId, wordCount: args.wordCount });
   
   try {
     // 1. Update essay status to PROCESSING
-    await updateEssayStatus(event.essayId, 'PROCESSING');
+    await updateEssayStatus(args.essayId, 'PROCESSING');
     
     // 2. Prepare the prompt for AI analysis
-    const prompt = createAnalysisPrompt(event.topic, event.content);
+    const prompt = createAnalysisPrompt(args.topic, args.content);
     
     // 3. Call Bedrock AI for analysis
     const aiResponse = await callBedrockAI(prompt);
@@ -83,16 +85,16 @@ export const handler: Handler<EssayProcessingEvent> = async (event) => {
     const scoringResult = parseAIResponse(aiResponse);
     
     // 5. Save results to DynamoDB
-    const resultId = await saveResults(event.essayId, event.userId, scoringResult);
+    const resultId = await saveResults(args.essayId, args.userId || 'anonymous', scoringResult);
     
     // 6. Update essay status to COMPLETED
-    await updateEssayStatus(event.essayId, 'COMPLETED', resultId);
+    await updateEssayStatus(args.essayId, 'COMPLETED', resultId);
     
     return {
       statusCode: 200,
       body: JSON.stringify({
         message: 'Essay processed successfully',
-        essayId: event.essayId,
+        essayId: args.essayId,
         resultId: resultId,
         overallScore: scoringResult.overallScore
       }),
@@ -101,7 +103,7 @@ export const handler: Handler<EssayProcessingEvent> = async (event) => {
     console.error('Error processing essay:', error);
     
     // Update essay status to FAILED
-    await updateEssayStatus(event.essayId, 'FAILED');
+    await updateEssayStatus(args.essayId, 'FAILED');
     
     return {
       statusCode: 500,
