@@ -9,7 +9,5 @@ export const processEssay = defineFunction({
   environment: {
     BEDROCK_MODEL_ID: 'anthropic.claude-3-sonnet-20240229-v1:0',
     BEDROCK_REGION: 'ap-south-1',
-    ESSAY_TABLE_NAME: 'Essay',
-    RESULT_TABLE_NAME: 'Result',
   },
 });
