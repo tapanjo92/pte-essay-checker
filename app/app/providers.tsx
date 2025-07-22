@@ -1,11 +1,18 @@
 'use client';
 
 import { Amplify } from 'aws-amplify';
-import outputs from '@/amplify_outputs.json';
 import '@aws-amplify/ui-react/styles.css';
-
-Amplify.configure(outputs);
+import { useEffect } from 'react';
 
 export function Providers({ children }: { children: React.ReactNode }) {
+  useEffect(() => {
+    // Configure Amplify on client side only
+    import('@/amplify_outputs.json').then((outputs) => {
+      Amplify.configure(outputs.default);
+    }).catch((error) => {
+      console.warn('Amplify outputs not found. Running without backend configuration.');
+    });
+  }, []);
+
   return <>{children}</>;
 }

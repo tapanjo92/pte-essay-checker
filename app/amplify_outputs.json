@@ -1,9 +1,9 @@
 {
   "auth": {
-    "user_pool_id": "ap-south-1_RGhrdZ0wj",
+    "user_pool_id": "ap-south-1_Ghhd8oy4t",
     "aws_region": "ap-south-1",
-    "user_pool_client_id": "185bcobeaelt7lri2q9800uokc",
-    "identity_pool_id": "ap-south-1:e8c42968-ca8e-496b-b60b-29790f537a6d",
+    "user_pool_client_id": "7r0muk852mgst2hdi8ca872g75",
+    "identity_pool_id": "ap-south-1:7827fa1a-050a-4a04-b740-d1a0eb6fd7e3",
     "mfa_methods": [],
     "standard_required_attributes": [
       "email"
@@ -26,9 +26,9 @@
     "unauthenticated_identities_enabled": true
   },
   "data": {
-    "url": "https://2i4kgokkw5b5rcc3ffpr2ambgq.appsync-api.ap-south-1.amazonaws.com/graphql",
+    "url": "https://ahgv7ll33fhepdxkj3ksqhslly.appsync-api.ap-south-1.amazonaws.com/graphql",
     "aws_region": "ap-south-1",
-    "api_key": "da2-3hr5lmyjljc5noxybyzu6txeqi",
+    "api_key": "da2-2crtitvpfzhtxlgafti4p3dghy",
     "default_authorization_type": "AMAZON_COGNITO_USER_POOLS",
     "authorization_types": [
       "API_KEY",
@@ -780,11 +780,11 @@
   },
   "storage": {
     "aws_region": "ap-south-1",
-    "bucket_name": "amplify-app-root-sandbox--pteessaystoragebucketc06-5z4nd2wwkxz4",
+    "bucket_name": "amplify-app-root-sandbox--pteessaystoragebucketc06-4zwke5hcg7qx",
     "buckets": [
       {
         "name": "pteEssayStorage",
-        "bucket_name": "amplify-app-root-sandbox--pteessaystoragebucketc06-5z4nd2wwkxz4",
+        "bucket_name": "amplify-app-root-sandbox--pteessaystoragebucketc06-4zwke5hcg7qx",
         "aws_region": "ap-south-1",
         "paths": {
           "essays/*": {
