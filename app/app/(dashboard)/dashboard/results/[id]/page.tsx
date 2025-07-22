@@ -8,8 +8,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 
-const client = generateClient<Schema>();
-
 interface Result {
   overallScore: number;
   taskResponseScore: number;
@@ -38,14 +36,23 @@ export default function ResultsPage() {
   const [essay, setEssay] = useState<any>(null);
   const [result, setResult] = useState<Result | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [client, setClient] = useState<any>(null);
 
   useEffect(() => {
-    if (essayId) {
+    // Initialize client after component mounts
+    const dataClient = generateClient<Schema>();
+    setClient(dataClient);
+  }, []);
+
+  useEffect(() => {
+    if (essayId && client) {
       fetchResults();
     }
-  }, [essayId]);
+  }, [essayId, client]);
 
   const fetchResults = async () => {
+    if (!client) return;
+    
     try {
       // Fetch essay data
       const essayResponse = await client.models.Essay.get({ id: essayId });

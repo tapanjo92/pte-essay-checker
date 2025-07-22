@@ -1,13 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { generateClient } from 'aws-amplify/data';
 import type { Schema } from '@/amplify/data/resource';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { getCurrentUser } from 'aws-amplify/auth';
-
-const client = generateClient<Schema>();
 
 const ESSAY_TOPICS = [
   {
@@ -34,6 +32,9 @@ export default function DashboardPage() {
   const [wordCount, setWordCount] = useState(0);
   const [submittedEssayId, setSubmittedEssayId] = useState<string | null>(null);
   const [processingStatus, setProcessingStatus] = useState<string | null>(null);
+  
+  // Initialize Amplify client inside component
+  const client = generateClient<Schema>();
 
   const handleContentChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const content = e.target.value;
