@@ -320,7 +320,7 @@ async function sendResultEmail(
   const resultUrl = `${appUrl}/results/${essayId}`;
   
   const emailParams = {
-    Source: 'noreply@pte-essay-checker.com', // You'll need to verify this email in SES
+    Source: 'noreply@getcomplical.com', // Using your verified SES domain
     Destination: {
       ToAddresses: [userEmail]
     },
@@ -362,7 +362,7 @@ async function sendResultEmail(
               <hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;">
               
               <p style="color: #999; font-size: 12px;">
-                This is an automated email from PTE Essay Checker. Please do not reply to this email.
+                This is an automated email from GetComplical.com PTE Essay Checker. Please do not reply to this email.
               </p>
             </div>
           `
