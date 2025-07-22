@@ -201,10 +201,10 @@ export default function ResultsPage() {
         </CardHeader>
         <CardContent className="space-y-4">
           <div>
-            <p className="text-sm text-muted-foreground">{result.feedback.summary}</p>
+            <p className="text-sm text-muted-foreground">{result.feedback?.summary || 'No summary available'}</p>
           </div>
           
-          {result.feedback.strengths.length > 0 && (
+          {result.feedback?.strengths && result.feedback.strengths.length > 0 && (
             <div>
               <h4 className="mb-2 font-semibold text-green-600">Strengths</h4>
               <ul className="list-inside list-disc space-y-1">
@@ -215,7 +215,7 @@ export default function ResultsPage() {
             </div>
           )}
 
-          {result.feedback.improvements.length > 0 && (
+          {result.feedback?.improvements && result.feedback.improvements.length > 0 && (
             <div>
               <h4 className="mb-2 font-semibold text-orange-600">Areas for Improvement</h4>
               <ul className="list-inside list-disc space-y-1">
@@ -237,32 +237,32 @@ export default function ResultsPage() {
           <div>
             <h4 className="mb-1 font-semibold">Task Response</h4>
             <p className="text-sm text-muted-foreground">
-              {result.feedback.detailedFeedback.taskResponse}
+              {result.feedback?.detailedFeedback?.taskResponse || 'No feedback available'}
             </p>
           </div>
           <div>
             <h4 className="mb-1 font-semibold">Coherence & Cohesion</h4>
             <p className="text-sm text-muted-foreground">
-              {result.feedback.detailedFeedback.coherence}
+              {result.feedback?.detailedFeedback?.coherence || 'No feedback available'}
             </p>
           </div>
           <div>
             <h4 className="mb-1 font-semibold">Vocabulary</h4>
             <p className="text-sm text-muted-foreground">
-              {result.feedback.detailedFeedback.vocabulary}
+              {result.feedback?.detailedFeedback?.vocabulary || 'No feedback available'}
             </p>
           </div>
           <div>
             <h4 className="mb-1 font-semibold">Grammar</h4>
             <p className="text-sm text-muted-foreground">
-              {result.feedback.detailedFeedback.grammar}
+              {result.feedback?.detailedFeedback?.grammar || 'No feedback available'}
             </p>
           </div>
         </CardContent>
       </Card>
 
       {/* Suggestions */}
-      {result.suggestions && result.suggestions.length > 0 && (
+      {result.suggestions && Array.isArray(result.suggestions) && result.suggestions.length > 0 && (
         <Card>
           <CardHeader>
             <CardTitle>Suggestions for Next Time</CardTitle>

@@ -38,6 +38,9 @@ backend.data.resources.tables["Essay"].grantReadWriteData(
 backend.data.resources.tables["Result"].grantReadWriteData(
   backend.processEssay.resources.lambda
 );
+backend.data.resources.tables["User"].grantReadData(
+  backend.processEssay.resources.lambda
+);
 
 // Pass the actual table names to the Lambda function
 backend.processEssay.resources.lambda.addEnvironment(
@@ -47,4 +50,20 @@ backend.processEssay.resources.lambda.addEnvironment(
 backend.processEssay.resources.lambda.addEnvironment(
   "RESULT_TABLE_NAME", 
   backend.data.resources.tables["Result"].tableName
+);
+backend.processEssay.resources.lambda.addEnvironment(
+  "USER_TABLE_NAME",
+  backend.data.resources.tables["User"].tableName
+);
+
+// Set the Bedrock model to Amazon Titan
+backend.processEssay.resources.lambda.addEnvironment(
+  "BEDROCK_MODEL_ID",
+  "amazon.titan-text-express-v1"
+);
+
+// Set the Bedrock region
+backend.processEssay.resources.lambda.addEnvironment(
+  "BEDROCK_REGION",
+  "ap-south-1"
 );

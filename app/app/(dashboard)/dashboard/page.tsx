@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { generateClient } from 'aws-amplify/data';
 import type { Schema } from '@/amplify/data/resource';
 import { Button } from '@/components/ui/button';
@@ -26,6 +27,7 @@ const ESSAY_TOPICS = [
 ];
 
 export default function DashboardPage() {
+  const router = useRouter();
   const [selectedTopic, setSelectedTopic] = useState(ESSAY_TOPICS[0]);
   const [essayContent, setEssayContent] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -80,14 +82,12 @@ export default function DashboardPage() {
         wordCount: wordCount,
       });
 
-      setProcessingStatus('Essay processed successfully! Check your email for detailed results.');
+      setProcessingStatus('Essay processed successfully!');
       
-      // Clear form after successful submission
+      // Redirect to results page
       setTimeout(() => {
-        setEssayContent('');
-        setWordCount(0);
-        setProcessingStatus('Your results have been sent to your email. Write another essay to continue practicing!');
-      }, 3000);
+        router.push(`/dashboard/results/${essayId}`);
+      }, 1000);
 
     } catch (error) {
       console.error('Error submitting essay:', error);

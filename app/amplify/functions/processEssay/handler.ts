@@ -71,11 +71,22 @@ interface ScoringResult {
 export const handler: Handler = async (event) => {
   // AppSync passes arguments in the 'arguments' field
   const args = event.arguments as EssayProcessingEvent;
-  console.log('Processing essay:', { essayId: args.essayId, wordCount: args.wordCount });
+  
+  // Get the authenticated user ID from the AppSync identity context
+  const userId = event.identity?.sub || event.identity?.username || 'anonymous';
+  args.userId = userId;
+  
+  // Get email from Cognito claims if available
+  const userEmail = event.identity?.claims?.email || event.identity?.email;
+  
+  console.log('Processing essay:', { essayId: args.essayId, wordCount: args.wordCount, userId });
+  console.log('Identity context:', JSON.stringify(event.identity, null, 2));
   
   try {
     // 1. Update essay status to PROCESSING
+    console.log('Updating essay status to PROCESSING...');
     await updateEssayStatus(args.essayId, 'PROCESSING');
+    console.log('Essay status updated');
     
     // 2. Prepare the prompt for AI analysis
     const prompt = createAnalysisPrompt(args.topic, args.content);
@@ -86,18 +97,16 @@ export const handler: Handler = async (event) => {
     console.log('AI Response received:', JSON.stringify(aiResponse, null, 2));
     
     // 4. Parse AI response and calculate scores
+    console.log('Parsing AI response...');
     const scoringResult = parseAIResponse(aiResponse);
+    console.log('Scoring result:', scoringResult.overallScore);
     
     // 5. Save results to DynamoDB
+    console.log('Saving results to DynamoDB...');
     const resultId = await saveResults(args.essayId, args.userId || 'anonymous', scoringResult);
+    console.log('Results saved with ID:', resultId);
     
-    // 6. Get user email
-    const userEmail = await getUserEmail(args.userId);
-    
-    // 7. Send email with results
-    if (userEmail) {
-      await sendResultEmail(userEmail, args.essayId, resultId, scoringResult, args.topic);
-    }
+    // Email functionality removed - results will be displayed on webpage
     
     // 8. Update essay status to COMPLETED
     await updateEssayStatus(args.essayId, 'COMPLETED', resultId);
@@ -173,55 +182,86 @@ Provide your response as a valid JSON object (no markdown, no code blocks, just 
 }
 
 async function callBedrockAI(prompt: string): Promise<any> {
-  const modelId = process.env.BEDROCK_MODEL_ID || 'anthropic.claude-3-sonnet-20240229-v1:0';
+  const modelId = process.env.BEDROCK_MODEL_ID || 'amazon.titan-text-express-v1';
   
   const input = {
     modelId: modelId,
     contentType: 'application/json',
     accept: 'application/json',
     body: JSON.stringify({
-      anthropic_version: "bedrock-2023-05-31",
-      max_tokens: 4000,
-      messages: [{
-        role: "user",
-        content: prompt
-      }]
+      inputText: prompt,
+      textGenerationConfig: {
+        maxTokenCount: 4000,
+        temperature: 0.2,
+        topP: 0.9
+      }
     })
   };
   
   const command = new InvokeModelCommand(input);
-  const response = await bedrockClient.send(command);
   
-  const responseBody = JSON.parse(new TextDecoder().decode(response.body));
-  const responseText = responseBody.content[0].text;
+  // Retry logic with exponential backoff for throttling
+  let retries = 0;
+  const maxRetries = 5;
+  let response;
   
-  console.log('Raw AI response:', responseText.substring(0, 500) + '...');
-  
-  // Try multiple patterns to extract JSON
-  let cleanJson = responseText;
-  
-  // Pattern 1: Look for ```json blocks
-  const codeBlockMatch = responseText.match(/```json\s*\n?([\s\S]*?)\n?```/);
-  if (codeBlockMatch) {
-    cleanJson = codeBlockMatch[1].trim();
-  } else {
-    // Pattern 2: Look for any ``` blocks
-    const anyCodeBlock = responseText.match(/```\s*\n?([\s\S]*?)\n?```/);
-    if (anyCodeBlock) {
-      cleanJson = anyCodeBlock[1].trim();
-    } else {
-      // Pattern 3: Try to find JSON object pattern
-      const jsonObjectMatch = responseText.match(/\{[\s\S]*\}/);
-      if (jsonObjectMatch) {
-        cleanJson = jsonObjectMatch[0];
+  while (retries < maxRetries) {
+    try {
+      response = await bedrockClient.send(command);
+      break; // Success, exit retry loop
+    } catch (error: any) {
+      if (error.name === 'ThrottlingException' && retries < maxRetries - 1) {
+        retries++;
+        const delay = Math.pow(2, retries) * 1000; // Exponential backoff: 2s, 4s, 8s, 16s
+        console.log(`Throttled by Bedrock, retrying in ${delay/1000}s... (attempt ${retries}/${maxRetries})`);
+        await new Promise(resolve => setTimeout(resolve, delay));
+      } else {
+        throw error; // Re-throw if not throttling or max retries reached
       }
     }
   }
   
+  if (!response) {
+    throw new Error('Failed to get response from Bedrock after retries');
+  }
+  
+  const responseBody = JSON.parse(new TextDecoder().decode(response.body));
+  // Titan returns results in a different format than Claude
+  const responseText = responseBody.results?.[0]?.outputText || responseBody.outputText || '';
+  
+  console.log('Raw AI response length:', responseText.length);
+  console.log('Raw AI response preview:', responseText.substring(0, 200));
+  
+  // Try multiple patterns to extract JSON
+  let cleanJson = responseText.trim();
+  
+  // Handle Titan's specific response format with empty code blocks
+  // Remove the first empty ``` block if it exists
+  cleanJson = cleanJson.replace(/^```\s*```\s*/, '');
+  
+  // Pattern 1: Look for JSON between code blocks (with or without 'json' tag)
+  const codeBlockMatch = cleanJson.match(/```(?:json)?\s*\n?([\s\S]*?)\n?```/);
+  if (codeBlockMatch && codeBlockMatch[1].trim()) {
+    cleanJson = codeBlockMatch[1].trim();
+  } else {
+    // Pattern 2: Extract everything between first { and last }
+    const firstBrace = cleanJson.indexOf('{');
+    const lastBrace = cleanJson.lastIndexOf('}');
+    if (firstBrace >= 0 && lastBrace > firstBrace) {
+      cleanJson = cleanJson.substring(firstBrace, lastBrace + 1);
+    } else {
+      // Pattern 3: Remove all ``` and try to parse what's left
+      cleanJson = cleanJson.replace(/```/g, '').trim();
+    }
+  }
+  
   try {
-    return JSON.parse(cleanJson);
+    console.log('Attempting to parse cleaned JSON, length:', cleanJson.length);
+    const parsed = JSON.parse(cleanJson);
+    console.log('Successfully parsed AI response');
+    return parsed;
   } catch (parseError) {
-    console.error('Failed to parse JSON:', cleanJson);
+    console.error('Failed to parse JSON:', cleanJson.substring(0, 500));
     console.error('Parse error:', parseError);
     throw new Error(`Failed to parse AI response as JSON: ${parseError.message}`);
   }
@@ -281,7 +321,7 @@ async function saveResults(essayId: string, userId: string, scoringResult: Scori
       essayId: essayId,
       owner: userId,
       ...scoringResult,
-      aiModel: process.env.BEDROCK_MODEL_ID || 'claude-3-sonnet',
+      aiModel: process.env.BEDROCK_MODEL_ID || 'amazon-titan-text-express',
       processingTime: Date.now(),
       createdAt: timestamp,
       updatedAt: timestamp
@@ -297,7 +337,7 @@ async function getUserEmail(userId: string): Promise<string | null> {
   
   try {
     const params = {
-      TableName: process.env.USER_TABLE_NAME || 'User-xrc6izm2mfejziqhuhlhya7ome-NONE',
+      TableName: process.env.USER_TABLE_NAME!,
       Key: { id: userId }
     };
     
