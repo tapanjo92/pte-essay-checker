@@ -1,0 +1,27 @@
+version: 1
+backend:
+  phases:
+    build:
+      commands:
+        - cd app
+        - npm ci --cache .npm --prefer-offline
+        - npx ampx pipeline-deploy --branch $AWS_BRANCH --app-id $AWS_APP_ID
+frontend:
+  phases:
+    preBuild:
+      commands:
+        - cd app
+        - npm ci --cache .npm --prefer-offline
+    build:
+      commands:
+        - cd app
+        - npm run build
+  artifacts:
+    baseDirectory: app/.next
+    files:
+      - '**/*'
+  cache:
+    paths:
+      - app/.next/cache/**/*
+      - app/.npm/**/*
+      - app/node_modules/**/*
