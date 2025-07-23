@@ -56,13 +56,13 @@ backend.processEssay.resources.lambda.addEnvironment(
   backend.data.resources.tables["User"].tableName
 );
 
-// Set the Bedrock model to Amazon Titan
+// Set the Bedrock model to Amazon Titan Text Lite
 backend.processEssay.resources.lambda.addEnvironment(
   "BEDROCK_MODEL_ID",
-  "amazon.titan-text-express-v1"
+  "amazon.titan-text-lite-v1"
 );
 
-// Set the Bedrock region
+// Set the Bedrock region to ap-south-1
 backend.processEssay.resources.lambda.addEnvironment(
   "BEDROCK_REGION",
   "ap-south-1"

@@ -2,17 +2,26 @@
 
 import { Amplify } from 'aws-amplify';
 import '@aws-amplify/ui-react/styles.css';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import amplifyConfig from '@/amplify_outputs.json';
+
+// Configure Amplify immediately
+Amplify.configure(amplifyConfig);
 
 export function Providers({ children }: { children: React.ReactNode }) {
+  const [isConfigured, setIsConfigured] = useState(true);
+
   useEffect(() => {
-    // Configure Amplify on client side only
-    import('@/amplify_outputs.json').then((outputs) => {
-      Amplify.configure(outputs.default);
-    }).catch((error) => {
-      console.warn('Amplify outputs not found. Running without backend configuration.');
-    });
+    // Ensure configuration is applied
+    if (!Amplify.getConfig().Auth) {
+      Amplify.configure(amplifyConfig);
+    }
+    setIsConfigured(true);
   }, []);
+
+  if (!isConfigured) {
+    return <div>Loading...</div>;
+  }
 
   return <>{children}</>;
 }

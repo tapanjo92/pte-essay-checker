@@ -58,7 +58,21 @@ export default function ResultsPage() {
             id: essayResponse.data.resultId 
           });
           if (resultResponse.data) {
-            setResult(resultResponse.data as any);
+            console.log('Result data:', resultResponse.data);
+            // Parse JSON fields that are stored as strings
+            const parsedResult = {
+              ...resultResponse.data,
+              feedback: typeof resultResponse.data.feedback === 'string' 
+                ? JSON.parse(resultResponse.data.feedback) 
+                : resultResponse.data.feedback,
+              suggestions: typeof resultResponse.data.suggestions === 'string'
+                ? JSON.parse(resultResponse.data.suggestions)
+                : resultResponse.data.suggestions,
+              highlightedErrors: typeof resultResponse.data.highlightedErrors === 'string'
+                ? JSON.parse(resultResponse.data.highlightedErrors)
+                : resultResponse.data.highlightedErrors
+            };
+            setResult(parsedResult as any);
           }
         } else if (essayResponse.data.status === 'PROCESSING') {
           // Poll for results if still processing
@@ -202,6 +216,8 @@ export default function ResultsPage() {
         <CardContent className="space-y-4">
           <div>
             <p className="text-sm text-muted-foreground">{result.feedback?.summary || 'No summary available'}</p>
+            {/* Debug: Show raw feedback data */}
+            {!result.feedback && <pre className="text-xs">Debug: {JSON.stringify(result, null, 2)}</pre>}
           </div>
           
           {result.feedback?.strengths && result.feedback.strengths.length > 0 && (

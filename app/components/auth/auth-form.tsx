@@ -5,6 +5,13 @@ import { useRouter } from 'next/navigation';
 import { signIn, signUp, confirmSignUp, resetPassword, confirmResetPassword } from 'aws-amplify/auth';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Amplify } from 'aws-amplify';
+import amplifyConfig from '@/amplify_outputs.json';
+
+// Ensure Amplify is configured
+if (!Amplify.getConfig().Auth) {
+  Amplify.configure(amplifyConfig);
+}
 
 type AuthMode = 'signin' | 'signup' | 'confirm' | 'reset' | 'reset-confirm';
 

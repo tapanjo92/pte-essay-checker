@@ -4,6 +4,8 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { getCurrentUser, signOut } from 'aws-amplify/auth';
 import { Button } from '@/components/ui/button';
+import { Amplify } from 'aws-amplify';
+import amplifyConfig from '@/amplify_outputs.json';
 
 export default function DashboardLayout({
   children,
@@ -23,6 +25,7 @@ export default function DashboardLayout({
       const currentUser = await getCurrentUser();
       setUser(currentUser);
     } catch (error) {
+      console.error('Auth check failed:', error);
       router.push('/auth');
     } finally {
       setLoading(false);

@@ -182,7 +182,7 @@ Provide your response as a valid JSON object (no markdown, no code blocks, just 
 }
 
 async function callBedrockAI(prompt: string): Promise<any> {
-  const modelId = process.env.BEDROCK_MODEL_ID || 'amazon.titan-text-express-v1';
+  const modelId = process.env.BEDROCK_MODEL_ID || 'amazon.titan-text-lite-v1';
   
   const input = {
     modelId: modelId,
@@ -321,7 +321,7 @@ async function saveResults(essayId: string, userId: string, scoringResult: Scori
       essayId: essayId,
       owner: userId,
       ...scoringResult,
-      aiModel: process.env.BEDROCK_MODEL_ID || 'amazon-titan-text-express',
+      aiModel: process.env.BEDROCK_MODEL_ID || 'amazon.titan-text-lite-v1',
       processingTime: Date.now(),
       createdAt: timestamp,
       updatedAt: timestamp
