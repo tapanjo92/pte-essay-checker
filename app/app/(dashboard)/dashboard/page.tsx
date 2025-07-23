@@ -29,7 +29,7 @@ const ESSAY_TOPICS = [
 
 export default function DashboardPage() {
   const router = useRouter();
-  const [selectedTopic, setSelectedTopic] = useState(ESSAY_TOPICS[0]);
+  const [selectedTopic, setSelectedTopic] = useState(ESSAY_TOPICS[Math.floor(Math.random() * ESSAY_TOPICS.length)]);
   const [essayContent, setEssayContent] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [wordCount, setWordCount] = useState(0);
@@ -37,6 +37,9 @@ export default function DashboardPage() {
   const [processingStatus, setProcessingStatus] = useState<string | null>(null);
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
   const [isSaving, setIsSaving] = useState(false);
+  const [timeRemaining, setTimeRemaining] = useState(1200); // 20 minutes in seconds
+  const [isTimerActive, setIsTimerActive] = useState(false);
+  const [hasStartedWriting, setHasStartedWriting] = useState(false);
   
   // Initialize Amplify client inside component
   const client = generateClient<Schema>();
@@ -76,6 +79,44 @@ export default function DashboardPage() {
     return () => clearTimeout(saveTimer);
   }, [essayContent, selectedTopic]);
 
+  // Timer countdown
+  useEffect(() => {
+    if (!isTimerActive || timeRemaining <= 0) return;
+
+    const timer = setInterval(() => {
+      setTimeRemaining((prev) => {
+        if (prev <= 1) {
+          setIsTimerActive(false);
+          toast.error('Time is up!', {
+            description: 'Your 20 minutes have ended. Submit your essay now.',
+            duration: 10000,
+          });
+          return 0;
+        }
+        
+        // Time alerts
+        if (prev === 600) { // 10 minutes
+          toast.warning('10 minutes remaining', {
+            description: 'You have 10 minutes left to complete your essay.',
+          });
+        } else if (prev === 300) { // 5 minutes
+          toast.warning('5 minutes remaining', {
+            description: 'You have 5 minutes left. Start wrapping up your essay.',
+          });
+        } else if (prev === 60) { // 1 minute
+          toast.error('1 minute remaining!', {
+            description: 'Hurry! You have only 1 minute left.',
+            duration: 5000,
+          });
+        }
+        
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [isTimerActive, timeRemaining]);
+
   const saveDraft = () => {
     if (essayContent || selectedTopic) {
       setIsSaving(true);
@@ -105,6 +146,42 @@ export default function DashboardPage() {
     setEssayContent(content);
     const words = content.trim().split(/\s+/).filter(word => word.length > 0);
     setWordCount(words.length);
+    
+    // Start timer on first keystroke
+    if (!hasStartedWriting && content.length > 0) {
+      setHasStartedWriting(true);
+      setIsTimerActive(true);
+      toast.info('Timer started!', {
+        description: 'You have 20 minutes to complete your essay.',
+      });
+    }
+  };
+
+  const formatTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  };
+
+  const handlePaste = (e: React.ClipboardEvent) => {
+    e.preventDefault();
+    toast.error('Paste disabled', {
+      description: 'Copy/paste is not allowed in PTE exam conditions.',
+    });
+  };
+
+  const handleCopy = (e: React.ClipboardEvent) => {
+    e.preventDefault();
+    toast.error('Copy disabled', {
+      description: 'Copy/paste is not allowed in PTE exam conditions.',
+    });
+  };
+
+  const handleCut = (e: React.ClipboardEvent) => {
+    e.preventDefault();
+    toast.error('Cut disabled', {
+      description: 'Copy/paste is not allowed in PTE exam conditions.',
+    });
   };
 
   const handleSubmit = async () => {
@@ -177,33 +254,49 @@ export default function DashboardPage() {
 
   return (
     <div className="mx-auto max-w-4xl space-y-6">
-      <div>
-        <h2 className="text-3xl font-bold">Write Your Essay</h2>
-        <p className="mt-2 text-muted-foreground">
-          Select a topic and write your essay. It will be automatically scored using AI.
-        </p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-3xl font-bold">PTE Essay Writing Task</h2>
+          <p className="mt-2 text-muted-foreground">
+            Write a 200-300 word essay on the given topic. You have 20 minutes.
+          </p>
+        </div>
+        {hasStartedWriting && (
+          <div className={`text-3xl font-mono font-bold ${
+            timeRemaining <= 60 ? 'text-red-600 animate-pulse' : 
+            timeRemaining <= 300 ? 'text-orange-600' : 
+            'text-foreground'
+          }`}>
+            {formatTime(timeRemaining)}
+          </div>
+        )}
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>Select Topic</CardTitle>
-          <CardDescription>Choose one of the following essay topics</CardDescription>
+          <CardTitle>Essay Topic</CardTitle>
+          <CardDescription>Read the topic carefully before you start writing</CardDescription>
         </CardHeader>
-        <CardContent className="space-y-3">
-          {ESSAY_TOPICS.map((topic) => (
-            <div
-              key={topic.id}
-              className={`cursor-pointer rounded-lg border p-4 transition-colors ${
-                selectedTopic.id === topic.id
-                  ? 'border-primary bg-primary/5'
-                  : 'border-border hover:border-primary/50'
-              }`}
-              onClick={() => setSelectedTopic(topic)}
+        <CardContent>
+          <div className="rounded-lg border border-primary/20 bg-primary/5 p-4">
+            <h3 className="font-semibold mb-2">{selectedTopic.title}</h3>
+            <p className="text-sm">{selectedTopic.description}</p>
+          </div>
+          {!hasStartedWriting && (
+            <Button
+              variant="outline"
+              size="sm"
+              className="mt-4"
+              onClick={() => {
+                const currentIndex = ESSAY_TOPICS.findIndex(t => t.id === selectedTopic.id);
+                const nextIndex = (currentIndex + 1) % ESSAY_TOPICS.length;
+                setSelectedTopic(ESSAY_TOPICS[nextIndex]);
+                toast.info('New topic selected');
+              }}
             >
-              <h3 className="font-semibold">{topic.title}</h3>
-              <p className="mt-1 text-sm text-muted-foreground">{topic.description}</p>
-            </div>
-          ))}
+              Get Different Topic
+            </Button>
+          )}
         </CardContent>
       </Card>
 
@@ -230,11 +323,15 @@ export default function DashboardPage() {
         </CardHeader>
         <CardContent>
           <textarea
-            className="min-h-[300px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-            placeholder="Start writing your essay here..."
+            className="min-h-[300px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm resize-none"
+            placeholder="Start writing your essay here... (Timer will start when you begin typing)"
             value={essayContent}
             onChange={handleContentChange}
-            disabled={isSubmitting}
+            onPaste={handlePaste}
+            onCopy={handleCopy}
+            onCut={handleCut}
+            disabled={isSubmitting || timeRemaining === 0}
+            spellCheck={false}
           />
           <div className="mt-4 flex items-center justify-between">
             <div className="flex items-center gap-4 text-sm">
@@ -258,8 +355,11 @@ export default function DashboardPage() {
             <Button
               onClick={handleSubmit}
               disabled={isSubmitting || wordCount < 200 || wordCount > 300}
+              className={timeRemaining === 0 ? 'animate-pulse' : ''}
             >
-              {isSubmitting ? 'Processing...' : 'Submit Essay'}
+              {isSubmitting ? 'Processing...' : 
+               timeRemaining === 0 ? 'Submit Now - Time Up!' : 
+               'Submit Essay'}
             </Button>
           </div>
         </CardContent>
