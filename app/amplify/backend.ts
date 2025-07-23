@@ -47,31 +47,7 @@ backend.data.resources.tables["User"].grantReadData(
   backend.processEssay.resources.lambda
 );
 
-// Pass the actual table names to the Lambda function
-backend.processEssay.resources.lambda.addEnvironment(
-  "ESSAY_TABLE_NAME",
-  backend.data.resources.tables["Essay"].tableName
-);
-backend.processEssay.resources.lambda.addEnvironment(
-  "RESULT_TABLE_NAME", 
-  backend.data.resources.tables["Result"].tableName
-);
-backend.processEssay.resources.lambda.addEnvironment(
-  "USER_TABLE_NAME",
-  backend.data.resources.tables["User"].tableName
-);
-
-// Set the Bedrock model to Llama 3 8B Instruct
-backend.processEssay.resources.lambda.addEnvironment(
-  "BEDROCK_MODEL_ID",
-  "meta.llama3-8b-instruct-v1:0"
-);
-
-// Set the Bedrock region to ap-south-1
-backend.processEssay.resources.lambda.addEnvironment(
-  "BEDROCK_REGION",
-  "ap-south-1"
-);
+// Note: Environment variables are configured in the respective resource.ts files
 
 // Create SQS Queue in a way that avoids circular dependencies
 const stack = Stack.of(backend.data);
@@ -101,12 +77,4 @@ backend.data.resources.tables["Essay"].grantReadWriteData(
   backend.submitEssayToQueue.resources.lambda
 );
 
-// Pass environment variables
-backend.submitEssayToQueue.resources.lambda.addEnvironment(
-  "ESSAY_QUEUE_URL",
-  essayQueue.queueUrl
-);
-backend.submitEssayToQueue.resources.lambda.addEnvironment(
-  "ESSAY_TABLE_NAME",
-  backend.data.resources.tables["Essay"].tableName
-);
+// Note: Environment variables are configured in the respective resource.ts files

@@ -280,7 +280,7 @@ async function callBedrockAI(prompt: string): Promise<any> {
   } catch (parseError) {
     console.error('Failed to parse JSON:', cleanJson.substring(0, 500));
     console.error('Parse error:', parseError);
-    throw new Error(`Failed to parse AI response as JSON: ${parseError.message}`);
+    throw new Error(`Failed to parse AI response as JSON: ${parseError instanceof Error ? parseError.message : String(parseError)}`);
   }
 }
 

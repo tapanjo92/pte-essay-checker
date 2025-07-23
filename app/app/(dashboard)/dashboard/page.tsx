@@ -29,34 +29,55 @@ const ESSAY_TOPICS = [
 
 export default function DashboardPage() {
   const router = useRouter();
-  const [selectedTopic, setSelectedTopic] = useState(ESSAY_TOPICS[Math.floor(Math.random() * ESSAY_TOPICS.length)]);
+  const [currentEssayNumber, setCurrentEssayNumber] = useState(1);
+  const [totalEssays] = useState(2); // PTE can have 1-2 essays, we'll prepare for 2
+  const [essay1Topic] = useState(ESSAY_TOPICS[Math.floor(Math.random() * ESSAY_TOPICS.length)]);
+  const [essay2Topic] = useState(() => {
+    // Ensure essay 2 has a different topic
+    const remainingTopics = ESSAY_TOPICS.filter(t => t.id !== essay1Topic.id);
+    return remainingTopics[Math.floor(Math.random() * remainingTopics.length)];
+  });
+  const [selectedTopic, setSelectedTopic] = useState(essay1Topic);
   const [essayContent, setEssayContent] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [wordCount, setWordCount] = useState(0);
-  const [submittedEssayId, setSubmittedEssayId] = useState<string | null>(null);
+  const [submittedEssayIds, setSubmittedEssayIds] = useState<string[]>([]);
   const [processingStatus, setProcessingStatus] = useState<string | null>(null);
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [timeRemaining, setTimeRemaining] = useState(1200); // 20 minutes in seconds
   const [isTimerActive, setIsTimerActive] = useState(false);
   const [hasStartedWriting, setHasStartedWriting] = useState(false);
+  const [essay1Completed, setEssay1Completed] = useState(false);
   
   // Initialize Amplify client inside component
   const client = generateClient<Schema>();
 
   // Load draft on mount
   useEffect(() => {
-    const savedDraft = localStorage.getItem('essay-draft');
-    const savedTopic = localStorage.getItem('essay-topic');
-    const savedTimeRemaining = localStorage.getItem('essay-time-remaining');
-    const savedTimerActive = localStorage.getItem('essay-timer-active');
+    const savedEssayNumber = localStorage.getItem('current-essay-number');
+    const savedEssay1Completed = localStorage.getItem('essay1-completed');
+    
+    if (savedEssayNumber) {
+      setCurrentEssayNumber(parseInt(savedEssayNumber, 10));
+    }
+    
+    if (savedEssay1Completed === 'true') {
+      setEssay1Completed(true);
+      setSelectedTopic(essay2Topic);
+    }
+    
+    const essayPrefix = `essay${currentEssayNumber}`;
+    const savedDraft = localStorage.getItem(`${essayPrefix}-draft`);
+    const savedTimeRemaining = localStorage.getItem(`${essayPrefix}-time-remaining`);
+    const savedTimerActive = localStorage.getItem(`${essayPrefix}-timer-active`);
     
     if (savedDraft) {
       setEssayContent(savedDraft);
       const words = savedDraft.trim().split(/\s+/).filter(word => word.length > 0);
       setWordCount(words.length);
       
-      const lastSaveTime = localStorage.getItem('essay-draft-time');
+      const lastSaveTime = localStorage.getItem(`${essayPrefix}-draft-time`);
       if (lastSaveTime) {
         setLastSaved(new Date(lastSaveTime));
       }
@@ -68,18 +89,11 @@ export default function DashboardPage() {
           setTimeRemaining(timeLeft);
           setHasStartedWriting(true);
           setIsTimerActive(true);
-          toast.info(`Timer resumed: ${Math.floor(timeLeft / 60)} minutes remaining`);
+          toast.info(`Essay ${currentEssayNumber} timer resumed: ${Math.floor(timeLeft / 60)} minutes remaining`);
         }
       }
     }
-    
-    if (savedTopic) {
-      const topic = ESSAY_TOPICS.find(t => t.id === savedTopic);
-      if (topic) {
-        setSelectedTopic(topic);
-      }
-    }
-  }, []);
+  }, [currentEssayNumber, essay2Topic]);
 
   // Auto-save draft every 30 seconds
   useEffect(() => {
@@ -133,16 +147,18 @@ export default function DashboardPage() {
   const saveDraft = () => {
     if (essayContent || selectedTopic) {
       setIsSaving(true);
-      localStorage.setItem('essay-draft', essayContent);
-      localStorage.setItem('essay-topic', selectedTopic.id);
-      localStorage.setItem('essay-draft-time', new Date().toISOString());
-      localStorage.setItem('essay-time-remaining', timeRemaining.toString());
-      localStorage.setItem('essay-timer-active', isTimerActive.toString());
+      const essayPrefix = `essay${currentEssayNumber}`;
+      localStorage.setItem(`${essayPrefix}-draft`, essayContent);
+      localStorage.setItem(`${essayPrefix}-topic`, selectedTopic.id);
+      localStorage.setItem(`${essayPrefix}-draft-time`, new Date().toISOString());
+      localStorage.setItem(`${essayPrefix}-time-remaining`, timeRemaining.toString());
+      localStorage.setItem(`${essayPrefix}-timer-active`, isTimerActive.toString());
+      localStorage.setItem('current-essay-number', currentEssayNumber.toString());
       setLastSaved(new Date());
       
       setTimeout(() => {
         setIsSaving(false);
-        toast.success('Draft saved', {
+        toast.success(`Essay ${currentEssayNumber} draft saved`, {
           duration: 2000,
           description: `${formatTime(timeRemaining)} remaining`,
         });
@@ -151,12 +167,27 @@ export default function DashboardPage() {
   };
 
   const clearDraft = () => {
-    localStorage.removeItem('essay-draft');
-    localStorage.removeItem('essay-topic');
-    localStorage.removeItem('essay-draft-time');
-    localStorage.removeItem('essay-time-remaining');
-    localStorage.removeItem('essay-timer-active');
+    const essayPrefix = `essay${currentEssayNumber}`;
+    localStorage.removeItem(`${essayPrefix}-draft`);
+    localStorage.removeItem(`${essayPrefix}-topic`);
+    localStorage.removeItem(`${essayPrefix}-draft-time`);
+    localStorage.removeItem(`${essayPrefix}-time-remaining`);
+    localStorage.removeItem(`${essayPrefix}-timer-active`);
     setLastSaved(null);
+  };
+
+  const clearAllDrafts = () => {
+    // Clear drafts for both essays
+    for (let i = 1; i <= 2; i++) {
+      const essayPrefix = `essay${i}`;
+      localStorage.removeItem(`${essayPrefix}-draft`);
+      localStorage.removeItem(`${essayPrefix}-topic`);
+      localStorage.removeItem(`${essayPrefix}-draft-time`);
+      localStorage.removeItem(`${essayPrefix}-time-remaining`);
+      localStorage.removeItem(`${essayPrefix}-timer-active`);
+    }
+    localStorage.removeItem('current-essay-number');
+    localStorage.removeItem('essay1-completed');
   };
 
   const handleContentChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -232,7 +263,8 @@ export default function DashboardPage() {
       }
 
       const essayId = essayResult.data.id;
-      setSubmittedEssayId(essayId);
+      const newSubmittedIds = [...submittedEssayIds, essayId];
+      setSubmittedEssayIds(newSubmittedIds);
       setProcessingStatus('Processing essay with AI...');
       
       toast.loading('Queueing essay for AI analysis...', { id: toastId });
@@ -245,19 +277,46 @@ export default function DashboardPage() {
         wordCount: wordCount,
       });
 
-      setProcessingStatus('Essay submitted to processing queue. Redirecting to results...');
-      toast.success('Essay submitted successfully!', { 
+      setProcessingStatus(`Essay ${currentEssayNumber} submitted to processing queue.`);
+      toast.success(`Essay ${currentEssayNumber} submitted successfully!`, { 
         id: toastId,
-        description: 'Redirecting to results page...',
+        description: currentEssayNumber === 1 ? 'Proceeding to Essay 2...' : 'Redirecting to results...',
       });
       
       // Clear draft after successful submission
       clearDraft();
       
-      // Redirect to results page where they can see progress
-      setTimeout(() => {
-        router.push(`/dashboard/results/${essayId}`);
-      }, 1500);
+      // Handle navigation based on essay number
+      if (currentEssayNumber === 1) {
+        // Save state and move to essay 2
+        localStorage.setItem('essay1-completed', 'true');
+        localStorage.setItem('essay1-id', essayId);
+        
+        setTimeout(() => {
+          setCurrentEssayNumber(2);
+          setSelectedTopic(essay2Topic);
+          setEssayContent('');
+          setWordCount(0);
+          setTimeRemaining(1200); // Reset timer for essay 2
+          setIsTimerActive(false);
+          setHasStartedWriting(false);
+          setProcessingStatus(null);
+          setEssay1Completed(true);
+          toast.info('Please write Essay 2 of 2');
+        }, 1500);
+      } else {
+        // Both essays completed - redirect to results
+        localStorage.setItem('essay2-id', essayId);
+        setTimeout(() => {
+          const essay1Id = localStorage.getItem('essay1-id');
+          if (essay1Id) {
+            router.push(`/dashboard/results/${essay1Id}?essay2=${essayId}`);
+          } else {
+            router.push(`/dashboard/results/${essayId}`);
+          }
+          clearAllDrafts();
+        }, 1500);
+      }
 
     } catch (error) {
       console.error('Error submitting essay:', error);
@@ -276,7 +335,7 @@ export default function DashboardPage() {
         <div>
           <h2 className="text-3xl font-bold">PTE Essay Writing Task</h2>
           <p className="mt-2 text-muted-foreground">
-            Write a 200-300 word essay on the given topic. You have 20 minutes.
+            Essay {currentEssayNumber} of {totalEssays} • Write a 200-300 word essay on the given topic. You have 20 minutes per essay.
           </p>
         </div>
         {hasStartedWriting && (
@@ -290,9 +349,19 @@ export default function DashboardPage() {
         )}
       </div>
 
+      {/* Progress indicator */}
+      <div className="flex gap-2">
+        <div className={`flex-1 h-2 rounded-full ${
+          currentEssayNumber >= 1 ? 'bg-primary' : 'bg-muted'
+        }`} />
+        <div className={`flex-1 h-2 rounded-full ${
+          currentEssayNumber >= 2 || essay1Completed ? 'bg-primary' : 'bg-muted'
+        }`} />
+      </div>
+
       <Card>
         <CardHeader>
-          <CardTitle>Essay Topic</CardTitle>
+          <CardTitle>Essay {currentEssayNumber} Topic</CardTitle>
           <CardDescription>Read the topic carefully before you start writing</CardDescription>
         </CardHeader>
         <CardContent>
@@ -300,21 +369,6 @@ export default function DashboardPage() {
             <h3 className="font-semibold mb-2">{selectedTopic.title}</h3>
             <p className="text-sm">{selectedTopic.description}</p>
           </div>
-          {!hasStartedWriting && (
-            <Button
-              variant="outline"
-              size="sm"
-              className="mt-4"
-              onClick={() => {
-                const currentIndex = ESSAY_TOPICS.findIndex(t => t.id === selectedTopic.id);
-                const nextIndex = (currentIndex + 1) % ESSAY_TOPICS.length;
-                setSelectedTopic(ESSAY_TOPICS[nextIndex]);
-                toast.info('New topic selected');
-              }}
-            >
-              Get Different Topic
-            </Button>
-          )}
         </CardContent>
       </Card>
 

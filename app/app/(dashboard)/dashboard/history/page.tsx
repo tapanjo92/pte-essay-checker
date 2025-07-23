@@ -64,16 +64,24 @@ export default function EssayHistoryPage() {
           }
           
           return {
-            ...essay,
+            id: essay.id || '',
+            topic: essay.topic || '',
+            content: essay.content || '',
+            wordCount: essay.wordCount || 0,
+            status: essay.status || 'PENDING',
+            createdAt: essay.createdAt || '',
+            resultId: essay.resultId || undefined,
             overallScore
           };
         })
       );
 
       // Sort by creation date (newest first)
-      essaysWithResults.sort((a, b) => 
-        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-      );
+      essaysWithResults.sort((a, b) => {
+        const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+        const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+        return dateB - dateA;
+      });
 
       setEssays(essaysWithResults);
     } catch (error) {
@@ -105,7 +113,8 @@ export default function EssayHistoryPage() {
     return 'text-red-600';
   };
 
-  const formatDate = (dateString: string) => {
+  const formatDate = (dateString: string | null | undefined) => {
+    if (!dateString) return 'Unknown date';
     const date = new Date(dateString);
     const now = new Date();
     const diffMs = now.getTime() - date.getTime();
@@ -238,7 +247,7 @@ export default function EssayHistoryPage() {
                   <CardDescription>
                     <span className="flex items-center gap-2">
                       <Clock className="h-3 w-3" />
-                      {formatDate(essay.createdAt)}
+                      {formatDate(essay.createdAt || '')}
                       <span className="text-muted-foreground">•</span>
                       {essay.wordCount} words
                     </span>
