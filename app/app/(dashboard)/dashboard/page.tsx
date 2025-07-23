@@ -42,7 +42,6 @@ export default function DashboardPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [wordCount, setWordCount] = useState(0);
   const [submittedEssayIds, setSubmittedEssayIds] = useState<string[]>([]);
-  const [processingStatus, setProcessingStatus] = useState<string | null>(null);
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [timeRemaining, setTimeRemaining] = useState(1200); // 20 minutes in seconds
@@ -212,26 +211,6 @@ export default function DashboardPage() {
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
 
-  const handlePaste = (e: React.ClipboardEvent) => {
-    e.preventDefault();
-    toast.error('Paste disabled', {
-      description: 'Copy/paste is not allowed in PTE exam conditions.',
-    });
-  };
-
-  const handleCopy = (e: React.ClipboardEvent) => {
-    e.preventDefault();
-    toast.error('Copy disabled', {
-      description: 'Copy/paste is not allowed in PTE exam conditions.',
-    });
-  };
-
-  const handleCut = (e: React.ClipboardEvent) => {
-    e.preventDefault();
-    toast.error('Cut disabled', {
-      description: 'Copy/paste is not allowed in PTE exam conditions.',
-    });
-  };
 
   const handleSubmit = async () => {
     if (wordCount < 200 || wordCount > 300) {
@@ -242,7 +221,6 @@ export default function DashboardPage() {
     }
 
     setIsSubmitting(true);
-    setProcessingStatus('Submitting essay...');
     
     const toastId = toast.loading('Submitting your essay...');
 
@@ -265,19 +243,16 @@ export default function DashboardPage() {
       const essayId = essayResult.data.id;
       const newSubmittedIds = [...submittedEssayIds, essayId];
       setSubmittedEssayIds(newSubmittedIds);
-      setProcessingStatus('Processing essay with AI...');
-      
-      toast.loading('Queueing essay for AI analysis...', { id: toastId });
-
-      // Call the submitEssayToQueue mutation
-      const processingResult = await client.mutations.submitEssayToQueue({
+      // Submit to queue (fire and forget - don't wait for processing)
+      client.mutations.submitEssayToQueue({
         essayId: essayId,
         content: essayContent,
         topic: selectedTopic.description,
         wordCount: wordCount,
+      }).catch(error => {
+        console.error('Error queueing essay for processing:', error);
+        // Don't show error to user - processing can happen in background
       });
-
-      setProcessingStatus(`Essay ${currentEssayNumber} submitted to processing queue.`);
       toast.success(`Essay ${currentEssayNumber} submitted successfully!`, { 
         id: toastId,
         description: currentEssayNumber === 1 ? 'Proceeding to Essay 2...' : 'Redirecting to results...',
@@ -300,9 +275,9 @@ export default function DashboardPage() {
           setTimeRemaining(1200); // Reset timer for essay 2
           setIsTimerActive(false);
           setHasStartedWriting(false);
-          setProcessingStatus(null);
           setEssay1Completed(true);
-          toast.info('Please write Essay 2 of 2');
+          setIsSubmitting(false); // Reset submitting state
+          toast.info('Please write Essay 2 of 2. Essay 1 is being processed in the background.');
         }, 1500);
       } else {
         // Both essays completed - redirect to results
@@ -324,7 +299,6 @@ export default function DashboardPage() {
         id: toastId,
         description: 'Please try again. If the problem persists, contact support.',
       });
-      setProcessingStatus('Error processing essay. Please try again.');
       setIsSubmitting(false);
     }
   };
@@ -399,9 +373,6 @@ export default function DashboardPage() {
             placeholder="Start writing your essay here... (Timer will start when you begin typing)"
             value={essayContent}
             onChange={handleContentChange}
-            onPaste={handlePaste}
-            onCopy={handleCopy}
-            onCut={handleCut}
             disabled={isSubmitting || timeRemaining === 0}
             spellCheck={false}
           />
@@ -437,13 +408,6 @@ export default function DashboardPage() {
         </CardContent>
       </Card>
 
-      {processingStatus && (
-        <Card>
-          <CardContent className="pt-6">
-            <p className="text-center text-sm">{processingStatus}</p>
-          </CardContent>
-        </Card>
-      )}
     </div>
   );
 }

@@ -199,9 +199,14 @@ export default function ResultsPage() {
               {essay2 ? 'Processing your essays...' : 'Processing your essay...'}
             </p>
           </div>
-          <Link href="/dashboard">
-            <Button variant="outline">Back to Dashboard</Button>
-          </Link>
+          <div className="flex gap-2">
+            <Link href="/dashboard/history">
+              <Button variant="outline">View History</Button>
+            </Link>
+            <Link href="/dashboard">
+              <Button variant="outline">Write New Essay</Button>
+            </Link>
+          </div>
         </div>
         
         {/* Essay 1 Status */}
