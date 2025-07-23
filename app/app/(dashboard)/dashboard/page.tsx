@@ -48,6 +48,8 @@ export default function DashboardPage() {
   useEffect(() => {
     const savedDraft = localStorage.getItem('essay-draft');
     const savedTopic = localStorage.getItem('essay-topic');
+    const savedTimeRemaining = localStorage.getItem('essay-time-remaining');
+    const savedTimerActive = localStorage.getItem('essay-timer-active');
     
     if (savedDraft) {
       setEssayContent(savedDraft);
@@ -57,6 +59,17 @@ export default function DashboardPage() {
       const lastSaveTime = localStorage.getItem('essay-draft-time');
       if (lastSaveTime) {
         setLastSaved(new Date(lastSaveTime));
+      }
+      
+      // Restore timer state
+      if (savedTimeRemaining && savedTimerActive === 'true') {
+        const timeLeft = parseInt(savedTimeRemaining, 10);
+        if (timeLeft > 0) {
+          setTimeRemaining(timeLeft);
+          setHasStartedWriting(true);
+          setIsTimerActive(true);
+          toast.info(`Timer resumed: ${Math.floor(timeLeft / 60)} minutes remaining`);
+        }
       }
     }
     
@@ -123,12 +136,15 @@ export default function DashboardPage() {
       localStorage.setItem('essay-draft', essayContent);
       localStorage.setItem('essay-topic', selectedTopic.id);
       localStorage.setItem('essay-draft-time', new Date().toISOString());
+      localStorage.setItem('essay-time-remaining', timeRemaining.toString());
+      localStorage.setItem('essay-timer-active', isTimerActive.toString());
       setLastSaved(new Date());
       
       setTimeout(() => {
         setIsSaving(false);
         toast.success('Draft saved', {
           duration: 2000,
+          description: `${formatTime(timeRemaining)} remaining`,
         });
       }, 500);
     }
@@ -138,6 +154,8 @@ export default function DashboardPage() {
     localStorage.removeItem('essay-draft');
     localStorage.removeItem('essay-topic');
     localStorage.removeItem('essay-draft-time');
+    localStorage.removeItem('essay-time-remaining');
+    localStorage.removeItem('essay-timer-active');
     setLastSaved(null);
   };
 
