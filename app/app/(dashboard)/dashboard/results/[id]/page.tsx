@@ -74,8 +74,8 @@ export default function ResultsPage() {
             };
             setResult(parsedResult as any);
           }
-        } else if (essayResponse.data.status === 'PROCESSING') {
-          // Poll for results if still processing
+        } else if (essayResponse.data.status === 'PROCESSING' || essayResponse.data.status === 'QUEUED') {
+          // Poll for results if still processing or queued
           setTimeout(() => fetchResults(), 2000);
           return;
         }
@@ -133,7 +133,11 @@ export default function ResultsPage() {
       <div className="mx-auto max-w-4xl">
         <Card>
           <CardContent className="pt-6">
-            <p className="text-center">Essay is still being processed. Please wait...</p>
+            <p className="text-center">
+              {essay?.status === 'QUEUED' 
+                ? 'Your essay is in the processing queue. Please wait...' 
+                : 'Essay is being processed. Please wait...'}
+            </p>
             <div className="mt-4 text-center">
               <Button onClick={() => window.location.reload()}>Refresh</Button>
             </div>

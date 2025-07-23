@@ -1,4 +1,4 @@
-import { Handler } from 'aws-lambda';
+import { SQSHandler, SQSEvent } from 'aws-lambda';
 import { BedrockRuntimeClient, InvokeModelCommand } from '@aws-sdk/client-bedrock-runtime';
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import { DynamoDBDocumentClient, GetCommand, UpdateCommand, PutCommand } from '@aws-sdk/lib-dynamodb';
@@ -68,71 +68,64 @@ interface ScoringResult {
   }>;
 }
 
-export const handler: Handler = async (event) => {
-  // AppSync passes arguments in the 'arguments' field
-  const args = event.arguments as EssayProcessingEvent;
+export const handler: SQSHandler = async (event: SQSEvent) => {
+  console.log('SQS Event received:', JSON.stringify(event, null, 2));
   
-  // Get the authenticated user ID from the AppSync identity context
-  const userId = event.identity?.sub || event.identity?.username || 'anonymous';
-  args.userId = userId;
-  
-  // Get email from Cognito claims if available
-  const userEmail = event.identity?.claims?.email || event.identity?.email;
-  
-  console.log('Processing essay:', { essayId: args.essayId, wordCount: args.wordCount, userId });
-  console.log('Identity context:', JSON.stringify(event.identity, null, 2));
-  
-  try {
-    // 1. Update essay status to PROCESSING
-    console.log('Updating essay status to PROCESSING...');
-    await updateEssayStatus(args.essayId, 'PROCESSING');
-    console.log('Essay status updated');
-    
-    // 2. Prepare the prompt for AI analysis
-    const prompt = createAnalysisPrompt(args.topic, args.content);
-    
-    // 3. Call Bedrock AI for analysis
-    console.log('Calling Bedrock AI...');
-    const aiResponse = await callBedrockAI(prompt);
-    console.log('AI Response received:', JSON.stringify(aiResponse, null, 2));
-    
-    // 4. Parse AI response and calculate scores
-    console.log('Parsing AI response...');
-    const scoringResult = parseAIResponse(aiResponse);
-    console.log('Scoring result:', scoringResult.overallScore);
-    
-    // 5. Save results to DynamoDB
-    console.log('Saving results to DynamoDB...');
-    const resultId = await saveResults(args.essayId, args.userId || 'anonymous', scoringResult);
-    console.log('Results saved with ID:', resultId);
-    
-    // Email functionality removed - results will be displayed on webpage
-    
-    // 8. Update essay status to COMPLETED
-    await updateEssayStatus(args.essayId, 'COMPLETED', resultId);
-    
-    return {
-      statusCode: 200,
-      body: JSON.stringify({
-        message: 'Essay processed successfully',
-        essayId: args.essayId,
-        resultId: resultId,
-        overallScore: scoringResult.overallScore
-      }),
-    };
-  } catch (error) {
-    console.error('Error processing essay:', error);
-    
-    // Update essay status to FAILED
-    await updateEssayStatus(args.essayId, 'FAILED');
-    
-    return {
-      statusCode: 500,
-      body: JSON.stringify({
-        message: 'Failed to process essay',
-        error: error instanceof Error ? error.message : 'Unknown error'
-      }),
-    };
+  // Process each message (should be 1 based on our config)
+  for (const record of event.Records) {
+    try {
+      // Parse the message body
+      const args = JSON.parse(record.body) as EssayProcessingEvent;
+      
+      console.log('Processing essay:', { 
+        essayId: args.essayId, 
+        wordCount: args.wordCount, 
+        userId: args.userId 
+      });
+      
+      // 1. Update essay status to PROCESSING
+      console.log('Updating essay status to PROCESSING...');
+      await updateEssayStatus(args.essayId, 'PROCESSING');
+      console.log('Essay status updated');
+      
+      // 2. Prepare the prompt for AI analysis
+      const prompt = createAnalysisPrompt(args.topic, args.content);
+      
+      // 3. Call Bedrock AI for analysis
+      console.log('Calling Bedrock AI...');
+      const aiResponse = await callBedrockAI(prompt);
+      console.log('AI Response received:', JSON.stringify(aiResponse, null, 2));
+      
+      // 4. Parse AI response and calculate scores
+      console.log('Parsing AI response...');
+      const scoringResult = parseAIResponse(aiResponse);
+      console.log('Scoring result:', scoringResult.overallScore);
+      
+      // 5. Save results to DynamoDB
+      console.log('Saving results to DynamoDB...');
+      const resultId = await saveResults(args.essayId, args.userId || 'anonymous', scoringResult);
+      console.log('Results saved with ID:', resultId);
+      
+      // 6. Update essay status to COMPLETED
+      await updateEssayStatus(args.essayId, 'COMPLETED', resultId);
+      
+      console.log(`Successfully processed essay ${args.essayId}`);
+    } catch (error) {
+      console.error('Error processing essay from SQS:', error);
+      
+      // Update essay status to FAILED
+      try {
+        const message = JSON.parse(record.body);
+        if (message.essayId) {
+          await updateEssayStatus(message.essayId, 'FAILED');
+        }
+      } catch (parseError) {
+        console.error('Could not parse message to update status:', parseError);
+      }
+      
+      // Re-throw to make the message visible again for retry
+      throw error;
+    }
   }
 };
 
@@ -182,20 +175,36 @@ Provide your response as a valid JSON object (no markdown, no code blocks, just 
 }
 
 async function callBedrockAI(prompt: string): Promise<any> {
-  const modelId = process.env.BEDROCK_MODEL_ID || 'amazon.titan-text-lite-v1';
+  const modelId = process.env.BEDROCK_MODEL_ID || 'meta.llama3-8b-instruct-v1:0';
   
-  const input = {
-    modelId: modelId,
-    contentType: 'application/json',
-    accept: 'application/json',
-    body: JSON.stringify({
+  let requestBody;
+  
+  // Different input formats for different models
+  if (modelId.includes('llama')) {
+    // Llama format
+    requestBody = {
+      prompt: prompt,
+      max_gen_len: 4000,
+      temperature: 0.2,
+      top_p: 0.9
+    };
+  } else {
+    // Titan format
+    requestBody = {
       inputText: prompt,
       textGenerationConfig: {
         maxTokenCount: 4000,
         temperature: 0.2,
         topP: 0.9
       }
-    })
+    };
+  }
+  
+  const input = {
+    modelId: modelId,
+    contentType: 'application/json',
+    accept: 'application/json',
+    body: JSON.stringify(requestBody)
   };
   
   const command = new InvokeModelCommand(input);
@@ -226,8 +235,16 @@ async function callBedrockAI(prompt: string): Promise<any> {
   }
   
   const responseBody = JSON.parse(new TextDecoder().decode(response.body));
-  // Titan returns results in a different format than Claude
-  const responseText = responseBody.results?.[0]?.outputText || responseBody.outputText || '';
+  
+  // Different output formats for different models
+  let responseText = '';
+  if (modelId.includes('llama')) {
+    // Llama format
+    responseText = responseBody.generation || '';
+  } else {
+    // Titan format
+    responseText = responseBody.results?.[0]?.outputText || responseBody.outputText || '';
+  }
   
   console.log('Raw AI response length:', responseText.length);
   console.log('Raw AI response preview:', responseText.substring(0, 200));
@@ -321,7 +338,7 @@ async function saveResults(essayId: string, userId: string, scoringResult: Scori
       essayId: essayId,
       owner: userId,
       ...scoringResult,
-      aiModel: process.env.BEDROCK_MODEL_ID || 'amazon.titan-text-lite-v1',
+      aiModel: process.env.BEDROCK_MODEL_ID || 'meta.llama3-8b-instruct-v1:0',
       processingTime: Date.now(),
       createdAt: timestamp,
       updatedAt: timestamp

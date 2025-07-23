@@ -74,20 +74,20 @@ export default function DashboardPage() {
       setSubmittedEssayId(essayId);
       setProcessingStatus('Processing essay with AI...');
 
-      // Call the processEssay mutation
-      const processingResult = await client.mutations.processEssay({
+      // Call the submitEssayToQueue mutation
+      const processingResult = await client.mutations.submitEssayToQueue({
         essayId: essayId,
         content: essayContent,
         topic: selectedTopic.description,
         wordCount: wordCount,
       });
 
-      setProcessingStatus('Essay processed successfully!');
+      setProcessingStatus('Essay submitted to processing queue. Redirecting to results...');
       
-      // Redirect to results page
+      // Redirect to results page where they can see progress
       setTimeout(() => {
         router.push(`/dashboard/results/${essayId}`);
-      }, 1000);
+      }, 1500);
 
     } catch (error) {
       console.error('Error submitting essay:', error);

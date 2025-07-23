@@ -1,5 +1,5 @@
 import { type ClientSchema, a, defineData } from '@aws-amplify/backend';
-import { processEssay } from '../functions/processEssay/resource';
+import { submitEssayToQueue } from '../functions/submitEssayToQueue/resource';
 
 const schema = a.schema({
   User: a.model({
@@ -72,7 +72,7 @@ const schema = a.schema({
     allow.groups(['Admin']).to(['create', 'update', 'delete'])
   ]),
 
-  processEssay: a.mutation()
+  submitEssayToQueue: a.mutation()
     .arguments({
       essayId: a.string().required(),
       content: a.string().required(),
@@ -80,7 +80,7 @@ const schema = a.schema({
       wordCount: a.integer().required(),
     })
     .returns(a.json())
-    .handler(a.handler.function(processEssay))
+    .handler(a.handler.function(submitEssayToQueue))
     .authorization(allow => [allow.authenticated()]),
 });
 

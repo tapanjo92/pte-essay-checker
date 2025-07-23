@@ -743,8 +743,8 @@
       },
       "nonModels": {},
       "mutations": {
-        "processEssay": {
-          "name": "processEssay",
+        "submitEssayToQueue": {
+          "name": "submitEssayToQueue",
           "isArray": false,
           "type": "AWSJSON",
           "isRequired": false,
