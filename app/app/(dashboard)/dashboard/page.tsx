@@ -7,6 +7,7 @@ import type { Schema } from '@/amplify/data/resource';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { getCurrentUser } from 'aws-amplify/auth';
+import { toast } from 'sonner';
 
 const ESSAY_TOPICS = [
   {
@@ -34,9 +35,70 @@ export default function DashboardPage() {
   const [wordCount, setWordCount] = useState(0);
   const [submittedEssayId, setSubmittedEssayId] = useState<string | null>(null);
   const [processingStatus, setProcessingStatus] = useState<string | null>(null);
+  const [lastSaved, setLastSaved] = useState<Date | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
   
   // Initialize Amplify client inside component
   const client = generateClient<Schema>();
+
+  // Load draft on mount
+  useEffect(() => {
+    const savedDraft = localStorage.getItem('essay-draft');
+    const savedTopic = localStorage.getItem('essay-topic');
+    
+    if (savedDraft) {
+      setEssayContent(savedDraft);
+      const words = savedDraft.trim().split(/\s+/).filter(word => word.length > 0);
+      setWordCount(words.length);
+      
+      const lastSaveTime = localStorage.getItem('essay-draft-time');
+      if (lastSaveTime) {
+        setLastSaved(new Date(lastSaveTime));
+      }
+    }
+    
+    if (savedTopic) {
+      const topic = ESSAY_TOPICS.find(t => t.id === savedTopic);
+      if (topic) {
+        setSelectedTopic(topic);
+      }
+    }
+  }, []);
+
+  // Auto-save draft every 30 seconds
+  useEffect(() => {
+    if (!essayContent && !selectedTopic) return;
+    
+    const saveTimer = setTimeout(() => {
+      saveDraft();
+    }, 30000); // 30 seconds
+    
+    return () => clearTimeout(saveTimer);
+  }, [essayContent, selectedTopic]);
+
+  const saveDraft = () => {
+    if (essayContent || selectedTopic) {
+      setIsSaving(true);
+      localStorage.setItem('essay-draft', essayContent);
+      localStorage.setItem('essay-topic', selectedTopic.id);
+      localStorage.setItem('essay-draft-time', new Date().toISOString());
+      setLastSaved(new Date());
+      
+      setTimeout(() => {
+        setIsSaving(false);
+        toast.success('Draft saved', {
+          duration: 2000,
+        });
+      }, 500);
+    }
+  };
+
+  const clearDraft = () => {
+    localStorage.removeItem('essay-draft');
+    localStorage.removeItem('essay-topic');
+    localStorage.removeItem('essay-draft-time');
+    setLastSaved(null);
+  };
 
   const handleContentChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const content = e.target.value;
@@ -47,12 +109,16 @@ export default function DashboardPage() {
 
   const handleSubmit = async () => {
     if (wordCount < 200 || wordCount > 300) {
-      alert('Essay must be between 200-300 words');
+      toast.error('Essay must be between 200-300 words', {
+        description: `Current word count: ${wordCount}`,
+      });
       return;
     }
 
     setIsSubmitting(true);
     setProcessingStatus('Submitting essay...');
+    
+    const toastId = toast.loading('Submitting your essay...');
 
     try {
       const user = await getCurrentUser();
@@ -73,6 +139,8 @@ export default function DashboardPage() {
       const essayId = essayResult.data.id;
       setSubmittedEssayId(essayId);
       setProcessingStatus('Processing essay with AI...');
+      
+      toast.loading('Queueing essay for AI analysis...', { id: toastId });
 
       // Call the submitEssayToQueue mutation
       const processingResult = await client.mutations.submitEssayToQueue({
@@ -83,6 +151,13 @@ export default function DashboardPage() {
       });
 
       setProcessingStatus('Essay submitted to processing queue. Redirecting to results...');
+      toast.success('Essay submitted successfully!', { 
+        id: toastId,
+        description: 'Redirecting to results page...',
+      });
+      
+      // Clear draft after successful submission
+      clearDraft();
       
       // Redirect to results page where they can see progress
       setTimeout(() => {
@@ -91,6 +166,10 @@ export default function DashboardPage() {
 
     } catch (error) {
       console.error('Error submitting essay:', error);
+      toast.error('Failed to submit essay', { 
+        id: toastId,
+        description: 'Please try again. If the problem persists, contact support.',
+      });
       setProcessingStatus('Error processing essay. Please try again.');
       setIsSubmitting(false);
     }
@@ -130,10 +209,24 @@ export default function DashboardPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Write Your Essay</CardTitle>
-          <CardDescription>
-            Write 200-300 words on the selected topic. Current word count: {wordCount}
-          </CardDescription>
+          <div className="flex items-start justify-between">
+            <div>
+              <CardTitle>Write Your Essay</CardTitle>
+              <CardDescription>
+                Write 200-300 words on the selected topic. Current word count: {wordCount}
+              </CardDescription>
+            </div>
+            <div className="text-right">
+              {lastSaved && (
+                <p className="text-xs text-muted-foreground">
+                  Draft saved {lastSaved.toLocaleTimeString()}
+                </p>
+              )}
+              {isSaving && (
+                <p className="text-xs text-muted-foreground">Saving draft...</p>
+              )}
+            </div>
+          </div>
         </CardHeader>
         <CardContent>
           <textarea
@@ -144,10 +237,23 @@ export default function DashboardPage() {
             disabled={isSubmitting}
           />
           <div className="mt-4 flex items-center justify-between">
-            <div className="text-sm">
+            <div className="flex items-center gap-4 text-sm">
               <span className={wordCount < 200 || wordCount > 300 ? 'text-destructive' : 'text-muted-foreground'}>
                 {wordCount} words (200-300 required)
               </span>
+              {essayContent && (
+                <>
+                  <span className="text-muted-foreground">•</span>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={saveDraft}
+                    disabled={isSaving}
+                  >
+                    Save Draft
+                  </Button>
+                </>
+              )}
             </div>
             <Button
               onClick={handleSubmit}

@@ -4,7 +4,7 @@ export const processEssay = defineFunction({
   name: 'processEssay',
   runtime: 20,
   timeoutSeconds: 300,
-  memoryMB: 512,
+  memoryMB: 1024, // Increased to 1GB for better performance with concurrent processing
   resourceGroupName: 'data',
   environment: {
     BEDROCK_MODEL_ID: 'anthropic.claude-3-sonnet-20240229-v1:0',

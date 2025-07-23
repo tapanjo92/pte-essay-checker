@@ -7,6 +7,8 @@ import type { Schema } from '@/amplify/data/resource';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
+import { EssayProcessingStatus } from '@/components/essay-processing-status';
+import { Skeleton } from '@/components/ui/skeleton';
 
 interface Result {
   overallScore: number;
@@ -105,8 +107,44 @@ export default function ResultsPage() {
 
   if (loading) {
     return (
-      <div className="flex min-h-[400px] items-center justify-center">
-        <div className="text-lg">Loading results...</div>
+      <div className="mx-auto max-w-4xl space-y-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <Skeleton className="h-9 w-48" />
+            <Skeleton className="mt-2 h-5 w-64" />
+          </div>
+          <Skeleton className="h-10 w-32" />
+        </div>
+        
+        <Card>
+          <CardHeader>
+            <Skeleton className="h-6 w-32" />
+            <Skeleton className="mt-2 h-4 w-48" />
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <Skeleton className="h-32 w-full" />
+            <div className="flex justify-between">
+              <Skeleton className="h-4 w-24" />
+              <Skeleton className="h-4 w-24" />
+            </div>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardHeader>
+            <Skeleton className="h-6 w-40" />
+          </CardHeader>
+          <CardContent>
+            <div className="grid gap-4 md:grid-cols-2">
+              {[1, 2, 3, 4].map((i) => (
+                <div key={i} className="space-y-2">
+                  <Skeleton className="h-4 w-32" />
+                  <Skeleton className="h-8 w-16" />
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
       </div>
     );
   }
@@ -128,19 +166,33 @@ export default function ResultsPage() {
     );
   }
 
-  if (!result) {
+  if (!result && essay) {
     return (
-      <div className="mx-auto max-w-4xl">
+      <div className="mx-auto max-w-4xl space-y-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold">Essay Results</h1>
+            <p className="text-muted-foreground">Processing your essay...</p>
+          </div>
+          <Link href="/dashboard">
+            <Button variant="outline">Back to Dashboard</Button>
+          </Link>
+        </div>
+        
+        <EssayProcessingStatus status={essay.status} />
+        
         <Card>
-          <CardContent className="pt-6">
-            <p className="text-center">
-              {essay?.status === 'QUEUED' 
-                ? 'Your essay is in the processing queue. Please wait...' 
-                : 'Essay is being processed. Please wait...'}
+          <CardHeader>
+            <CardTitle>Your Essay</CardTitle>
+            <CardDescription>{essay.topic}</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <p className="whitespace-pre-wrap rounded-lg bg-muted p-4 text-sm">
+              {essay.content}
             </p>
-            <div className="mt-4 text-center">
-              <Button onClick={() => window.location.reload()}>Refresh</Button>
-            </div>
+            <p className="mt-2 text-sm text-muted-foreground">
+              Word count: {essay.wordCount}
+            </p>
           </CardContent>
         </Card>
       </div>

@@ -82,11 +82,12 @@ const essayQueue = new Queue(stack, 'EssayProcessingQueue', {
   receiveMessageWaitTime: Duration.seconds(20), // Long polling
 });
 
-// Configure processEssay Lambda to be triggered by SQS
+// Configure processEssay Lambda to be triggered by SQS with increased concurrency
 backend.processEssay.resources.lambda.addEventSource(
   new SqsEventSource(essayQueue, {
     batchSize: 1, // Process one essay at a time due to rate limits
-    maxBatchingWindow: Duration.seconds(0), // Process immediately
+    maxConcurrency: 25, // Process up to 25 essays concurrently
+    maxBatchingWindow: Duration.seconds(2), // Small batching window for efficiency
     reportBatchItemFailures: true, // Allow partial batch failures
   })
 );

@@ -1,0 +1,109 @@
+{
+  "Comment": "PTE Essay Processing State Machine",
+  "StartAt": "CheckUserTier",
+  "States": {
+    "CheckUserTier": {
+      "Type": "Task",
+      "Resource": "arn:aws:lambda:REGION:ACCOUNT:function:checkUserTier",
+      "Next": "RouteByTier"
+    },
+    "RouteByTier": {
+      "Type": "Choice",
+      "Choices": [
+        {
+          "Variable": "$.userTier",
+          "StringEquals": "premium",
+          "Next": "ProcessPremium"
+        },
+        {
+          "Variable": "$.userTier",
+          "StringEquals": "standard",
+          "Next": "ProcessStandard"
+        }
+      ],
+      "Default": "ProcessFree"
+    },
+    "ProcessPremium": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::bedrock:invokeModel",
+      "Parameters": {
+        "ModelId": "anthropic.claude-3-opus-20240229-v1:0",
+        "Body": {
+          "prompt.$": "$.prompt",
+          "max_tokens": 4000
+        }
+      },
+      "Retry": [
+        {
+          "ErrorEquals": ["Bedrock.ThrottlingException"],
+          "IntervalSeconds": 2,
+          "MaxAttempts": 3,
+          "BackoffRate": 2.0,
+          "Next": "FallbackToSonnet"
+        }
+      ],
+      "Next": "SaveResults"
+    },
+    "ProcessStandard": {
+      "Type": "Parallel",
+      "Branches": [
+        {
+          "StartAt": "AnalyzeGrammar",
+          "States": {
+            "AnalyzeGrammar": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::bedrock:invokeModel",
+              "Parameters": {
+                "ModelId": "amazon.titan-text-express-v1",
+                "Body": {
+                  "inputText.$": "$.essay",
+                  "textGenerationConfig": {
+                    "maxTokenCount": 1000,
+                    "temperature": 0.3
+                  }
+                }
+              },
+              "End": true
+            }
+          }
+        },
+        {
+          "StartAt": "AnalyzeCoherence",
+          "States": {
+            "AnalyzeCoherence": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::bedrock:invokeModel",
+              "Parameters": {
+                "ModelId": "meta.llama3-8b-instruct-v1:0",
+                "Body": {
+                  "prompt.$": "$.essay",
+                  "max_gen_len": 1000
+                }
+              },
+              "End": true
+            }
+          }
+        }
+      ],
+      "Next": "AggregateResults"
+    },
+    "AggregateResults": {
+      "Type": "Task",
+      "Resource": "arn:aws:lambda:REGION:ACCOUNT:function:aggregateResults",
+      "Next": "SaveResults"
+    },
+    "SaveResults": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::dynamodb:putItem",
+      "Parameters": {
+        "TableName": "Results",
+        "Item": {
+          "id": {"S.$": "$.resultId"},
+          "scores": {"M.$": "$.scores"},
+          "feedback": {"S.$": "$.feedback"}
+        }
+      },
+      "End": true
+    }
+  }
+}
