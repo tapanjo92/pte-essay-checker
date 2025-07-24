@@ -3,15 +3,19 @@ import { BedrockRuntimeClient, InvokeModelCommand } from '@aws-sdk/client-bedroc
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import { DynamoDBDocumentClient, GetCommand, UpdateCommand, PutCommand } from '@aws-sdk/lib-dynamodb';
 import { SESClient, SendEmailCommand } from '@aws-sdk/client-ses';
+import * as AWSXRay from 'aws-xray-sdk-core';
 
-// Initialize clients
-const bedrockClient = new BedrockRuntimeClient({ 
+// Capture AWS SDK v3 clients with X-Ray
+const { captureAWSv3Client } = AWSXRay;
+
+// Initialize clients with X-Ray tracing
+const bedrockClient = captureAWSv3Client(new BedrockRuntimeClient({ 
   region: process.env.BEDROCK_REGION || 'ap-south-1' 
-});
+}));
 
-const dynamoClient = new DynamoDBClient({});
+const dynamoClient = captureAWSv3Client(new DynamoDBClient({}));
 const docClient = DynamoDBDocumentClient.from(dynamoClient);
-const sesClient = new SESClient({ region: process.env.AWS_REGION || 'ap-south-1' });
+const sesClient = captureAWSv3Client(new SESClient({ region: process.env.AWS_REGION || 'ap-south-1' }));
 
 // PTE scoring criteria
 const PTE_CRITERIA = {
@@ -68,16 +72,33 @@ interface ScoringResult {
   }>;
 }
 
+// Structured logging helper
+function structuredLog(level: string, message: string, metadata?: any) {
+  const log = {
+    timestamp: new Date().toISOString(),
+    level,
+    message,
+    ...metadata,
+    traceId: process.env._X_AMZN_TRACE_ID
+  };
+  console.log(JSON.stringify(log));
+}
+
 export const handler: SQSHandler = async (event: SQSEvent) => {
-  console.log('SQS Event received:', JSON.stringify(event, null, 2));
+  const segment = AWSXRay.getSegment();
+  structuredLog('INFO', 'SQS Event received', { 
+    recordCount: event.Records.length,
+    eventSourceARNs: event.Records.map(r => r.eventSourceARN) 
+  });
   
   // Process each message (should be 1 based on our config)
   for (const record of event.Records) {
+    const subsegment = segment?.addNewSubsegment('ProcessEssay');
     try {
       // Parse the message body
       const args = JSON.parse(record.body) as EssayProcessingEvent;
       
-      console.log('Processing essay:', { 
+      structuredLog('INFO', 'Processing essay', { 
         essayId: args.essayId, 
         wordCount: args.wordCount, 
         userId: args.userId 
@@ -110,8 +131,13 @@ export const handler: SQSHandler = async (event: SQSEvent) => {
       await updateEssayStatus(args.essayId, 'COMPLETED', resultId);
       
       console.log(`Successfully processed essay ${args.essayId}`);
+      subsegment?.addAnnotation('essayId', args.essayId);
+      subsegment?.addAnnotation('userId', args.userId || 'anonymous');
+      subsegment?.close();
     } catch (error) {
       console.error('Error processing essay from SQS:', error);
+      subsegment?.addError(error as Error);
+      subsegment?.close();
       
       // Update essay status to FAILED
       try {
@@ -175,9 +201,14 @@ Provide your response as a valid JSON object (no markdown, no code blocks, just 
 }
 
 async function callBedrockAI(prompt: string): Promise<any> {
-  const modelId = process.env.BEDROCK_MODEL_ID || 'meta.llama3-8b-instruct-v1:0';
+  const segment = AWSXRay.getSegment();
+  const subsegment = segment?.addNewSubsegment('BedrockAI');
   
-  let requestBody;
+  try {
+    const modelId = process.env.BEDROCK_MODEL_ID || 'meta.llama3-8b-instruct-v1:0';
+    subsegment?.addAnnotation('modelId', modelId);
+    
+    let requestBody;
   
   // Different input formats for different models
   if (modelId.includes('llama')) {
@@ -215,18 +246,34 @@ async function callBedrockAI(prompt: string): Promise<any> {
   let response;
   
   while (retries < maxRetries) {
+    const retrySubsegment = subsegment?.addNewSubsegment(`BedrockRetry_${retries}`);
     try {
+      retrySubsegment?.addAnnotation('attempt', retries + 1);
+      retrySubsegment?.addMetadata('request', { modelId, promptLength: prompt.length });
+      
+      const startTime = Date.now();
       response = await bedrockClient.send(command);
+      
+      const duration = Date.now() - startTime;
+      retrySubsegment?.addAnnotation('duration', duration);
+      retrySubsegment?.addAnnotation('success', true);
+      
       break; // Success, exit retry loop
     } catch (error: any) {
+      retrySubsegment?.addAnnotation('error', error.name);
+      retrySubsegment?.addMetadata('error', error);
+      
       if (error.name === 'ThrottlingException' && retries < maxRetries - 1) {
         retries++;
         const delay = Math.pow(2, retries) * 1000; // Exponential backoff: 2s, 4s, 8s, 16s
         console.log(`Throttled by Bedrock, retrying in ${delay/1000}s... (attempt ${retries}/${maxRetries})`);
+        retrySubsegment?.addAnnotation('retryDelay', delay);
         await new Promise(resolve => setTimeout(resolve, delay));
       } else {
         throw error; // Re-throw if not throttling or max retries reached
       }
+    } finally {
+      retrySubsegment?.close();
     }
   }
   
@@ -276,11 +323,19 @@ async function callBedrockAI(prompt: string): Promise<any> {
     console.log('Attempting to parse cleaned JSON, length:', cleanJson.length);
     const parsed = JSON.parse(cleanJson);
     console.log('Successfully parsed AI response');
+    subsegment?.close();
     return parsed;
   } catch (parseError) {
     console.error('Failed to parse JSON:', cleanJson.substring(0, 500));
     console.error('Parse error:', parseError);
+    subsegment?.addError(parseError as Error);
+    subsegment?.close();
     throw new Error(`Failed to parse AI response as JSON: ${parseError instanceof Error ? parseError.message : String(parseError)}`);
+  }
+  } catch (error) {
+    subsegment?.addError(error as Error);
+    subsegment?.close();
+    throw error;
   }
 }
 
@@ -306,47 +361,92 @@ function parseAIResponse(aiResponse: any): ScoringResult {
 }
 
 async function updateEssayStatus(essayId: string, status: string, resultId?: string) {
-  const updateExpression = resultId 
-    ? 'SET #status = :status, resultId = :resultId, updatedAt = :updatedAt'
-    : 'SET #status = :status, updatedAt = :updatedAt';
+  const segment = AWSXRay.getSegment();
+  const subsegment = segment?.addNewSubsegment('DynamoDB.UpdateEssayStatus');
+  
+  try {
+    subsegment?.addAnnotation('essayId', essayId);
+    subsegment?.addAnnotation('status', status);
+    if (resultId) subsegment?.addAnnotation('resultId', resultId);
     
-  const expressionAttributeValues = resultId
-    ? { ':status': status, ':resultId': resultId, ':updatedAt': new Date().toISOString() }
-    : { ':status': status, ':updatedAt': new Date().toISOString() };
-  
-  const params = {
-    TableName: process.env.ESSAY_TABLE_NAME || 'Essay',
-    Key: { id: essayId },
-    UpdateExpression: updateExpression,
-    ExpressionAttributeNames: {
-      '#status': 'status'
-    },
-    ExpressionAttributeValues: expressionAttributeValues
-  };
-  
-  await docClient.send(new UpdateCommand(params));
+    const updateExpression = resultId 
+      ? 'SET #status = :status, resultId = :resultId, updatedAt = :updatedAt'
+      : 'SET #status = :status, updatedAt = :updatedAt';
+      
+    const expressionAttributeValues = resultId
+      ? { ':status': status, ':resultId': resultId, ':updatedAt': new Date().toISOString() }
+      : { ':status': status, ':updatedAt': new Date().toISOString() };
+    
+    const params = {
+      TableName: process.env.ESSAY_TABLE_NAME || 'Essay',
+      Key: { id: essayId },
+      UpdateExpression: updateExpression,
+      ExpressionAttributeNames: {
+        '#status': 'status'
+      },
+      ExpressionAttributeValues: expressionAttributeValues
+    };
+    
+    const startTime = Date.now();
+    await docClient.send(new UpdateCommand(params));
+    const duration = Date.now() - startTime;
+    
+    subsegment?.addAnnotation('duration', duration);
+    subsegment?.addMetadata('params', params);
+  } catch (error) {
+    subsegment?.addError(error as Error);
+    throw error;
+  } finally {
+    subsegment?.close();
+  }
 }
 
 async function saveResults(essayId: string, userId: string, scoringResult: ScoringResult): Promise<string> {
-  const resultId = `result_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-  const timestamp = new Date().toISOString();
+  const segment = AWSXRay.getSegment();
+  const subsegment = segment?.addNewSubsegment('DynamoDB.SaveResults');
   
-  const params = {
-    TableName: process.env.RESULT_TABLE_NAME || 'Result',
-    Item: {
-      id: resultId,
-      essayId: essayId,
-      owner: userId,
-      ...scoringResult,
-      aiModel: process.env.BEDROCK_MODEL_ID || 'meta.llama3-8b-instruct-v1:0',
-      processingTime: Date.now(),
-      createdAt: timestamp,
-      updatedAt: timestamp
-    }
-  };
-  
-  await docClient.send(new PutCommand(params));
-  return resultId;
+  try {
+    const resultId = `result_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    const timestamp = new Date().toISOString();
+    
+    subsegment?.addAnnotation('essayId', essayId);
+    subsegment?.addAnnotation('userId', userId);
+    subsegment?.addAnnotation('resultId', resultId);
+    subsegment?.addAnnotation('overallScore', scoringResult.overallScore);
+    
+    const params = {
+      TableName: process.env.RESULT_TABLE_NAME || 'Result',
+      Item: {
+        id: resultId,
+        essayId: essayId,
+        owner: userId,
+        ...scoringResult,
+        aiModel: process.env.BEDROCK_MODEL_ID || 'meta.llama3-8b-instruct-v1:0',
+        processingTime: Date.now(),
+        createdAt: timestamp,
+        updatedAt: timestamp
+      }
+    };
+    
+    const startTime = Date.now();
+    await docClient.send(new PutCommand(params));
+    const duration = Date.now() - startTime;
+    
+    subsegment?.addAnnotation('duration', duration);
+    subsegment?.addMetadata('scores', {
+      task: scoringResult.taskResponseScore,
+      coherence: scoringResult.coherenceScore,
+      vocabulary: scoringResult.vocabularyScore,
+      grammar: scoringResult.grammarScore
+    });
+    
+    return resultId;
+  } catch (error) {
+    subsegment?.addError(error as Error);
+    throw error;
+  } finally {
+    subsegment?.close();
+  }
 }
 
 async function getUserEmail(userId: string): Promise<string | null> {

@@ -13,5 +13,8 @@ export const processEssay = defineFunction({
     ESSAY_TABLE_NAME: 'Essay-3jvy5oiy4fewzg24gsbnrxx5oi-NONE',
     RESULT_TABLE_NAME: 'Result-3jvy5oiy4fewzg24gsbnrxx5oi-NONE',
     USER_TABLE_NAME: 'User-3jvy5oiy4fewzg24gsbnrxx5oi-NONE',
+    // X-Ray configuration
+    AWS_XRAY_CONTEXT_MISSING: 'LOG_ERROR',
+    AWS_XRAY_TRACING_NAME: 'PTE-Essay-ProcessEssay',
   },
 });

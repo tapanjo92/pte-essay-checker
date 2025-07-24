@@ -2,11 +2,10 @@
 
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
-import { generateClient } from 'aws-amplify/data';
-import type { Schema } from '@/amplify/data/resource';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
+import { createTracedClient } from '@/lib/xray-client';
 
 interface Result {
   overallScore: number;
@@ -43,7 +42,7 @@ export default function PublicResultsPage() {
     const fetchResults = async () => {
       try {
         // Initialize client with API key for public access
-        const client = generateClient<Schema>({
+        const client = createTracedClient({
           authMode: 'apiKey'
         });
         

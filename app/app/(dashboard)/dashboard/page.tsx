@@ -2,12 +2,11 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { generateClient } from 'aws-amplify/data';
-import type { Schema } from '@/amplify/data/resource';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { getCurrentUser } from 'aws-amplify/auth';
 import { toast } from 'sonner';
+import { createTracedClient } from '@/lib/xray-client';
 
 const ESSAY_TOPICS = [
   {
@@ -30,8 +29,8 @@ const ESSAY_TOPICS = [
 export default function DashboardPage() {
   const router = useRouter();
   const [currentEssayNumber, setCurrentEssayNumber] = useState(1);
-  const [totalEssays] = useState(2); // PTE can have 1-2 essays, we'll prepare for 2
-  const [essay1Topic] = useState(ESSAY_TOPICS[Math.floor(Math.random() * ESSAY_TOPICS.length)]);
+  const [totalEssays, setTotalEssays] = useState(1); // Default to single essay
+  const [essay1Topic, setEssay1Topic] = useState(ESSAY_TOPICS[0]);
   const [essay2Topic] = useState(() => {
     // Ensure essay 2 has a different topic
     const remainingTopics = ESSAY_TOPICS.filter(t => t.id !== essay1Topic.id);
@@ -50,10 +49,27 @@ export default function DashboardPage() {
   const [essay1Completed, setEssay1Completed] = useState(false);
   
   // Initialize Amplify client inside component
-  const client = generateClient<Schema>();
+  const client = createTracedClient();
 
   // Load draft on mount
   useEffect(() => {
+    // Check if coming from essay questions page
+    const savedTopic = localStorage.getItem('selected-essay-topic');
+    const flowType = localStorage.getItem('essay-flow-type');
+    
+    if (savedTopic) {
+      try {
+        const topic = JSON.parse(savedTopic);
+        setEssay1Topic(topic);
+        setSelectedTopic(topic);
+        if (flowType === 'single') {
+          setTotalEssays(1);
+        }
+      } catch (e) {
+        console.error('Error parsing saved topic:', e);
+      }
+    }
+    
     const savedEssayNumber = localStorage.getItem('current-essay-number');
     const savedEssay1Completed = localStorage.getItem('essay1-completed');
     
@@ -211,7 +227,6 @@ export default function DashboardPage() {
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
 
-
   const handleSubmit = async () => {
     if (wordCount < 200 || wordCount > 300) {
       toast.error('Essay must be between 200-300 words', {
@@ -253,17 +268,25 @@ export default function DashboardPage() {
         console.error('Error queueing essay for processing:', error);
         // Don't show error to user - processing can happen in background
       });
-      toast.success(`Essay ${currentEssayNumber} submitted successfully!`, { 
+      toast.success(`Essay submitted successfully!`, { 
         id: toastId,
-        description: currentEssayNumber === 1 ? 'Proceeding to Essay 2...' : 'Redirecting to results...',
+        description: totalEssays === 1 ? 'Redirecting to results...' : (currentEssayNumber === 1 ? 'Proceeding to Essay 2...' : 'Redirecting to results...'),
       });
       
       // Clear draft after successful submission
       clearDraft();
       
-      // Handle navigation based on essay number
-      if (currentEssayNumber === 1) {
-        // Save state and move to essay 2
+      // Handle navigation based on total essays and current number
+      if (totalEssays === 1) {
+        // Single essay mode - go directly to results
+        setTimeout(() => {
+          router.push(`/dashboard/results/${essayId}`);
+          clearAllDrafts();
+          localStorage.removeItem('selected-essay-topic');
+          localStorage.removeItem('essay-flow-type');
+        }, 1500);
+      } else if (currentEssayNumber === 1 && totalEssays === 2) {
+        // First essay of two - move to essay 2
         localStorage.setItem('essay1-completed', 'true');
         localStorage.setItem('essay1-id', essayId);
         
@@ -305,11 +328,12 @@ export default function DashboardPage() {
 
   return (
     <div className="mx-auto max-w-4xl space-y-6">
+      {/* Header */}
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-3xl font-bold">PTE Essay Writing Task</h2>
           <p className="mt-2 text-muted-foreground">
-            Essay {currentEssayNumber} of {totalEssays} • Write a 200-300 word essay on the given topic. You have 20 minutes per essay.
+            {totalEssays > 1 ? `Essay ${currentEssayNumber} of ${totalEssays} •` : ''} Write 200-300 words • 20 minutes per essay
           </p>
         </div>
         {hasStartedWriting && (
@@ -323,76 +347,75 @@ export default function DashboardPage() {
         )}
       </div>
 
-      {/* Progress indicator */}
-      <div className="flex gap-2">
-        <div className={`flex-1 h-2 rounded-full ${
-          currentEssayNumber >= 1 ? 'bg-primary' : 'bg-muted'
-        }`} />
-        <div className={`flex-1 h-2 rounded-full ${
-          currentEssayNumber >= 2 || essay1Completed ? 'bg-primary' : 'bg-muted'
-        }`} />
-      </div>
+      {/* Progress indicator - only show for 2 essays */}
+      {totalEssays > 1 && (
+        <div className="flex gap-2">
+          <div className={`flex-1 h-2 rounded-full ${
+            currentEssayNumber >= 1 || essay1Completed ? 'bg-primary' : 'bg-muted'
+          }`} />
+          <div className={`flex-1 h-2 rounded-full ${
+            currentEssayNumber >= 2 || essay1Completed ? 'bg-primary' : 'bg-muted'
+          }`} />
+        </div>
+      )}
 
+      {/* Topic Card */}
       <Card>
         <CardHeader>
-          <CardTitle>Essay {currentEssayNumber} Topic</CardTitle>
+          <CardTitle>Essay Topic{totalEssays > 1 ? ` ${currentEssayNumber}` : ''}</CardTitle>
           <CardDescription>Read the topic carefully before you start writing</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="rounded-lg border border-primary/20 bg-primary/5 p-4">
-            <h3 className="font-semibold mb-2">{selectedTopic.title}</h3>
-            <p className="text-sm">{selectedTopic.description}</p>
+          <div className="space-y-2">
+            <h3 className="font-semibold">{selectedTopic.title}</h3>
+            <p className="text-sm text-muted-foreground">{selectedTopic.description}</p>
           </div>
         </CardContent>
       </Card>
 
+      {/* Writing Area */}
       <Card>
         <CardHeader>
           <div className="flex items-start justify-between">
             <div>
               <CardTitle>Write Your Essay</CardTitle>
               <CardDescription>
-                Write 200-300 words on the selected topic. Current word count: {wordCount}
+                Current word count: {wordCount} / 200-300 words
+                {wordCount < 200 && wordCount > 0 && ' (Too short)'}
+                {wordCount > 300 && ' (Too long)'}
               </CardDescription>
             </div>
-            <div className="text-right">
-              {lastSaved && (
-                <p className="text-xs text-muted-foreground">
-                  Draft saved {lastSaved.toLocaleTimeString()}
-                </p>
-              )}
-              {isSaving && (
-                <p className="text-xs text-muted-foreground">Saving draft...</p>
-              )}
-            </div>
+            {lastSaved && (
+              <p className="text-xs text-muted-foreground">
+                Draft saved at {lastSaved.toLocaleTimeString()}
+              </p>
+            )}
           </div>
         </CardHeader>
         <CardContent>
           <textarea
-            className="min-h-[300px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm resize-none"
+            className="min-h-[300px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-ring"
             placeholder="Start writing your essay here... (Timer will start when you begin typing)"
             value={essayContent}
             onChange={handleContentChange}
             disabled={isSubmitting || timeRemaining === 0}
-            spellCheck={false}
           />
           <div className="mt-4 flex items-center justify-between">
-            <div className="flex items-center gap-4 text-sm">
-              <span className={wordCount < 200 || wordCount > 300 ? 'text-destructive' : 'text-muted-foreground'}>
-                {wordCount} words (200-300 required)
+            <div className="flex items-center gap-4">
+              <span className={`text-sm ${
+                wordCount < 200 || wordCount > 300 ? 'text-destructive' : 'text-muted-foreground'
+              }`}>
+                {wordCount} words
               </span>
               {essayContent && (
-                <>
-                  <span className="text-muted-foreground">•</span>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={saveDraft}
-                    disabled={isSaving}
-                  >
-                    Save Draft
-                  </Button>
-                </>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={saveDraft}
+                  disabled={isSaving}
+                >
+                  {isSaving ? 'Saving...' : 'Save Draft'}
+                </Button>
               )}
             </div>
             <Button
@@ -400,14 +423,13 @@ export default function DashboardPage() {
               disabled={isSubmitting || wordCount < 200 || wordCount > 300}
               className={timeRemaining === 0 ? 'animate-pulse' : ''}
             >
-              {isSubmitting ? 'Processing...' : 
+              {isSubmitting ? 'Submitting...' : 
                timeRemaining === 0 ? 'Submit Now - Time Up!' : 
-               'Submit Essay'}
+               `Submit Essay ${currentEssayNumber}`}
             </Button>
           </div>
         </CardContent>
       </Card>
-
     </div>
   );
 }

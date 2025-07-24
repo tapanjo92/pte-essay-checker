@@ -7,36 +7,28 @@
    - Network:      http://10.120.0.42:3000
 
  ✓ Starting...
- ✓ Ready in 1039ms
+ ✓ Ready in 1048ms
  ○ Compiling /dashboard ...
  ✓ Compiled /dashboard in 3.5s
- GET /dashboard 200 in 3995ms
+ GET /dashboard 200 in 3933ms
  ⚠ Cross origin request detected from 3.109.164.76 to /_next/* resource. In a future major version of Next.js, you will need to explicitly configure "allowedDevOrigins" in next.config to allow this.
 Read more: https://nextjs.org/docs/app/api-reference/config/next-config-js/allowedDevOrigins
- ✓ Compiled /favicon.ico in 232ms
- GET /favicon.ico?favicon.45db1c09.ico 200 in 514ms
+ ✓ Compiled /favicon.ico in 190ms
+ GET /favicon.ico?favicon.45db1c09.ico 200 in 468ms
+ ✓ Compiled / in 369ms
+ GET / 200 in 423ms
  ○ Compiling /dashboard/results/[id] ...
- ✓ Compiled /dashboard/results/[id] in 626ms
- GET /dashboard/results/ad7d520c-f7b5-4bcd-a2af-ffa53c5b6cfe?essay2=0ef89d04-c656-4b6c-868c-93c847015d2c 200 in 1151ms
- GET /favicon.ico?favicon.45db1c09.ico 200 in 220ms
- GET /dashboard/results/ad7d520c-f7b5-4bcd-a2af-ffa53c5b6cfe?essay2=0ef89d04-c656-4b6c-868c-93c847015d2c 200 in 133ms
- GET /favicon.ico?favicon.45db1c09.ico 200 in 217ms
- ○ Compiling /dashboard/history ...
- ✓ Compiled /dashboard/history in 576ms
- GET /dashboard/history 200 in 609ms
- GET /favicon.ico?favicon.45db1c09.ico 200 in 215ms
- GET /dashboard/results/0ef89d04-c656-4b6c-868c-93c847015d2c 200 in 63ms
- GET /favicon.ico?favicon.45db1c09.ico 200 in 217ms
- GET /dashboard/results/0ef89d04-c656-4b6c-868c-93c847015d2c 200 in 88ms
- GET /favicon.ico?favicon.45db1c09.ico 200 in 215ms
- GET /dashboard/results/0ef89d04-c656-4b6c-868c-93c847015d2c 200 in 89ms
- GET /favicon.ico?favicon.45db1c09.ico 200 in 215ms
- GET /dashboard 200 in 26ms
- GET /favicon.ico?favicon.45db1c09.ico 200 in 217ms
- GET /dashboard/results/dc0c8dbb-f49f-4cfc-acf1-ed0bd0be8d59?essay2=661818c0-7d33-4568-88e4-e560fae4dd4b 200 in 59ms
+ ✓ Compiled /dashboard/results/[id] in 598ms
+ GET /dashboard/results/39c24807-6820-4154-84fd-610579c97b56 200 in 1113ms
  GET /favicon.ico?favicon.45db1c09.ico 200 in 216ms
+ GET /dashboard/results/39c24807-6820-4154-84fd-610579c97b56 200 in 100ms
  GET /favicon.ico?favicon.45db1c09.ico 200 in 220ms
- GET /dashboard/results/52be9d41-10cf-4f95-b991-e7490200f505?essay2=47885c72-f792-4f0f-8905-5e98bac2c19b 200 in 66ms
+ ✓ Compiled /results/[id] in 490ms
+ GET /results/39c24807-6820-4154-84fd-610579c97b56 200 in 1026ms
+ GET /favicon.ico?favicon.45db1c09.ico 200 in 222ms
+ GET / 200 in 24ms
  GET /favicon.ico?favicon.45db1c09.ico 200 in 217ms
- GET /dashboard/history 200 in 29ms
- GET /favicon.ico?favicon.45db1c09.ico 200 in 215ms
+ ✓ Compiled /auth in 475ms
+ GET /auth 200 in 513ms
+ GET /auth 200 in 27ms
+ GET /favicon.ico?favicon.45db1c09.ico 200 in 216ms

@@ -1,8 +1,6 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { generateClient } from 'aws-amplify/data';
-import type { Schema } from '@/amplify/data/resource';
 import { getCurrentUser } from 'aws-amplify/auth';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -10,8 +8,9 @@ import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
 import { Clock, FileText, TrendingUp, ArrowRight } from 'lucide-react';
 import { toast } from 'sonner';
+import { createTracedClient } from '@/lib/xray-client';
 
-const client = generateClient<Schema>();
+const client = createTracedClient();
 
 interface EssayWithResult {
   id: string;
@@ -190,92 +189,123 @@ export default function EssayHistoryPage() {
     : 0;
 
   return (
-    <div className="mx-auto max-w-4xl space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">Essay History</h1>
-          <p className="text-muted-foreground">View all your previous essays and scores</p>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-950 dark:to-slate-900 py-8">
+      <div className="mx-auto max-w-6xl px-4 space-y-8">
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+              Essay History
+            </h1>
+            <p className="mt-2 text-lg text-gray-600 dark:text-gray-400">
+              Track your progress and review past essays
+            </p>
+          </div>
+          <Link href="/dashboard">
+            <Button className="bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:from-blue-700 hover:to-purple-700">
+              <svg className="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+              </svg>
+              Write New Essay
+            </Button>
+          </Link>
         </div>
-        <Link href="/dashboard">
-          <Button>Write New Essay</Button>
-        </Link>
-      </div>
 
-      {/* Statistics Cards */}
-      <div className="grid gap-4 md:grid-cols-3">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Essays</CardTitle>
-            <FileText className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{essays.length}</div>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Average Score</CardTitle>
-            <TrendingUp className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {averageScore > 0 ? averageScore : '-'}
-            </div>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Completed</CardTitle>
-            <Clock className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{completedEssays.length}</div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Essay List */}
-      <div className="space-y-4">
-        {essays.map((essay) => (
-          <Card key={essay.id} className="hover:shadow-lg transition-shadow">
-            <CardHeader>
-              <div className="flex items-start justify-between">
-                <div className="space-y-1">
-                  <CardTitle className="text-lg">{essay.topic}</CardTitle>
-                  <CardDescription>
-                    <span className="flex items-center gap-2">
-                      <Clock className="h-3 w-3" />
-                      {formatDate(essay.createdAt || '')}
-                      <span className="text-muted-foreground">•</span>
-                      {essay.wordCount} words
-                    </span>
-                  </CardDescription>
+        {/* Statistics Cards */}
+        <div className="grid gap-6 md:grid-cols-3">
+          <Card className="overflow-hidden border-0 bg-gradient-to-br from-blue-500 to-blue-600 text-white shadow-lg">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-blue-100">Total Essays</p>
+                  <p className="text-3xl font-bold mt-2">{essays.length}</p>
                 </div>
-                <div className="flex items-center gap-2">
-                  {getStatusBadge(essay.status)}
-                  {essay.overallScore && (
-                    <span className={`text-2xl font-bold ${getScoreColor(essay.overallScore)}`}>
-                      {essay.overallScore}
-                    </span>
-                  )}
+                <div className="rounded-full bg-white/20 p-3">
+                  <FileText className="h-6 w-6" />
                 </div>
               </div>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-muted-foreground line-clamp-2 mb-4">
-                {essay.content}
-              </p>
-              <Link href={`/dashboard/results/${essay.id}`}>
-                <Button variant="outline" size="sm" className="w-full">
-                  View Details
-                  <ArrowRight className="ml-2 h-4 w-4" />
-                </Button>
-              </Link>
             </CardContent>
           </Card>
-        ))}
+          
+          <Card className="overflow-hidden border-0 bg-gradient-to-br from-purple-500 to-purple-600 text-white shadow-lg">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-purple-100">Average Score</p>
+                  <p className="text-3xl font-bold mt-2">
+                    {averageScore > 0 ? `${averageScore}/90` : 'N/A'}
+                  </p>
+                </div>
+                <div className="rounded-full bg-white/20 p-3">
+                  <TrendingUp className="h-6 w-6" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+          
+          <Card className="overflow-hidden border-0 bg-gradient-to-br from-green-500 to-green-600 text-white shadow-lg">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-green-100">Completed</p>
+                  <p className="text-3xl font-bold mt-2">{completedEssays.length}</p>
+                </div>
+                <div className="rounded-full bg-white/20 p-3">
+                  <Clock className="h-6 w-6" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Essay List */}
+        <div className="space-y-6">
+          {essays.map((essay) => (
+            <Card key={essay.id} className="overflow-hidden border-0 shadow-lg transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
+              <CardHeader className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
+                <div className="flex items-start justify-between">
+                  <div className="space-y-2">
+                    <CardTitle className="text-xl">{essay.topic}</CardTitle>
+                    <div className="flex items-center gap-4 text-sm text-gray-600 dark:text-gray-400">
+                      <span className="flex items-center gap-1">
+                        <Clock className="h-4 w-4" />
+                        {formatDate(essay.createdAt || '')}
+                      </span>
+                      <span className="flex items-center gap-1">
+                        <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
+                        </svg>
+                        {essay.wordCount} words
+                      </span>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    {getStatusBadge(essay.status)}
+                    {essay.overallScore !== undefined && (
+                      <div className="text-center">
+                        <span className={`text-3xl font-bold ${getScoreColor(essay.overallScore)}`}>
+                          {essay.overallScore}
+                        </span>
+                        <span className="text-sm text-gray-500 block">/ 90</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent className="p-6">
+                <p className="text-gray-600 dark:text-gray-400 line-clamp-3 mb-6 leading-relaxed">
+                  {essay.content}
+                </p>
+                <Link href={`/dashboard/results/${essay.id}`}>
+                  <Button className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:from-blue-700 hover:to-purple-700">
+                    View Detailed Results
+                    <ArrowRight className="ml-2 h-4 w-4" />
+                  </Button>
+                </Link>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
       </div>
     </div>
   );

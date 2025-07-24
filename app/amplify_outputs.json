@@ -61,6 +61,20 @@
               "isRequired": false,
               "attributes": []
             },
+            "firstName": {
+              "name": "firstName",
+              "isArray": false,
+              "type": "String",
+              "isRequired": false,
+              "attributes": []
+            },
+            "lastName": {
+              "name": "lastName",
+              "isArray": false,
+              "type": "String",
+              "isRequired": false,
+              "attributes": []
+            },
             "subscriptionId": {
               "name": "subscriptionId",
               "isArray": false,

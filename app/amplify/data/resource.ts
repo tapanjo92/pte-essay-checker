@@ -6,6 +6,8 @@ const schema = a.schema({
     id: a.id(),
     email: a.string().required(),
     username: a.string(),
+    firstName: a.string(),
+    lastName: a.string(),
     subscriptionId: a.string(),
     subscription: a.belongsTo('UserSubscription', 'subscriptionId'),
     essays: a.hasMany('Essay', 'userId'),

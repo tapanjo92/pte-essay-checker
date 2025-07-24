@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { signIn, signUp, confirmSignUp, resetPassword, confirmResetPassword } from 'aws-amplify/auth';
+import { signIn, signUp, confirmSignUp } from 'aws-amplify/auth';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Amplify } from 'aws-amplify';
@@ -13,18 +13,21 @@ if (!Amplify.getConfig().Auth) {
   Amplify.configure(amplifyConfig);
 }
 
-type AuthMode = 'signin' | 'signup' | 'confirm' | 'reset' | 'reset-confirm';
+type AuthMode = 'signin' | 'signup' | 'confirm';
 
 export function AuthForm() {
   const router = useRouter();
   const [mode, setMode] = useState<AuthMode>('signin');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
   
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [code, setCode] = useState('');
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -65,6 +68,9 @@ export function AuthForm() {
       });
 
       if (!isSignUpComplete && nextStep.signUpStep === 'CONFIRM_SIGN_UP') {
+        // Store first and last names in session storage for use after confirmation
+        sessionStorage.setItem('pendingUserFirstName', firstName);
+        sessionStorage.setItem('pendingUserLastName', lastName);
         setMode('confirm');
       }
     } catch (err: any) {
@@ -97,44 +103,6 @@ export function AuthForm() {
     }
   };
 
-  const handleResetPassword = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    setError('');
-
-    try {
-      const output = await resetPassword({ username: email });
-      const { nextStep } = output;
-      
-      if (nextStep.resetPasswordStep === 'CONFIRM_RESET_PASSWORD_WITH_CODE') {
-        setMode('reset-confirm');
-      }
-    } catch (err: any) {
-      setError(err.message || 'An error occurred during password reset');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleConfirmReset = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    setError('');
-
-    try {
-      await confirmResetPassword({
-        username: email,
-        confirmationCode: code,
-        newPassword: password,
-      });
-      setMode('signin');
-      setError('Password reset successfully. Please sign in.');
-    } catch (err: any) {
-      setError(err.message || 'An error occurred during password reset confirmation');
-    } finally {
-      setLoading(false);
-    }
-  };
 
   return (
     <div className="flex min-h-screen items-center justify-center px-4">
@@ -144,24 +112,18 @@ export function AuthForm() {
             {mode === 'signin' && 'Sign In'}
             {mode === 'signup' && 'Create Account'}
             {mode === 'confirm' && 'Confirm Email'}
-            {mode === 'reset' && 'Reset Password'}
-            {mode === 'reset-confirm' && 'Set New Password'}
           </CardTitle>
           <CardDescription>
             {mode === 'signin' && 'Enter your credentials to access your account'}
             {mode === 'signup' && 'Create a new account to start checking essays'}
             {mode === 'confirm' && 'Enter the code sent to your email'}
-            {mode === 'reset' && 'Enter your email to receive a reset code'}
-            {mode === 'reset-confirm' && 'Enter the code and your new password'}
           </CardDescription>
         </CardHeader>
 
         <form onSubmit={
           mode === 'signin' ? handleSignIn :
           mode === 'signup' ? handleSignUp :
-          mode === 'confirm' ? handleConfirm :
-          mode === 'reset' ? handleResetPassword :
-          handleConfirmReset
+          handleConfirm
         }>
           <CardContent className="space-y-4">
             {error && (
@@ -169,8 +131,49 @@ export function AuthForm() {
                 {error}
               </div>
             )}
+            
+            {successMessage && (
+              <div className="rounded-md bg-green-50 dark:bg-green-900/20 p-3 text-sm text-green-600 dark:text-green-400">
+                {successMessage}
+              </div>
+            )}
 
-            {(mode === 'signin' || mode === 'signup' || mode === 'reset') && (
+            {mode === 'signup' && (
+              <>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <label htmlFor="firstName" className="text-sm font-medium">
+                      First Name
+                    </label>
+                    <input
+                      id="firstName"
+                      type="text"
+                      value={firstName}
+                      onChange={(e) => setFirstName(e.target.value)}
+                      className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                      placeholder="John"
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label htmlFor="lastName" className="text-sm font-medium">
+                      Last Name
+                    </label>
+                    <input
+                      id="lastName"
+                      type="text"
+                      value={lastName}
+                      onChange={(e) => setLastName(e.target.value)}
+                      className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                      placeholder="Doe"
+                      required
+                    />
+                  </div>
+                </div>
+              </>
+            )}
+
+            {(mode === 'signin' || mode === 'signup') && (
               <div className="space-y-2">
                 <label htmlFor="email" className="text-sm font-medium">
                   Email
@@ -187,10 +190,10 @@ export function AuthForm() {
               </div>
             )}
 
-            {(mode === 'signin' || mode === 'signup' || mode === 'reset-confirm') && (
+            {(mode === 'signin' || mode === 'signup') && (
               <div className="space-y-2">
                 <label htmlFor="password" className="text-sm font-medium">
-                  {mode === 'reset-confirm' ? 'New Password' : 'Password'}
+                  Password
                 </label>
                 <input
                   id="password"
@@ -221,20 +224,24 @@ export function AuthForm() {
               </div>
             )}
 
-            {(mode === 'confirm' || mode === 'reset-confirm') && (
+            {mode === 'confirm' && (
               <div className="space-y-2">
                 <label htmlFor="code" className="text-sm font-medium">
-                  Confirmation Code
+                  Verification Code
                 </label>
                 <input
                   id="code"
                   type="text"
                   value={code}
                   onChange={(e) => setCode(e.target.value)}
-                  className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                  className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm font-mono"
                   placeholder="123456"
+                  maxLength={6}
                   required
                 />
+                <p className="text-xs text-muted-foreground">
+                  Enter the 6-digit code sent to your email
+                </p>
               </div>
             )}
           </CardContent>
@@ -244,9 +251,7 @@ export function AuthForm() {
               {loading ? 'Loading...' : 
                 mode === 'signin' ? 'Sign In' :
                 mode === 'signup' ? 'Create Account' :
-                mode === 'confirm' ? 'Confirm Email' :
-                mode === 'reset' ? 'Send Reset Code' :
-                'Reset Password'
+                'Confirm Email'
               }
             </Button>
 
@@ -256,17 +261,13 @@ export function AuthForm() {
                   type="button"
                   variant="ghost"
                   className="w-full"
-                  onClick={() => setMode('signup')}
+                  onClick={() => {
+                    setMode('signup');
+                    setError('');
+                    setSuccessMessage('');
+                  }}
                 >
                   Don't have an account? Sign up
-                </Button>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  className="w-full text-sm"
-                  onClick={() => setMode('reset')}
-                >
-                  Forgot password?
                 </Button>
               </>
             )}
@@ -276,18 +277,26 @@ export function AuthForm() {
                 type="button"
                 variant="ghost"
                 className="w-full"
-                onClick={() => setMode('signin')}
+                onClick={() => {
+                  setMode('signin');
+                  setError('');
+                  setSuccessMessage('');
+                }}
               >
                 Already have an account? Sign in
               </Button>
             )}
 
-            {(mode === 'confirm' || mode === 'reset' || mode === 'reset-confirm') && (
+            {mode === 'confirm' && (
               <Button
                 type="button"
                 variant="ghost"
                 className="w-full"
-                onClick={() => setMode('signin')}
+                onClick={() => {
+                  setMode('signin');
+                  setError('');
+                  setSuccessMessage('');
+                }}
               >
                 Back to Sign In
               </Button>

@@ -2,12 +2,18 @@ import { Handler } from 'aws-lambda';
 import { SQSClient, SendMessageCommand } from '@aws-sdk/client-sqs';
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import { DynamoDBDocumentClient, UpdateCommand } from '@aws-sdk/lib-dynamodb';
+import * as AWSXRay from 'aws-xray-sdk-core';
 
-const sqsClient = new SQSClient({});
-const dynamoClient = new DynamoDBClient({});
+// Capture AWS SDK v3 clients with X-Ray
+const { captureAWSv3Client } = AWSXRay;
+
+const sqsClient = captureAWSv3Client(new SQSClient({}));
+const dynamoClient = captureAWSv3Client(new DynamoDBClient({}));
 const docClient = DynamoDBDocumentClient.from(dynamoClient);
 
 export const handler: Handler = async (event) => {
+  const segment = AWSXRay.getSegment();
+  const subsegment = segment?.addNewSubsegment('SubmitEssayToQueue');
   console.log('Submit essay event:', JSON.stringify(event, null, 2));
   
   try {
@@ -42,6 +48,11 @@ export const handler: Handler = async (event) => {
     const result = await sqsClient.send(command);
     console.log('Message sent to SQS:', result.MessageId);
     
+    subsegment?.addAnnotation('essayId', essayId);
+    subsegment?.addAnnotation('userId', userId);
+    subsegment?.addAnnotation('messageId', result.MessageId || '');
+    subsegment?.close();
+    
     return {
       success: true,
       messageId: result.MessageId,
@@ -50,6 +61,8 @@ export const handler: Handler = async (event) => {
     };
   } catch (error) {
     console.error('Error submitting essay:', error);
+    subsegment?.addError(error as Error);
+    subsegment?.close();
     throw error;
   }
 };
