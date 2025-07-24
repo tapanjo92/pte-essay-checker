@@ -10,6 +10,10 @@ import { SqsEventSource } from 'aws-cdk-lib/aws-lambda-event-sources';
 import { Duration, Stack } from 'aws-cdk-lib';
 import { Tracing } from 'aws-cdk-lib/aws-lambda';
 import { CfnSamplingRule } from 'aws-cdk-lib/aws-xray';
+import { Alarm, TreatMissingData } from 'aws-cdk-lib/aws-cloudwatch';
+import { SnsAction } from 'aws-cdk-lib/aws-cloudwatch-actions';
+import { Topic } from 'aws-cdk-lib/aws-sns';
+import { EmailSubscription } from 'aws-cdk-lib/aws-sns-subscriptions';
 
 /**
  * @see https://docs.amplify.aws/react/build-a-backend/ to add storage, functions, and more
@@ -139,12 +143,22 @@ new CfnSamplingRule(stack, 'HealthCheckSamplingRule', {
 
 // Note: Environment variables are configured in the respective resource.ts files
 
+// Create Dead Letter Queue for failed messages
+const dlq = new Queue(stack, 'EssayProcessingDLQ', {
+  queueName: 'pte-essay-processing-dlq',
+  retentionPeriod: Duration.days(14), // Keep failed messages for 2 weeks for investigation
+});
+
 // Create SQS Queue in a way that avoids circular dependencies
 const essayQueue = new Queue(stack, 'EssayProcessingQueue', {
   queueName: 'pte-essay-processing-queue',
   visibilityTimeout: Duration.seconds(900), // 15 minutes
   retentionPeriod: Duration.days(1),
   receiveMessageWaitTime: Duration.seconds(20), // Long polling
+  deadLetterQueue: {
+    queue: dlq,
+    maxReceiveCount: 3, // Move to DLQ after 3 failed attempts
+  },
 });
 
 // Configure processEssay Lambda to be triggered by SQS with increased concurrency
@@ -160,10 +174,60 @@ backend.processEssay.resources.lambda.addEventSource(
 // Grant permissions
 essayQueue.grantConsumeMessages(backend.processEssay.resources.lambda);
 essayQueue.grantSendMessages(backend.submitEssayToQueue.resources.lambda);
+dlq.grantConsumeMessages(backend.processEssay.resources.lambda); // Allow Lambda to read from DLQ
+
+// Create SNS topic for DLQ alerts
+const dlqAlertTopic = new Topic(stack, 'DLQAlertTopic', {
+  topicName: 'pte-essay-dlq-alerts',
+  displayName: 'PTE Essay Processing DLQ Alerts',
+});
+
+// Subscribe email to alerts (you should update this email)
+dlqAlertTopic.addSubscription(
+  new EmailSubscription('tapmit25@gmail.com') // TODO: Change to your ops email
+);
+
+// Create CloudWatch alarm for DLQ
+const dlqAlarm = new Alarm(stack, 'DLQMessagesAlarm', {
+  alarmName: 'pte-essay-dlq-messages',
+  alarmDescription: 'Alert when essays fail processing and end up in DLQ',
+  metric: dlq.metricApproximateNumberOfMessagesVisible({
+    period: Duration.minutes(1),
+  }),
+  threshold: 1,
+  evaluationPeriods: 1,
+  treatMissingData: TreatMissingData.NOT_BREACHING,
+});
+
+// Add SNS action to alarm
+dlqAlarm.addAlarmAction(new SnsAction(dlqAlertTopic));
+
+// Also monitor if messages are sitting in DLQ too long
+const dlqOldMessagesAlarm = new Alarm(stack, 'DLQOldMessagesAlarm', {
+  alarmName: 'pte-essay-dlq-old-messages',
+  alarmDescription: 'Alert when messages in DLQ are older than 1 hour',
+  metric: dlq.metricApproximateAgeOfOldestMessage({
+    period: Duration.minutes(5),
+  }),
+  threshold: 3600, // 1 hour in seconds
+  evaluationPeriods: 1,
+  treatMissingData: TreatMissingData.NOT_BREACHING,
+});
+
+dlqOldMessagesAlarm.addAlarmAction(new SnsAction(dlqAlertTopic));
 
 // Grant access to tables
 backend.data.resources.tables["Essay"].grantReadWriteData(
   backend.submitEssayToQueue.resources.lambda
 );
+
+// Export DLQ URL for monitoring and manual processing
+backend.addOutput({
+  custom: {
+    DLQUrl: dlq.queueUrl,
+    DLQName: dlq.queueName,
+    MainQueueUrl: essayQueue.queueUrl,
+  },
+});
 
 // Note: Environment variables are configured in the respective resource.ts files

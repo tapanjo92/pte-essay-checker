@@ -4,6 +4,7 @@ import { Amplify } from 'aws-amplify';
 import '@aws-amplify/ui-react/styles.css';
 import { useEffect, useState } from 'react';
 import amplifyConfig from '@/amplify_outputs.json';
+import { ErrorBoundary } from '@/components/error-boundary';
 
 // Configure Amplify immediately
 Amplify.configure(amplifyConfig);
@@ -23,5 +24,9 @@ export function Providers({ children }: { children: React.ReactNode }) {
     return <div>Loading...</div>;
   }
 
-  return <>{children}</>;
+  return (
+    <ErrorBoundary>
+      {children}
+    </ErrorBoundary>
+  );
 }

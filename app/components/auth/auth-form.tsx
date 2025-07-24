@@ -40,7 +40,16 @@ export function AuthForm() {
         router.push('/dashboard');
       }
     } catch (err: any) {
-      setError(err.message || 'An error occurred during sign in');
+      const errorMessage = err.message || 'An error occurred during sign in';
+      if (errorMessage.includes('User does not exist')) {
+        setError('No account found with this email. Please sign up first.');
+      } else if (errorMessage.includes('Incorrect username or password')) {
+        setError('Incorrect email or password. Please try again.');
+      } else if (errorMessage.includes('Network')) {
+        setError('Network error. Please check your connection and try again.');
+      } else {
+        setError(errorMessage);
+      }
     } finally {
       setLoading(false);
     }
@@ -74,7 +83,16 @@ export function AuthForm() {
         setMode('confirm');
       }
     } catch (err: any) {
-      setError(err.message || 'An error occurred during sign up');
+      const errorMessage = err.message || 'An error occurred during sign up';
+      if (errorMessage.includes('already exists')) {
+        setError('An account with this email already exists. Please sign in.');
+      } else if (errorMessage.includes('password')) {
+        setError('Password must be at least 8 characters with uppercase, lowercase, numbers, and special characters.');
+      } else if (errorMessage.includes('Network')) {
+        setError('Network error. Please check your connection and try again.');
+      } else {
+        setError(errorMessage);
+      }
     } finally {
       setLoading(false);
     }
@@ -97,7 +115,16 @@ export function AuthForm() {
         router.push('/dashboard');
       }
     } catch (err: any) {
-      setError(err.message || 'An error occurred during confirmation');
+      const errorMessage = err.message || 'An error occurred during confirmation';
+      if (errorMessage.includes('Invalid verification code')) {
+        setError('Invalid or expired verification code. Please check and try again.');
+      } else if (errorMessage.includes('expired')) {
+        setError('Verification code has expired. Please request a new one.');
+      } else if (errorMessage.includes('Network')) {
+        setError('Network error. Please check your connection and try again.');
+      } else {
+        setError(errorMessage);
+      }
     } finally {
       setLoading(false);
     }
@@ -127,13 +154,22 @@ export function AuthForm() {
         }>
           <CardContent className="space-y-4">
             {error && (
-              <div className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">
+              <div 
+                className="rounded-md bg-destructive/10 p-3 text-sm text-destructive"
+                role="alert"
+                aria-live="assertive"
+                id="error-message"
+              >
                 {error}
               </div>
             )}
             
             {successMessage && (
-              <div className="rounded-md bg-green-50 dark:bg-green-900/20 p-3 text-sm text-green-600 dark:text-green-400">
+              <div 
+                className="rounded-md bg-green-50 dark:bg-green-900/20 p-3 text-sm text-green-600 dark:text-green-400"
+                role="status"
+                aria-live="polite"
+              >
                 {successMessage}
               </div>
             )}
@@ -150,9 +186,10 @@ export function AuthForm() {
                       type="text"
                       value={firstName}
                       onChange={(e) => setFirstName(e.target.value)}
-                      className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                      className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm min-h-[44px]"
                       placeholder="John"
                       required
+                      aria-required="true"
                     />
                   </div>
                   <div className="space-y-2">
@@ -164,9 +201,10 @@ export function AuthForm() {
                       type="text"
                       value={lastName}
                       onChange={(e) => setLastName(e.target.value)}
-                      className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                      className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm min-h-[44px]"
                       placeholder="Doe"
                       required
+                      aria-required="true"
                     />
                   </div>
                 </div>
@@ -183,9 +221,12 @@ export function AuthForm() {
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                  className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm min-h-[44px]"
                   placeholder="you@example.com"
                   required
+                  aria-required="true"
+                  aria-invalid={!!error}
+                  aria-describedby={error ? "error-message" : undefined}
                 />
               </div>
             )}
@@ -200,9 +241,12 @@ export function AuthForm() {
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                  className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm min-h-[44px]"
                   placeholder="••••••••"
                   required
+                  aria-required="true"
+                  aria-invalid={!!error}
+                  aria-describedby={error ? "error-message" : undefined}
                 />
               </div>
             )}
@@ -217,9 +261,10 @@ export function AuthForm() {
                   type="password"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
-                  className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                  className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm min-h-[44px]"
                   placeholder="••••••••"
                   required
+                  aria-required="true"
                 />
               </div>
             )}
@@ -247,7 +292,17 @@ export function AuthForm() {
           </CardContent>
 
           <CardFooter className="flex flex-col space-y-2">
-            <Button type="submit" className="w-full" disabled={loading}>
+            <Button 
+              type="submit" 
+              className="w-full min-h-[44px]" 
+              disabled={loading}
+              aria-busy={loading}
+              aria-label={loading ? 'Processing...' : 
+                mode === 'signin' ? 'Sign in to your account' :
+                mode === 'signup' ? 'Create new account' :
+                'Confirm email address'
+              }
+            >
               {loading ? 'Loading...' : 
                 mode === 'signin' ? 'Sign In' :
                 mode === 'signup' ? 'Create Account' :

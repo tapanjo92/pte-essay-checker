@@ -831,5 +831,10 @@
       }
     ]
   },
-  "version": "1.4"
+  "version": "1.4",
+  "custom": {
+    "DLQUrl": "https://sqs.ap-south-1.amazonaws.com/493093635246/pte-essay-processing-dlq",
+    "DLQName": "pte-essay-processing-dlq",
+    "MainQueueUrl": "https://sqs.ap-south-1.amazonaws.com/493093635246/pte-essay-processing-queue"
+  }
 }

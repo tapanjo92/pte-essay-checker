@@ -8,7 +8,7 @@ import { Amplify } from 'aws-amplify';
 import amplifyConfig from '@/amplify_outputs.json';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { FileText, PenTool, List, User } from 'lucide-react';
+import { FileText, PenTool, List, User, Menu, X } from 'lucide-react';
 import { initializeUserIfNeeded } from '@/lib/user-init';
 import { createTracedClient } from '@/lib/xray-client';
 
@@ -25,6 +25,7 @@ export default function DashboardLayout({
   const [userData, setUserData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [initialized, setInitialized] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     checkAuth();
@@ -118,9 +119,9 @@ export default function DashboardLayout({
       <header className="border-b">
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-between py-4">
-            <h1 className="text-2xl font-bold">PTE Essay Checker</h1>
-            <div className="flex items-center gap-4">
-              <Link href="/dashboard/profile">
+            <h1 className="text-xl md:text-2xl font-bold">PTE Essay Checker</h1>
+            <div className="flex items-center gap-2 md:gap-4">
+              <Link href="/dashboard/profile" className="hidden md:block">
                 <Button variant="ghost" size="sm" className="flex items-center gap-2">
                   <User className="h-4 w-4" />
                   {userData?.firstName && userData?.lastName 
@@ -129,12 +130,22 @@ export default function DashboardLayout({
                   }
                 </Button>
               </Link>
-              <Button variant="outline" onClick={handleSignOut}>
+              <Button variant="outline" onClick={handleSignOut} className="hidden md:block">
                 Sign Out
+              </Button>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="md:hidden" 
+                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                aria-label="Toggle navigation menu"
+              >
+                {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
               </Button>
             </div>
           </div>
-          <nav className="flex gap-6 border-t pt-2">
+          {/* Desktop Navigation */}
+          <nav className="hidden md:flex gap-6 border-t pt-2">
             <Link href="/essay-questions">
               <Button 
                 variant="ghost" 
@@ -175,6 +186,69 @@ export default function DashboardLayout({
               </Button>
             </Link>
           </nav>
+          {/* Mobile Navigation */}
+          {mobileMenuOpen && (
+            <nav className="md:hidden flex flex-col gap-2 py-4 border-t">
+              <Link href="/dashboard/profile" onClick={() => setMobileMenuOpen(false)}>
+                <Button 
+                  variant="ghost" 
+                  className="w-full justify-start gap-2 min-h-[44px]"
+                >
+                  <User className="h-4 w-4" />
+                  {userData?.firstName && userData?.lastName 
+                    ? `${userData.firstName} ${userData.lastName}`
+                    : userData?.email || user?.username || 'Profile'
+                  }
+                </Button>
+              </Link>
+              <Link href="/essay-questions" onClick={() => setMobileMenuOpen(false)}>
+                <Button 
+                  variant="ghost" 
+                  className={`w-full justify-start gap-2 min-h-[44px] ${
+                    pathname === '/essay-questions' 
+                      ? 'bg-primary/10 text-primary' 
+                      : 'text-muted-foreground hover:text-foreground'
+                  }`}
+                >
+                  <List className="h-4 w-4" />
+                  Essay Topics
+                </Button>
+              </Link>
+              <Link href="/dashboard" onClick={() => setMobileMenuOpen(false)}>
+                <Button 
+                  variant="ghost" 
+                  className={`w-full justify-start gap-2 min-h-[44px] ${
+                    pathname === '/dashboard' 
+                      ? 'bg-primary/10 text-primary' 
+                      : 'text-muted-foreground hover:text-foreground'
+                  }`}
+                >
+                  <PenTool className="h-4 w-4" />
+                  Write Essay
+                </Button>
+              </Link>
+              <Link href="/dashboard/history" onClick={() => setMobileMenuOpen(false)}>
+                <Button 
+                  variant="ghost" 
+                  className={`w-full justify-start gap-2 min-h-[44px] ${
+                    pathname === '/dashboard/history' 
+                      ? 'bg-primary/10 text-primary' 
+                      : 'text-muted-foreground hover:text-foreground'
+                  }`}
+                >
+                  <FileText className="h-4 w-4" />
+                  Essay History
+                </Button>
+              </Link>
+              <Button 
+                variant="outline" 
+                onClick={handleSignOut} 
+                className="w-full mt-2 min-h-[44px]"
+              >
+                Sign Out
+              </Button>
+            </nav>
+          )}
         </div>
       </header>
       <main className="container mx-auto px-4 py-8">

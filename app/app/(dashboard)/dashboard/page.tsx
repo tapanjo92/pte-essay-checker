@@ -7,6 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { getCurrentUser } from 'aws-amplify/auth';
 import { toast } from 'sonner';
 import { createTracedClient } from '@/lib/xray-client';
+import { useNetworkStatus, retryWithBackoff, isNetworkError } from '@/lib/network-utils';
 
 const ESSAY_TOPICS = [
   {
@@ -28,6 +29,7 @@ const ESSAY_TOPICS = [
 
 export default function DashboardPage() {
   const router = useRouter();
+  const isOnline = useNetworkStatus();
   const [currentEssayNumber, setCurrentEssayNumber] = useState(1);
   const [totalEssays, setTotalEssays] = useState(1); // Default to single essay
   const [essay1Topic, setEssay1Topic] = useState(ESSAY_TOPICS[0]);
@@ -109,6 +111,29 @@ export default function DashboardPage() {
       }
     }
   }, [currentEssayNumber, essay2Topic]);
+
+  // Keyboard navigation support
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Ctrl/Cmd + Enter to submit
+      if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+        e.preventDefault();
+        if (!isSubmitting && wordCount >= 200 && wordCount <= 300 && hasStartedWriting) {
+          handleSubmit();
+        }
+      }
+      // Ctrl/Cmd + S to save draft
+      if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+        e.preventDefault();
+        if (essayContent && !isSaving) {
+          saveDraft();
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isSubmitting, wordCount, hasStartedWriting, essayContent, isSaving]);
 
   // Auto-save draft every 30 seconds
   useEffect(() => {
@@ -229,8 +254,22 @@ export default function DashboardPage() {
 
   const handleSubmit = async () => {
     if (wordCount < 200 || wordCount > 300) {
-      toast.error('Essay must be between 200-300 words', {
-        description: `Current word count: ${wordCount}`,
+      toast.error(
+        wordCount < 200 
+          ? `Essay too short (${wordCount}/200 words)` 
+          : `Essay too long (${wordCount}/300 words)`,
+        {
+          description: wordCount < 200 
+            ? `Please write at least ${200 - wordCount} more words.`
+            : `Please remove at least ${wordCount - 300} words.`,
+        }
+      );
+      return;
+    }
+
+    if (!isOnline) {
+      toast.error('No internet connection', {
+        description: 'Please check your connection and try again.',
       });
       return;
     }
@@ -242,14 +281,22 @@ export default function DashboardPage() {
     try {
       const user = await getCurrentUser();
       
-      // Create essay record
-      const essayResult = await client.models.Essay.create({
-        userId: user.userId,
-        topic: selectedTopic.title,
-        content: essayContent,
-        wordCount: wordCount,
-        status: 'PENDING',
-      });
+      // Create essay record with retry
+      const essayResult = await retryWithBackoff(
+        () => client.models.Essay.create({
+          userId: user.userId,
+          topic: selectedTopic.title,
+          content: essayContent,
+          wordCount: wordCount,
+          status: 'PENDING',
+        }),
+        {
+          maxRetries: 3,
+          onRetry: (attempt) => {
+            toast.loading(`Retrying submission... (Attempt ${attempt}/3)`, { id: toastId });
+          },
+        }
+      );
 
       if (!essayResult.data?.id) {
         throw new Error('Failed to create essay');
@@ -258,13 +305,16 @@ export default function DashboardPage() {
       const essayId = essayResult.data.id;
       const newSubmittedIds = [...submittedEssayIds, essayId];
       setSubmittedEssayIds(newSubmittedIds);
-      // Submit to queue (fire and forget - don't wait for processing)
-      client.mutations.submitEssayToQueue({
-        essayId: essayId,
-        content: essayContent,
-        topic: selectedTopic.description,
-        wordCount: wordCount,
-      }).catch(error => {
+      // Submit to queue with retry (fire and forget - don't wait for processing)
+      retryWithBackoff(
+        () => client.mutations.submitEssayToQueue({
+          essayId: essayId,
+          content: essayContent,
+          topic: selectedTopic.description,
+          wordCount: wordCount,
+        }),
+        { maxRetries: 2 }
+      ).catch(error => {
         console.error('Error queueing essay for processing:', error);
         // Don't show error to user - processing can happen in background
       });
@@ -318,16 +368,37 @@ export default function DashboardPage() {
 
     } catch (error) {
       console.error('Error submitting essay:', error);
-      toast.error('Failed to submit essay', { 
-        id: toastId,
-        description: 'Please try again. If the problem persists, contact support.',
-      });
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      if (isNetworkError(error)) {
+        toast.error('Network error', { 
+          id: toastId,
+          description: 'Please check your internet connection and try again.',
+          action: {
+            label: 'Retry',
+            onClick: () => handleSubmit(),
+          },
+        });
+      } else {
+        toast.error('Failed to submit essay', { 
+          id: toastId,
+          description: 'An unexpected error occurred. Your essay has been saved as a draft.',
+        });
+      }
       setIsSubmitting(false);
     }
   };
 
   return (
     <div className="mx-auto max-w-4xl space-y-6">
+      {/* Offline indicator */}
+      {!isOnline && (
+        <div className="rounded-md bg-yellow-50 dark:bg-yellow-900/20 p-3 text-sm text-yellow-600 dark:text-yellow-400 flex items-center gap-2">
+          <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 5.636a9 9 0 010 12.728m0 0l-2.829-2.829m2.829 2.829L21 21M15.536 8.464a5 5 0 010 7.072m0 0l-2.829-2.829m-4.243 2.829a4.978 4.978 0 01-1.414-2.83m-1.414 5.658a9 9 0 01-2.167-9.238m7.824 2.167a1 1 0 111.414 1.414m-1.414-1.414L3 3m8.293 8.293l1.414 1.414" />
+          </svg>
+          You are offline. Your work will be saved locally and synced when connection is restored.
+        </div>
+      )}
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -337,13 +408,36 @@ export default function DashboardPage() {
           </p>
         </div>
         {hasStartedWriting && (
-          <div className={`text-3xl font-mono font-bold ${
-            timeRemaining <= 60 ? 'text-red-600 animate-pulse' : 
-            timeRemaining <= 300 ? 'text-orange-600' : 
-            'text-foreground'
-          }`}>
-            {formatTime(timeRemaining)}
-          </div>
+          <>
+            {/* Desktop timer */}
+            <div 
+              className={`hidden md:block text-3xl font-mono font-bold ${
+                timeRemaining <= 60 ? 'text-red-600 animate-pulse' : 
+                timeRemaining <= 300 ? 'text-orange-600' : 
+                'text-foreground'
+              }`}
+              role="timer"
+              aria-live="polite"
+              aria-atomic="true"
+              aria-label={`Time remaining: ${formatTime(timeRemaining)}`}
+            >
+              {formatTime(timeRemaining)}
+            </div>
+            {/* Mobile floating timer */}
+            <div 
+              className={`md:hidden fixed bottom-20 right-4 z-50 bg-background border shadow-lg rounded-full px-4 py-2 text-lg font-mono font-bold ${
+                timeRemaining <= 60 ? 'text-red-600 animate-pulse border-red-600' : 
+                timeRemaining <= 300 ? 'text-orange-600 border-orange-600' : 
+                'text-foreground'
+              }`}
+              role="timer"
+              aria-live="polite"
+              aria-atomic="true"
+              aria-label={`Time remaining: ${formatTime(timeRemaining)}`}
+            >
+              {formatTime(timeRemaining)}
+            </div>
+          </>
         )}
       </div>
 
@@ -380,9 +474,16 @@ export default function DashboardPage() {
             <div>
               <CardTitle>Write Your Essay</CardTitle>
               <CardDescription>
-                Current word count: {wordCount} / 200-300 words
-                {wordCount < 200 && wordCount > 0 && ' (Too short)'}
-                {wordCount > 300 && ' (Too long)'}
+                <span
+                  role="status"
+                  aria-live="polite"
+                  aria-atomic="true"
+                  id="word-count"
+                >
+                  Current word count: {wordCount} / 200-300 words
+                  {wordCount < 200 && wordCount > 0 && ' (Too short)'}
+                  {wordCount > 300 && ' (Too long)'}
+                </span>
               </CardDescription>
             </div>
             {lastSaved && (
@@ -394,39 +495,51 @@ export default function DashboardPage() {
         </CardHeader>
         <CardContent>
           <textarea
-            className="min-h-[300px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-ring"
+            className="min-h-[300px] md:min-h-[400px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-ring"
             placeholder="Start writing your essay here... (Timer will start when you begin typing)"
             value={essayContent}
             onChange={handleContentChange}
             disabled={isSubmitting || timeRemaining === 0}
+            aria-label="Essay writing area"
+            aria-describedby="word-count essay-instructions"
+            aria-invalid={wordCount < 200 || wordCount > 300}
           />
-          <div className="mt-4 flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <span className={`text-sm ${
-                wordCount < 200 || wordCount > 300 ? 'text-destructive' : 'text-muted-foreground'
-              }`}>
-                {wordCount} words
-              </span>
+          <div className="mt-4 flex flex-col gap-2">
+            <p className="text-xs text-muted-foreground">
+              Press Ctrl+Enter to submit • Ctrl+S to save draft
+            </p>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <span className={`text-sm ${
+                  wordCount < 200 || wordCount > 300 ? 'text-destructive' : 'text-muted-foreground'
+                }`}>
+                  {wordCount} words
+                </span>
               {essayContent && (
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={saveDraft}
                   disabled={isSaving}
+                  aria-label={isSaving ? 'Saving draft' : 'Save current draft'}
+                  aria-busy={isSaving}
                 >
                   {isSaving ? 'Saving...' : 'Save Draft'}
                 </Button>
               )}
-            </div>
-            <Button
+              </div>
+              <Button
               onClick={handleSubmit}
               disabled={isSubmitting || wordCount < 200 || wordCount > 300}
-              className={timeRemaining === 0 ? 'animate-pulse' : ''}
+              className={`${timeRemaining === 0 ? 'animate-pulse' : ''} min-h-[44px]`}
+              aria-label={isSubmitting ? 'Submitting essay' : 'Submit essay for grading'}
+              aria-busy={isSubmitting}
             >
               {isSubmitting ? 'Submitting...' : 
                timeRemaining === 0 ? 'Submit Now - Time Up!' : 
                `Submit Essay ${currentEssayNumber}`}
             </Button>
+            </div>
           </div>
         </CardContent>
       </Card>
