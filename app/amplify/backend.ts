@@ -111,7 +111,7 @@ const dataStack = Stack.of(backend.data);
 // Basic sampling rule - sample 10% of requests after the first one per second
 new CfnSamplingRule(dataStack, 'BasicSamplingRule', {
   samplingRule: {
-    ruleName: 'BasicSampling',
+    ruleName: `BasicSampling-${Stack.of(dataStack).stackName}`,
     priority: 9000,
     fixedRate: 0.1, // 10% sampling rate
     reservoirSize: 1, // 1 request per second guaranteed
@@ -128,7 +128,7 @@ new CfnSamplingRule(dataStack, 'BasicSamplingRule', {
 // High priority rule for essay processing - sample more aggressively for debugging
 new CfnSamplingRule(dataStack, 'EssayProcessingSamplingRule', {
   samplingRule: {
-    ruleName: 'EssayProcessing',
+    ruleName: `EssayProcessing-${Stack.of(dataStack).stackName}`,
     priority: 8000,
     fixedRate: 0.25, // 25% sampling for essay processing
     reservoirSize: 2, // 2 requests per second guaranteed
@@ -145,7 +145,7 @@ new CfnSamplingRule(dataStack, 'EssayProcessingSamplingRule', {
 // Low sampling for health checks and routine operations
 new CfnSamplingRule(dataStack, 'HealthCheckSamplingRule', {
   samplingRule: {
-    ruleName: 'HealthChecks',
+    ruleName: `HealthChecks-${Stack.of(dataStack).stackName}`,
     priority: 7000,
     fixedRate: 0.01, // 1% sampling for health checks
     reservoirSize: 0,
@@ -163,13 +163,13 @@ new CfnSamplingRule(dataStack, 'HealthCheckSamplingRule', {
 
 // Create Dead Letter Queue for failed messages
 const dlq = new Queue(dataStack, 'EssayProcessingDLQ', {
-  queueName: 'pte-essay-processing-dlq',
+  queueName: `pte-essay-dlq-${Stack.of(dataStack).stackName}`,
   retentionPeriod: Duration.days(14), // Keep failed messages for 2 weeks for investigation
 });
 
 // Create SQS Queue in a way that avoids circular dependencies
 const essayQueue = new Queue(dataStack, 'EssayProcessingQueue', {
-  queueName: 'pte-essay-processing-queue',
+  queueName: `pte-essay-queue-${Stack.of(dataStack).stackName}`,
   visibilityTimeout: Duration.seconds(900), // 15 minutes
   retentionPeriod: Duration.days(1),
   receiveMessageWaitTime: Duration.seconds(20), // Long polling
@@ -196,7 +196,7 @@ dlq.grantConsumeMessages(backend.processEssay.resources.lambda); // Allow Lambda
 
 // Create SNS topic for DLQ alerts
 const dlqAlertTopic = new Topic(dataStack, 'DLQAlertTopic', {
-  topicName: 'pte-essay-dlq-alerts',
+  topicName: `pte-dlq-alerts-${Stack.of(dataStack).stackName}`,
   displayName: 'PTE Essay Processing DLQ Alerts',
 });
 
