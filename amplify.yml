@@ -14,11 +14,9 @@ frontend:
     preBuild:
       commands:
         - nvm use 20
-        - cd app
         - npm ci --cache .npm --prefer-offline
     build:
       commands:
-        - cd app
         - npm run build
   artifacts:
     baseDirectory: app/.next
