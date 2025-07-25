@@ -109,10 +109,10 @@ const apiStack = backend.data.resources.graphqlApi.stack;
 backend.data.resources.cfnResources.cfnGraphqlApi.xrayEnabled = true;
 
 // Add X-Ray sampling rules for cost optimization
-const stack = Stack.of(backend.data);
+const dataStack = Stack.of(backend.data);
 
 // Basic sampling rule - sample 10% of requests after the first one per second
-new CfnSamplingRule(stack, 'BasicSamplingRule', {
+new CfnSamplingRule(dataStack, 'BasicSamplingRule', {
   samplingRule: {
     ruleName: 'BasicSampling',
     priority: 9000,
@@ -129,7 +129,7 @@ new CfnSamplingRule(stack, 'BasicSamplingRule', {
 });
 
 // High priority rule for essay processing - sample more aggressively for debugging
-new CfnSamplingRule(stack, 'EssayProcessingSamplingRule', {
+new CfnSamplingRule(dataStack, 'EssayProcessingSamplingRule', {
   samplingRule: {
     ruleName: 'EssayProcessing',
     priority: 8000,
@@ -146,7 +146,7 @@ new CfnSamplingRule(stack, 'EssayProcessingSamplingRule', {
 });
 
 // Low sampling for health checks and routine operations
-new CfnSamplingRule(stack, 'HealthCheckSamplingRule', {
+new CfnSamplingRule(dataStack, 'HealthCheckSamplingRule', {
   samplingRule: {
     ruleName: 'HealthChecks',
     priority: 7000,
@@ -165,13 +165,13 @@ new CfnSamplingRule(stack, 'HealthCheckSamplingRule', {
 // Note: Environment variables are configured in the respective resource.ts files
 
 // Create Dead Letter Queue for failed messages
-const dlq = new Queue(stack, 'EssayProcessingDLQ', {
+const dlq = new Queue(dataStack, 'EssayProcessingDLQ', {
   queueName: 'pte-essay-processing-dlq',
   retentionPeriod: Duration.days(14), // Keep failed messages for 2 weeks for investigation
 });
 
 // Create SQS Queue in a way that avoids circular dependencies
-const essayQueue = new Queue(stack, 'EssayProcessingQueue', {
+const essayQueue = new Queue(dataStack, 'EssayProcessingQueue', {
   queueName: 'pte-essay-processing-queue',
   visibilityTimeout: Duration.seconds(900), // 15 minutes
   retentionPeriod: Duration.days(1),
@@ -198,7 +198,7 @@ essayQueue.grantSendMessages(backend.submitEssayToQueue.resources.lambda);
 dlq.grantConsumeMessages(backend.processEssay.resources.lambda); // Allow Lambda to read from DLQ
 
 // Create SNS topic for DLQ alerts
-const dlqAlertTopic = new Topic(stack, 'DLQAlertTopic', {
+const dlqAlertTopic = new Topic(dataStack, 'DLQAlertTopic', {
   topicName: 'pte-essay-dlq-alerts',
   displayName: 'PTE Essay Processing DLQ Alerts',
 });
@@ -209,7 +209,7 @@ dlqAlertTopic.addSubscription(
 );
 
 // Create CloudWatch alarm for DLQ
-const dlqAlarm = new Alarm(stack, 'DLQMessagesAlarm', {
+const dlqAlarm = new Alarm(dataStack, 'DLQMessagesAlarm', {
   alarmName: 'pte-essay-dlq-messages',
   alarmDescription: 'Alert when essays fail processing and end up in DLQ',
   metric: dlq.metricApproximateNumberOfMessagesVisible({
@@ -224,7 +224,7 @@ const dlqAlarm = new Alarm(stack, 'DLQMessagesAlarm', {
 dlqAlarm.addAlarmAction(new SnsAction(dlqAlertTopic));
 
 // Also monitor if messages are sitting in DLQ too long
-const dlqOldMessagesAlarm = new Alarm(stack, 'DLQOldMessagesAlarm', {
+const dlqOldMessagesAlarm = new Alarm(dataStack, 'DLQOldMessagesAlarm', {
   alarmName: 'pte-essay-dlq-old-messages',
   alarmDescription: 'Alert when messages in DLQ are older than 1 hour',
   metric: dlq.metricApproximateAgeOfOldestMessage({
