@@ -58,5 +58,6 @@
     "@aws-cdk/custom-resources:logApiResponseDataPropertyTrueDefault": false
   },
   "toolkitStackName": "CDKToolkit",
-  "versionReporting": true
+  "versionReporting": true,
+  "requireApproval": "never"
 }

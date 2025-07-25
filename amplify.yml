@@ -9,17 +9,11 @@ backend:
         - cd amplify/functions/processEssay && npm ci && cd ../../..
         - cd amplify/functions/submitEssayToQueue && npm ci && cd ../../..
         - |
-          # Create cdk.context.json to bypass SSM parameter check
-          cat > cdk.context.json << 'EOF'
-          {
-            "aws:cdk:bootstrap-version": "28",
-            "@aws-cdk/core:bootstrapQualifier": "hnb659fds",
-            "bootstrap-version": "28"
-          }
-          EOF
-        - export CDK_CONTEXT_JSON=$(cat cdk.context.json)
-        - export CDK_NEW_BOOTSTRAP=1
-        - export CDK_LEGACY_STACK_SYNTHESIS_ENABLED=0
+          # Set environment variables to bypass SSM check
+          export CDK_DEFAULT_ACCOUNT=493093635246
+          export CDK_DEFAULT_REGION=ap-south-1
+          export CDK_DEPLOY_ACCOUNT=493093635246
+          export CDK_DEPLOY_REGION=ap-south-1
         - npx ampx pipeline-deploy --branch $AWS_BRANCH --app-id $AWS_APP_ID
 frontend:
   phases:
