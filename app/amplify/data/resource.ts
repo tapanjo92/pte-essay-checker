@@ -74,6 +74,29 @@ const schema = a.schema({
     allow.groups(['Admin']).to(['create', 'update', 'delete'])
   ]),
 
+  // Gold Standard Essays for RAG implementation
+  GoldStandardEssay: a.model({
+    id: a.id(),
+    topic: a.string().required(),
+    category: a.enum(['AGREE_DISAGREE', 'DISCUSS_BOTH_VIEWS', 'ADVANTAGES_DISADVANTAGES', 'PROBLEM_SOLUTION', 'POSITIVE_NEGATIVE']),
+    essayText: a.string().required(),
+    wordCount: a.integer().required(),
+    officialScore: a.integer().required(), // Out of 90
+    scoreBreakdown: a.json().required(), // {task: 80, coherence: 75, vocabulary: 70, grammar: 85}
+    strengths: a.json(), // ["Clear thesis", "Good examples", "Varied vocabulary"]
+    weaknesses: a.json(), // ["Minor grammar errors", "Repetitive phrases"]
+    embedding: a.json(), // Vector embedding for similarity search (future)
+    scoreRange: a.string(), // "65-74", "75-84", "85-90"
+    createdAt: a.datetime(),
+    updatedAt: a.datetime(),
+  }).authorization(allow => [
+    allow.authenticated().to(['read']),
+    allow.groups(['Admin']).to(['create', 'update', 'delete'])
+  ]).secondaryIndexes(index => [
+    index('topic'),
+    index('scoreRange')
+  ]),
+
   submitEssayToQueue: a.mutation()
     .arguments({
       essayId: a.string().required(),

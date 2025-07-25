@@ -1,0 +1,90 @@
+
+> app@0.1.0 dev
+> next dev --turbopack --hostname 0.0.0.0 --port 3000
+
+   ▲ Next.js 15.4.2 (Turbopack)
+   - Local:        http://localhost:3000
+   - Network:      http://0.0.0.0:3000
+
+ ✓ Starting...
+ ✓ Ready in 1129ms
+ ○ Compiling /dashboard/history ...
+ ✓ Compiled /dashboard/history in 3.5s
+ GET /dashboard/history 200 in 4005ms
+ ⚠ Cross origin request detected from 3.109.164.76 to /_next/* resource. In a future major version of Next.js, you will need to explicitly configure "allowedDevOrigins" in next.config to allow this.
+Read more: https://nextjs.org/docs/app/api-reference/config/next-config-js/allowedDevOrigins
+ ✓ Compiled /favicon.ico in 196ms
+ GET /favicon.ico?favicon.45db1c09.ico 200 in 477ms
+ ○ Compiling /dashboard ...
+ ✓ Compiled /dashboard in 612ms
+ GET /dashboard 200 in 650ms
+ GET /favicon.ico?favicon.45db1c09.ico 200 in 221ms
+ ○ Compiling /dashboard/results/[id] ...
+ ✓ Compiled /dashboard/results/[id] in 578ms
+ GET /dashboard/results/134d04e7-6828-4cb4-8142-f8b1d2e63fc7 200 in 1102ms
+ GET /favicon.ico?favicon.45db1c09.ico 200 in 217ms
+ GET /dashboard/results/134d04e7-6828-4cb4-8142-f8b1d2e63fc7 200 in 97ms
+ GET /favicon.ico?favicon.45db1c09.ico 200 in 221ms
+ GET /dashboard 200 in 35ms
+ GET /favicon.ico?favicon.45db1c09.ico 200 in 224ms
+ GET /dashboard 200 in 53ms
+ GET /favicon.ico?favicon.45db1c09.ico 200 in 218ms
+ GET /dashboard/results/43fced75-3a87-4953-bf2f-74e6efefe7f7 200 in 55ms
+ GET /favicon.ico?favicon.45db1c09.ico 200 in 216ms
+ GET /dashboard/history 200 in 26ms
+ GET /favicon.ico?favicon.45db1c09.ico 200 in 214ms
+ GET /dashboard/history 200 in 51ms
+ GET /favicon.ico?favicon.45db1c09.ico 200 in 218ms
+ GET /dashboard/results/43fced75-3a87-4953-bf2f-74e6efefe7f7 200 in 56ms
+ GET /favicon.ico?favicon.45db1c09.ico 200 in 216ms
+ GET /dashboard/results/43fced75-3a87-4953-bf2f-74e6efefe7f7 200 in 76ms
+ GET /favicon.ico?favicon.45db1c09.ico 200 in 219ms
+ GET /dashboard/results/43fced75-3a87-4953-bf2f-74e6efefe7f7 200 in 87ms
+ GET /favicon.ico?favicon.45db1c09.ico 200 in 218ms
+ GET /dashboard/history 200 in 31ms
+ GET /favicon.ico?favicon.45db1c09.ico 200 in 228ms
+ GET /dashboard 200 in 22ms
+ GET /favicon.ico?favicon.45db1c09.ico 200 in 213ms
+ GET /dashboard/results/b75d9a6b-599e-4118-a85d-cd321339c767 200 in 56ms
+ GET /favicon.ico?favicon.45db1c09.ico 200 in 218ms
+ GET /dashboard/history 200 in 25ms
+ GET /favicon.ico?favicon.45db1c09.ico 200 in 216ms
+ GET /dashboard/results/b75d9a6b-599e-4118-a85d-cd321339c767 200 in 53ms
+ GET /favicon.ico?favicon.45db1c09.ico 200 in 214ms
+ GET /dashboard/results/b75d9a6b-599e-4118-a85d-cd321339c767 200 in 80ms
+ GET /favicon.ico?favicon.45db1c09.ico 200 in 220ms
+ GET /dashboard/results/b75d9a6b-599e-4118-a85d-cd321339c767 200 in 76ms
+ GET /favicon.ico?favicon.45db1c09.ico 200 in 236ms
+ GET /dashboard/results/b75d9a6b-599e-4118-a85d-cd321339c767 200 in 76ms
+ GET /favicon.ico?favicon.45db1c09.ico 200 in 224ms
+ GET /dashboard/history 200 in 24ms
+ GET /favicon.ico?favicon.45db1c09.ico 200 in 212ms
+ ○ Compiling /dashboard/profile ...
+ ✓ Compiled /dashboard/profile in 610ms
+ GET /dashboard/profile 200 in 642ms
+ GET /favicon.ico?favicon.45db1c09.ico 200 in 215ms
+ GET /dashboard/profile 200 in 58ms
+ GET /favicon.ico?favicon.45db1c09.ico 200 in 216ms
+ GET /dashboard/profile 200 in 20ms
+ GET /dashboard 200 in 22ms
+ GET /favicon.ico?favicon.45db1c09.ico 200 in 214ms
+ GET /dashboard/results/810d576a-0df9-419c-99b0-f239cf1802e4 200 in 54ms
+ GET /favicon.ico?favicon.45db1c09.ico 200 in 215ms
+ GET /dashboard/history 200 in 23ms
+ GET /favicon.ico?favicon.45db1c09.ico 200 in 213ms
+ GET /dashboard/results/810d576a-0df9-419c-99b0-f239cf1802e4 200 in 53ms
+ GET /favicon.ico?favicon.45db1c09.ico 200 in 216ms
+ GET /dashboard/results/810d576a-0df9-419c-99b0-f239cf1802e4 200 in 77ms
+ GET /favicon.ico?favicon.45db1c09.ico 200 in 220ms
+ GET /dashboard/results/810d576a-0df9-419c-99b0-f239cf1802e4 200 in 75ms
+ GET /favicon.ico?favicon.45db1c09.ico 200 in 215ms
+ GET /dashboard/results/810d576a-0df9-419c-99b0-f239cf1802e4 200 in 78ms
+ GET /favicon.ico?favicon.45db1c09.ico 200 in 218ms
+ GET /dashboard/results/810d576a-0df9-419c-99b0-f239cf1802e4 200 in 72ms
+ GET /favicon.ico?favicon.45db1c09.ico 200 in 217ms
+ GET /dashboard/results/810d576a-0df9-419c-99b0-f239cf1802e4 200 in 76ms
+ GET /favicon.ico?favicon.45db1c09.ico 200 in 238ms
+ GET /dashboard/history 200 in 32ms
+ GET /favicon.ico?favicon.45db1c09.ico 200 in 215ms
+ GET /dashboard 200 in 23ms
+ GET /favicon.ico?favicon.45db1c09.ico 200 in 213ms

@@ -1,0 +1,301 @@
+[
+  {
+    "id": "gold_001",
+    "topic": "Artificial intelligence will eventually replace human workers in most industries. To what extent do you agree or disagree?",
+    "category": "AGREE_DISAGREE",
+    "essayText": "While artificial intelligence continues advancing rapidly, I disagree that it will completely replace human workers across most industries. Although AI excels at repetitive tasks and data processing, human creativity, emotional intelligence, and complex problem-solving remain irreplaceable.\n\nFirstly, many professions require human empathy and interpersonal skills that AI cannot replicate. Healthcare workers, teachers, and counselors build trust through genuine human connections. A robot may diagnose illnesses accurately, but patients need compassionate care during vulnerable moments. Similarly, education involves understanding individual student needs and adapting teaching methods accordingly.\n\nSecondly, creative industries and innovation-driven fields depend on human imagination and intuition. Artists, designers, and researchers draw from personal experiences and emotions to create original work. While AI can mimic existing patterns, breakthrough innovations emerge from human curiosity and unconventional thinking.\n\nHowever, I acknowledge AI will transform how we work rather than eliminate jobs entirely. Automation will handle routine tasks, allowing humans to focus on strategic and creative aspects. This partnership between human intelligence and artificial intelligence can enhance productivity and job satisfaction.\n\nIn conclusion, while AI will significantly impact employment, humans possess unique qualities that ensure our continued relevance in the workforce. The future lies in collaboration between humans and AI, not replacement. We must adapt our skills and embrace this technological evolution while maintaining our distinctly human contributions to society.",
+    "wordCount": 234,
+    "officialScore": 79,
+    "scoreBreakdown": {
+      "content": 2.5,
+      "form": 1.8,
+      "grammar": 1.7,
+      "vocabulary": 1.7,
+      "spelling": 1.0,
+      "developmentCoherence": 1.8,
+      "linguisticRange": 1.7
+    },
+    "strengths": [
+      "Clear position stated in introduction",
+      "Well-developed arguments with specific examples",
+      "Good use of transition words (Firstly, Secondly, However)",
+      "Acknowledgment of opposing view shows balance",
+      "Strong conclusion that reinforces thesis"
+    ],
+    "weaknesses": [
+      "Some repetitive vocabulary (human/humans used 12 times)",
+      "Could use more advanced academic phrases",
+      "Minor grammar inconsistency with article usage"
+    ],
+    "scoreRange": "75-84"
+  },
+  {
+    "id": "gold_002",
+    "topic": "Artificial intelligence will eventually replace human workers in most industries. To what extent do you agree or disagree?",
+    "category": "AGREE_DISAGREE",
+    "essayText": "The rapid advancement of artificial intelligence technology has sparked considerable debate regarding its impact on employment. I strongly agree that AI will eventually replace human workers in the majority of industries, fundamentally transforming our economic landscape.\n\nThe primary reason supporting this view is AI's exponential improvement in capabilities. Machine learning algorithms now outperform humans in complex tasks ranging from medical diagnosis to legal research. Goldman Sachs recently automated 600 trading jobs, while autonomous vehicles threaten millions of transportation positions. As AI becomes more sophisticated, even creative fields like journalism and design face automation through tools like GPT and DALL-E.\n\nFurthermore, economic incentives drive this replacement. Businesses naturally gravitate toward AI solutions that operate continuously without wages, benefits, or errors. A single AI system can perform tasks equivalent to hundreds of employees at a fraction of the cost. This economic pressure creates an inevitable shift toward automation across industries.\n\nAdmittedly, new job categories may emerge, as occurred during previous technological revolutions. However, the pace and scope of AI advancement suggest these opportunities will be insufficient to offset massive job displacement. Unlike past innovations that augmented human capabilities, AI directly replicates and surpasses human intelligence.\n\nIn conclusion, while the timeline remains uncertain, AI's trajectory points toward comprehensive workforce replacement. Governments must urgently implement policies like universal basic income to address this unprecedented societal transformation.",
+    "wordCount": 237,
+    "officialScore": 88,
+    "scoreBreakdown": {
+      "content": 2.9,
+      "form": 2.0,
+      "grammar": 1.9,
+      "vocabulary": 2.0,
+      "spelling": 1.0,
+      "developmentCoherence": 2.0,
+      "linguisticRange": 2.0
+    },
+    "strengths": [
+      "Sophisticated vocabulary (exponential, augmented, trajectory)",
+      "Specific examples (Goldman Sachs, GPT, DALL-E)",
+      "Complex sentence structures with subordinate clauses",
+      "Strong economic analysis",
+      "Acknowledges counter-argument effectively"
+    ],
+    "weaknesses": [
+      "Slightly over-reliant on economic arguments",
+      "Could explore ethical implications"
+    ],
+    "scoreRange": "85-90"
+  },
+  {
+    "id": "gold_003",
+    "topic": "Some people believe that unpaid internships exploit young workers, while others see them as valuable learning opportunities. Discuss both views and give your opinion.",
+    "category": "DISCUSS_BOTH_VIEWS",
+    "essayText": "The debate over unpaid internships reflects broader tensions between educational opportunity and fair labor practices. Both perspectives merit careful consideration before reaching a balanced conclusion.\n\nThose opposing unpaid internships argue they constitute exploitation of vulnerable young workers. Students from low-income backgrounds cannot afford to work without compensation, creating systemic inequality. Wealthy students gain exclusive access to prestigious opportunities, perpetuating socioeconomic disparities. Moreover, companies often assign menial tasks unrelated to learning objectives, essentially obtaining free labor under the guise of education. This practice devalues professional work and may violate labor laws designed to protect workers.\n\nConversely, proponents emphasize the invaluable experience gained through internships. Students acquire practical skills unavailable in classroom settings, build professional networks, and explore career paths before committing. Many industries, particularly creative fields and non-profits, operate on tight budgets but offer exceptional mentorship. Internships frequently lead to job offers, with employers viewing them as extended interviews. The knowledge and connections gained can outweigh immediate financial compensation.\n\nIn my opinion, the solution lies in regulated, structured internship programs that balance learning with fair treatment. Internships should include clear educational components, mentorship, and meaningful projects. Organizations unable to pay wages could offer stipends covering basic expenses. Academic institutions should award credit, acknowledging internships' educational value.\n\nUltimately, internships serve crucial developmental purposes but must not exploit economic vulnerability. Thoughtful regulation can preserve benefits while ensuring fairness.",
+    "wordCount": 242,
+    "officialScore": 85,
+    "scoreBreakdown": {
+      "content": 2.8,
+      "form": 2.0,
+      "grammar": 1.9,
+      "vocabulary": 1.9,
+      "spelling": 1.0,
+      "developmentCoherence": 1.9,
+      "linguisticRange": 1.9
+    },
+    "strengths": [
+      "Excellent balance between both viewpoints",
+      "Sophisticated vocabulary (perpetuating, disparities, guise)",
+      "Clear paragraph structure with topic sentences",
+      "Nuanced personal opinion with practical solutions",
+      "Strong use of cohesive devices"
+    ],
+    "weaknesses": [
+      "Could include more specific examples",
+      "Minor redundancy in economic arguments"
+    ],
+    "scoreRange": "85-90"
+  },
+  {
+    "id": "gold_004",
+    "topic": "The rise of remote work has fundamentally changed the traditional office culture. What are the advantages and disadvantages of this trend?",
+    "category": "ADVANTAGES_DISADVANTAGES",
+    "essayText": "Remote work transformation represents one of the most significant shifts in modern employment. This trend brings both considerable benefits and notable challenges that reshape how we conceptualize professional life.\n\nThe advantages of remote work are substantial and multifaceted. Primarily, employees enjoy unprecedented flexibility, eliminating lengthy commutes and enabling better work-life balance. Parents can attend children's activities, while individuals manage personal appointments without sacrificing productivity. Companies benefit from accessing global talent pools unrestricted by geography, often reducing overhead costs associated with physical offices. Environmental impacts decrease as fewer people commute, contributing to sustainability goals. Studies indicate remote workers often demonstrate increased productivity due to fewer office distractions.\n\nHowever, remote work presents significant disadvantages. Social isolation emerges as a primary concern, with employees missing spontaneous interactions that foster creativity and camaraderie. Career advancement may suffer as remote workers become less visible to management. Maintaining work-life boundaries proves challenging when home becomes office, leading to burnout. Communication barriers arise from relying solely on digital platforms, potentially causing misunderstandings. Team cohesion weakens without shared physical experiences.\n\nIn conclusion, remote work's transformation of office culture yields mixed results. While flexibility and efficiency gains are undeniable, human connection and collaborative dynamics suffer. Organizations must deliberately cultivate virtual culture and connection opportunities. The future likely involves hybrid models that capture benefits while mitigating drawbacks of pure remote work.",
+    "wordCount": 234,
+    "officialScore": 82,
+    "scoreBreakdown": {
+      "content": 2.7,
+      "form": 1.9,
+      "grammar": 1.8,
+      "vocabulary": 1.8,
+      "spelling": 1.0,
+      "developmentCoherence": 1.8,
+      "linguisticRange": 1.8
+    },
+    "strengths": [
+      "Comprehensive coverage of multiple advantages and disadvantages",
+      "Academic vocabulary (multifaceted, camaraderie, mitigating)",
+      "Balanced 50-50 treatment of both sides",
+      "Strong conclusion proposing hybrid solution",
+      "Good variety in sentence structures"
+    ],
+    "weaknesses": [
+      "Some sentences could be more concise",
+      "Limited use of specific statistics or examples",
+      "Minor repetition of concepts"
+    ],
+    "scoreRange": "80-84"
+  },
+  {
+    "id": "gold_005",
+    "topic": "Governments should prioritize funding for space exploration over addressing problems on Earth. To what extent do you agree or disagree?",
+    "category": "AGREE_DISAGREE",
+    "essayText": "I strongly disagree with prioritizing space exploration funding over Earth's pressing problems. While space research offers long-term benefits, immediate human needs demand urgent attention.\n\nFirstly, millions suffer from poverty, hunger, and preventable diseases worldwide. Redirecting space budgets toward healthcare, education, and infrastructure would save countless lives immediately. NASA's annual budget of $25 billion could provide clean water access for entire nations or fund crucial medical research. When children die from malnutrition, exploring Mars seems morally questionable.\n\nSecondly, climate change threatens humanity's survival on Earth. Instead of seeking alternative planets, governments should invest in renewable energy and environmental protection. The technology and resources dedicated to space missions could revolutionize sustainable development and preserve our existing home.\n\nHowever, space exploration does yield valuable innovations. Satellite technology enables GPS, weather prediction, and global communications. Medical advances from space research benefit Earth-bound patients. These contributions suggest maintaining modest space programs while prioritizing terrestrial needs.\n\nIn conclusion, although space exploration provides some benefits, governments must address Earth's critical challenges first. A balanced approach would allocate resources primarily to immediate human needs while maintaining basic space research. We cannot justify reaching for the stars while ignoring suffering on our own planet.",
+    "wordCount": 208,
+    "officialScore": 72,
+    "scoreBreakdown": {
+      "content": 2.3,
+      "form": 1.6,
+      "grammar": 1.5,
+      "vocabulary": 1.5,
+      "spelling": 0.9,
+      "developmentCoherence": 1.6,
+      "linguisticRange": 1.5
+    },
+    "strengths": [
+      "Clear position with strong thesis",
+      "Good use of specific example (NASA budget)",
+      "Acknowledges opposing view appropriately",
+      "Emotional appeal adds persuasive power",
+      "Logical argument progression"
+    ],
+    "weaknesses": [
+      "Below optimal word count (208 vs 250+ ideal)",
+      "Some basic vocabulary choices",
+      "Could use more sophisticated sentence structures",
+      "Limited range of cohesive devices"
+    ],
+    "scoreRange": "70-74"
+  },
+  {
+    "id": "gold_006",
+    "topic": "Social media influencers have more impact on young people than traditional role models like teachers and parents. What are the causes of this phenomenon and what effects does it have on society?",
+    "category": "CAUSES_EFFECTS",
+    "essayText": "The diminishing influence of traditional authority figures in favor of social media personalities represents a profound societal shift. Understanding the causes and effects of this phenomenon is crucial for navigating modern youth development.\n\nSeveral factors drive influencers' disproportionate impact on young people. Primarily, digital natives spend extensive time on platforms where influencers dominate, creating constant exposure that traditional role models cannot match. Influencers' content appears relatable and aspirational simultaneously, showcasing luxurious lifestyles while maintaining perceived authenticity. The parasocial relationships formed through daily vlogs and stories create intimacy that formal teacher-student dynamics lack. Additionally, influencers discuss topics traditionally considered taboo, providing guidance on relationships, mental health, and identity that young people may hesitate to seek from parents.\n\nThis shift generates significant societal effects. Positively, diverse influencers provide representation for marginalized communities, inspiring young people who lack similar role models locally. Mental health awareness has improved through influencers' openness about struggles. However, negative consequences predominate. Unrealistic beauty standards and materialism proliferate, damaging self-esteem and promoting unsustainable consumption. Young people increasingly value fame over education, pursuing influencer careers instead of traditional professions. The spread of misinformation through unqualified influencers poses serious risks, from dangerous health trends to political manipulation.\n\nIn conclusion, while influencers' impact stems from accessibility and relatability, the effects threaten traditional value systems and youth wellbeing. Society must adapt by improving digital literacy and encouraging critical thinking about online content.",
+    "wordCount": 248,
+    "officialScore": 89,
+    "scoreBreakdown": {
+      "content": 3.0,
+      "form": 2.0,
+      "grammar": 2.0,
+      "vocabulary": 2.0,
+      "spelling": 1.0,
+      "developmentCoherence": 2.0,
+      "linguisticRange": 2.0
+    },
+    "strengths": [
+      "Exceptional vocabulary (parasocial, predominate, proliferate)",
+      "Clear cause-effect organization",
+      "Sophisticated analysis of complex phenomenon",
+      "Balanced perspective acknowledging positives",
+      "Strong academic tone throughout"
+    ],
+    "weaknesses": [
+      "Very minor: could include specific influencer examples"
+    ],
+    "scoreRange": "85-90"
+  },
+  {
+    "id": "gold_007",
+    "topic": "In many countries, traditional festivals and celebrations are losing their significance. What are the reasons for this trend and what can be done to preserve cultural traditions?",
+    "category": "PROBLEM_SOLUTION",
+    "essayText": "Many country loose traditional festival today. This very bad for culture and we must do something stop this problem happening more.\n\nFirst reason is young people not interest in old festival. They like modern thing like Halloween and Valentine Day from America movie. They think traditional festival boring and for old people only. Also urbanization make people move city and forget village tradition. In city no time for long celebration because work busy.\n\nAnother reason is globalization influence. Internet and TV show western culture everywhere. Young generation want be modern and think traditional festival not cool. Also expensive to organize traditional festival with all decoration and food. Many family cannot afford.\n\nFor preserve tradition, government must help. They can make holiday for important festival so people have time celebrate. School should teach children about cultural importance. Maybe have cultural class where student learn traditional dance and song.\n\nAlso community leader can organize cheap festival in neighborhood. Not need expensive thing, just people come together and remember tradition. Parents also responsible teach children at home about ancestor culture.\n\nIn conclusion, traditional festival disappearing because modernization but we can save if everyone help. Government, school, and family must work together preserve our culture identity for future generation.",
+    "wordCount": 195,
+    "officialScore": 58,
+    "scoreBreakdown": {
+      "content": 1.8,
+      "form": 1.2,
+      "grammar": 0.8,
+      "vocabulary": 1.0,
+      "spelling": 0.8,
+      "developmentCoherence": 1.2,
+      "linguisticRange": 0.8
+    },
+    "strengths": [
+      "Addresses both causes and solutions",
+      "Clear paragraph organization",
+      "Attempts to provide specific examples"
+    ],
+    "weaknesses": [
+      "Numerous grammar errors (loose vs lose, subject-verb agreement)",
+      "Basic vocabulary throughout",
+      "Informal tone inappropriate for academic writing",
+      "Below minimum word count",
+      "Weak sentence structures",
+      "Missing articles and prepositions"
+    ],
+    "scoreRange": "55-64"
+  },
+  {
+    "id": "gold_008",
+    "topic": "Some people think that parents should teach children how to be good members of society. Others believe that school is the place to learn this. Discuss both views and give your opinion.",
+    "category": "DISCUSS_BOTH_VIEWS",
+    "essayText": "In todays world their is big debate about who should teach children to be good citizen. Some people think parents job, other people think school responsibility. I will discuss both opinion and give my view.\n\nOn the one hand, parent are first teacher for children. Children learn from watching what parent do everyday. If parent show good behavior like honest and kind, children will copy. Parent spend most time with children when they young so they have big influence. Also, parent know their children personality better than anyone, so they can teach in way that children understand. Family values is important for society.\n\nOn the other hand, school have trained teacher who know how teach properly. In school, children learn to interact with many different people from different background. This teach them tolerance and cooperation. School also have special program for citizenship education and moral values. Teacher can teach all children same standard of behavior, which is fair.\n\nIn my opinion, both parent and school important for teaching children. Parent give foundation at home and school build on this foundation. They should work together not separate. Parent can support what school teach and school can help parent with difficult issue.\n\nTo sum up, teaching children to be good member of society is job for both parent and school. One cannot do without other. Best result come when they cooperate together for children future.",
+    "wordCount": 235,
+    "officialScore": 65,
+    "scoreBreakdown": {
+      "content": 2.0,
+      "form": 1.4,
+      "grammar": 1.0,
+      "vocabulary": 1.2,
+      "spelling": 0.7,
+      "developmentCoherence": 1.3,
+      "linguisticRange": 1.0
+    },
+    "strengths": [
+      "Discusses both viewpoints as required",
+      "Clear opinion provided",
+      "Reasonable paragraph structure",
+      "Attempts to use transition phrases"
+    ],
+    "weaknesses": [
+      "Multiple spelling errors (todays, their/there confusion)",
+      "Consistent grammar mistakes (missing articles, wrong verb forms)",
+      "Simple vocabulary lacks academic tone",
+      "Repetitive sentence patterns",
+      "Informal expressions"
+    ],
+    "scoreRange": "65-69"
+  },
+  {
+    "id": "gold_009",
+    "topic": "The rise of remote work has fundamentally changed the traditional office culture. What are the advantages and disadvantages of this trend?",
+    "category": "ADVANTAGES_DISADVANTAGES",
+    "essayText": "Remote work has become increasingly common since the COVID-19 pandemic. This new way of working brings both benefits and drawbacks to employees and employers.\n\nThere are several advantages to remote work. First, employees save time and money by not commuting to office every day. This extra time can be used for family or personal activities. Second, people can work from anywhere, which gives them freedom to travel or live in cheaper areas. Companies also benefit because they need less office space and can hire talented people from anywhere in the world. Furthermore, many workers report being more productive at home without office distractions.\n\nHowever, remote work also has disadvantages. The main problem is lack of social interaction with colleagues. People feel lonely and isolated when working from home all the time. It is also harder to separate work life from personal life when your home is your office. Some employees work longer hours because they cannot switch off. Additionally, communication can be more difficult through video calls and emails compared to face-to-face meetings. Career advancement might also be affected as remote workers have less visibility in the company.\n\nIn conclusion, remote work has transformed how we work with both positive and negative impacts. While it offers flexibility and cost savings, it also creates challenges for social connection and work-life balance. Companies should consider hybrid models to get the best of both worlds.",
+    "wordCount": 243,
+    "officialScore": 75,
+    "scoreBreakdown": {
+      "content": 2.4,
+      "form": 1.7,
+      "grammar": 1.6,
+      "vocabulary": 1.6,
+      "spelling": 1.0,
+      "developmentCoherence": 1.7,
+      "linguisticRange": 1.6
+    },
+    "strengths": [
+      "Clear structure with advantages and disadvantages",
+      "Good use of transition words (First, Second, However)",
+      "Relevant examples provided",
+      "Appropriate conclusion with forward-looking statement",
+      "No major spelling errors"
+    ],
+    "weaknesses": [
+      "Some missing articles (to office, in the company)",
+      "Relatively simple vocabulary",
+      "Could use more complex sentence structures",
+      "Some ideas could be developed further"
+    ],
+    "scoreRange": "75-79"
+  },
+  {
+    "id": "gold_010",
+    "topic": "Artificial intelligence will eventually replace human workers in most industries. To what extent do you agree or disagree?",
+    "category": "AGREE_DISAGREE",
+    "essayText": "The question of whether artificial intelligence will supplant human workers across industries represents one of the most consequential debates of our era. While I acknowledge AI's transformative potential, I fundamentally disagree with the notion of wholesale human replacement, arguing instead for a nuanced evolution of human-AI collaboration.\n\nUndeniably, AI demonstrates remarkable capabilities in specific domains. Machine learning algorithms excel at pattern recognition, data analysis, and repetitive tasks with unprecedented accuracy and efficiency. In manufacturing, robots have already assumed roles in assembly lines, while algorithmic trading dominates financial markets. These examples might suggest an inexorable march toward human obsolescence.\n\nHowever, this perspective overlooks crucial human attributes that remain irreplaceable. Emotional intelligence, creative problem-solving, and ethical reasoning represent uniquely human capabilities that AI cannot authentically replicate. Healthcare exemplifies this limitation—while AI can analyze medical images with superhuman precision, patients require empathetic communication and nuanced decision-making that considers individual circumstances beyond mere data points. Similarly, leadership, innovation, and artistic expression emerge from distinctly human experiences and consciousness.\n\nMoreover, historical precedent suggests technology augments rather than eliminates human roles. The industrial revolution, despite initial fears, ultimately created new employment categories while transforming existing ones. AI likely follows this pattern, generating opportunities in AI development, maintenance, and ethical oversight while elevating humans to more strategic, creative positions.\n\nIn conclusion, while AI will undoubtedly reshape the employment landscape, complete human replacement remains both unlikely and undesirable. The future workplace will feature sophisticated human-AI partnerships that leverage respective strengths, demanding adaptability but ultimately enhancing human potential rather than eliminating it.",
+    "wordCount": 276,
+    "officialScore": 90,
+    "scoreBreakdown": {
+      "content": 3.0,
+      "form": 2.0,
+      "grammar": 2.0,
+      "vocabulary": 2.0,
+      "spelling": 1.0,
+      "developmentCoherence": 2.0,
+      "linguisticRange": 2.0
+    },
+    "strengths": [
+      "Exceptional vocabulary (supplant, inexorable, obsolescence)",
+      "Sophisticated argument structure with nuanced position",
+      "Excellent use of specific examples across industries",
+      "Complex sentence structures with perfect grammar",
+      "Strong analytical depth and critical thinking",
+      "Masterful use of cohesive devices"
+    ],
+    "weaknesses": [
+      "None significant - exemplary essay"
+    ],
+    "scoreRange": "90"
+  }
+]

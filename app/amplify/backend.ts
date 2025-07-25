@@ -82,6 +82,21 @@ backend.data.resources.tables["Result"].grantReadWriteData(
 backend.data.resources.tables["User"].grantReadData(
   backend.processEssay.resources.lambda
 );
+// Grant read access to GoldStandardEssay table for RAG
+backend.data.resources.tables["GoldStandardEssay"].grantReadData(
+  backend.processEssay.resources.lambda
+);
+
+// Add explicit permission for querying indexes
+backend.processEssay.resources.lambda.addToRolePolicy(
+  new PolicyStatement({
+    actions: ['dynamodb:Query'],
+    resources: [
+      backend.data.resources.tables["GoldStandardEssay"].tableArn,
+      `${backend.data.resources.tables["GoldStandardEssay"].tableArn}/index/*`
+    ],
+  })
+);
 
 // Enable X-Ray tracing for AppSync API
 const apiStack = backend.data.resources.graphqlApi.stack;

@@ -1,7 +1,7 @@
 import { SQSHandler, SQSEvent } from 'aws-lambda';
 import { BedrockRuntimeClient, InvokeModelCommand } from '@aws-sdk/client-bedrock-runtime';
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
-import { DynamoDBDocumentClient, GetCommand, UpdateCommand, PutCommand } from '@aws-sdk/lib-dynamodb';
+import { DynamoDBDocumentClient, GetCommand, UpdateCommand, PutCommand, QueryCommand } from '@aws-sdk/lib-dynamodb';
 import { SESClient, SendEmailCommand } from '@aws-sdk/client-ses';
 import * as AWSXRay from 'aws-xray-sdk-core';
 
@@ -109,8 +109,8 @@ export const handler: SQSHandler = async (event: SQSEvent) => {
       await updateEssayStatus(args.essayId, 'PROCESSING');
       console.log('Essay status updated');
       
-      // 2. Prepare the prompt for AI analysis
-      const prompt = createAnalysisPrompt(args.topic, args.content);
+      // 2. Prepare the prompt for AI analysis with RAG enhancement
+      const prompt = await createRAGEnhancedPrompt(args.topic, args.content, args.wordCount);
       
       // 3. Call Bedrock AI for analysis
       console.log('Calling Bedrock AI...');
@@ -154,6 +154,136 @@ export const handler: SQSHandler = async (event: SQSEvent) => {
     }
   }
 };
+
+// RAG: Find similar essays from gold standard
+async function findSimilarEssays(topic: string, wordCount: number): Promise<any[]> {
+  const segment = AWSXRay.getSegment();
+  const subsegment = segment?.addNewSubsegment('RAG.FindSimilarEssays');
+  
+  try {
+    structuredLog('INFO', 'Finding similar essays for RAG', { topic, wordCount });
+    
+    // Query gold standard essays by topic
+    const params = {
+      TableName: process.env.GOLD_STANDARD_TABLE_NAME || 'GoldStandardEssay-3jvy5oiy4fewzg24gsbnrxx5oi-NONE',
+      IndexName: 'goldStandardEssaysByTopic',
+      KeyConditionExpression: '#topic = :topic',
+      ExpressionAttributeNames: {
+        '#topic': 'topic'
+      },
+      ExpressionAttributeValues: {
+        ':topic': topic
+      },
+      Limit: 5 // Get up to 5 similar essays
+    };
+    
+    try {
+      const response = await docClient.send(new QueryCommand(params));
+      
+      if (response.Items && response.Items.length > 0) {
+        structuredLog('INFO', 'Found similar essays', { count: response.Items.length });
+        subsegment?.addAnnotation('similarEssaysFound', response.Items.length);
+        
+        // Sort by closest word count
+        return response.Items.sort((a, b) => 
+          Math.abs(a.wordCount - wordCount) - Math.abs(b.wordCount - wordCount)
+        ).slice(0, 3); // Return top 3 most similar
+      }
+    } catch (queryError) {
+      // If table doesn't exist or query fails, continue without RAG
+      structuredLog('WARN', 'Gold standard query failed', { error: queryError });
+    }
+    
+    return [];
+  } catch (error) {
+    subsegment?.addError(error as Error);
+    structuredLog('ERROR', 'RAG enhancement failed', { error });
+    return [];
+  } finally {
+    subsegment?.close();
+  }
+}
+
+// Create RAG-enhanced prompt
+async function createRAGEnhancedPrompt(topic: string, content: string, wordCount: number): Promise<string> {
+  const similarEssays = await findSimilarEssays(topic, wordCount);
+  
+  if (similarEssays.length === 0) {
+    structuredLog('INFO', 'No similar essays found, using standard prompt');
+    return createAnalysisPrompt(topic, content);
+  }
+  
+  // Build RAG context
+  const ragContext = similarEssays.map(essay => `
+Example Essay (Official PTE Score: ${essay.officialScore}/90):
+Topic: ${essay.topic}
+Word Count: ${essay.wordCount}
+Score Breakdown:
+- Task Response: ${essay.scoreBreakdown.task}/90
+- Coherence: ${essay.scoreBreakdown.coherence}/90
+- Vocabulary: ${essay.scoreBreakdown.vocabulary}/90
+- Grammar: ${essay.scoreBreakdown.grammar}/90
+Key Strengths: ${essay.strengths?.join(', ') || 'N/A'}
+Key Weaknesses: ${essay.weaknesses?.join(', ') || 'N/A'}
+Essay Excerpt: ${essay.essayText.substring(0, 200)}...
+`).join('\n---\n');
+
+  // Create enhanced prompt
+  return `You are an expert PTE Academic essay evaluator. You have access to similar essays with official PTE scores for reference.
+
+REFERENCE ESSAYS WITH OFFICIAL SCORES:
+${ragContext}
+
+IMPORTANT: Use the reference essays above to calibrate your scoring. Essays with similar quality should receive similar scores.
+
+Now evaluate the following essay:
+
+Topic: ${topic}
+Word Count: ${wordCount}
+
+Essay:
+${content}
+
+Please evaluate the essay on these criteria:
+1. Task Response (0-90): How well does the essay address the topic and fulfill task requirements?
+2. Coherence and Cohesion (0-90): Is the essay well-organized with clear progression of ideas?
+3. Vocabulary (0-90): Range, accuracy, and appropriateness of vocabulary
+4. Grammar (0-90): Grammatical accuracy, sentence variety, and complexity
+
+Compare this essay's quality to the reference essays and ensure your scores are consistent with the official scoring patterns.
+
+Provide your response as a valid JSON object (no markdown, no code blocks, just pure JSON) in the following format:
+{
+  "scores": {
+    "taskResponse": <score>,
+    "coherence": <score>,
+    "vocabulary": <score>,
+    "grammar": <score>
+  },
+  "feedback": {
+    "summary": "<overall assessment>",
+    "strengths": ["<strength1>", "<strength2>", ...],
+    "improvements": ["<improvement1>", "<improvement2>", ...],
+    "detailedFeedback": {
+      "taskResponse": "<detailed feedback>",
+      "coherence": "<detailed feedback>",
+      "vocabulary": "<detailed feedback>",
+      "grammar": "<detailed feedback>"
+    }
+  },
+  "suggestions": ["<suggestion1>", "<suggestion2>", ...],
+  "highlightedErrors": [
+    {
+      "text": "<error text>",
+      "type": "grammar|vocabulary|coherence",
+      "correction": "<suggested correction>",
+      "startIndex": <number>,
+      "endIndex": <number>
+    }
+  ],
+  "comparisonNote": "<brief note comparing this essay to the reference essays>"
+}`;
+}
 
 function createAnalysisPrompt(topic: string, content: string): string {
   return `You are an expert PTE Academic essay evaluator. Analyze the following essay and provide detailed scoring and feedback based on PTE criteria.
@@ -211,7 +341,20 @@ async function callBedrockAI(prompt: string): Promise<any> {
     let requestBody;
   
   // Different input formats for different models
-  if (modelId.includes('llama')) {
+  if (modelId.includes('claude')) {
+    // Claude format
+    requestBody = {
+      anthropic_version: "bedrock-2023-05-31",
+      max_tokens: 4000,
+      temperature: 0.2,
+      messages: [
+        {
+          role: "user",
+          content: prompt
+        }
+      ]
+    };
+  } else if (modelId.includes('llama')) {
     // Llama format
     requestBody = {
       prompt: prompt,
@@ -285,7 +428,10 @@ async function callBedrockAI(prompt: string): Promise<any> {
   
   // Different output formats for different models
   let responseText = '';
-  if (modelId.includes('llama')) {
+  if (modelId.includes('claude')) {
+    // Claude format
+    responseText = responseBody.content?.[0]?.text || '';
+  } else if (modelId.includes('llama')) {
     // Llama format
     responseText = responseBody.generation || '';
   } else {

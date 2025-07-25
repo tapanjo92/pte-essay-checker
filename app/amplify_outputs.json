@@ -707,6 +707,171 @@
             "primaryKeyFieldName": "id",
             "sortKeyFieldNames": []
           }
+        },
+        "GoldStandardEssay": {
+          "name": "GoldStandardEssay",
+          "fields": {
+            "id": {
+              "name": "id",
+              "isArray": false,
+              "type": "ID",
+              "isRequired": true,
+              "attributes": []
+            },
+            "topic": {
+              "name": "topic",
+              "isArray": false,
+              "type": "String",
+              "isRequired": true,
+              "attributes": []
+            },
+            "category": {
+              "name": "category",
+              "isArray": false,
+              "type": {
+                "enum": "GoldStandardEssayCategory"
+              },
+              "isRequired": false,
+              "attributes": []
+            },
+            "essayText": {
+              "name": "essayText",
+              "isArray": false,
+              "type": "String",
+              "isRequired": true,
+              "attributes": []
+            },
+            "wordCount": {
+              "name": "wordCount",
+              "isArray": false,
+              "type": "Int",
+              "isRequired": true,
+              "attributes": []
+            },
+            "officialScore": {
+              "name": "officialScore",
+              "isArray": false,
+              "type": "Int",
+              "isRequired": true,
+              "attributes": []
+            },
+            "scoreBreakdown": {
+              "name": "scoreBreakdown",
+              "isArray": false,
+              "type": "AWSJSON",
+              "isRequired": true,
+              "attributes": []
+            },
+            "strengths": {
+              "name": "strengths",
+              "isArray": false,
+              "type": "AWSJSON",
+              "isRequired": false,
+              "attributes": []
+            },
+            "weaknesses": {
+              "name": "weaknesses",
+              "isArray": false,
+              "type": "AWSJSON",
+              "isRequired": false,
+              "attributes": []
+            },
+            "embedding": {
+              "name": "embedding",
+              "isArray": false,
+              "type": "AWSJSON",
+              "isRequired": false,
+              "attributes": []
+            },
+            "scoreRange": {
+              "name": "scoreRange",
+              "isArray": false,
+              "type": "String",
+              "isRequired": false,
+              "attributes": []
+            },
+            "createdAt": {
+              "name": "createdAt",
+              "isArray": false,
+              "type": "AWSDateTime",
+              "isRequired": false,
+              "attributes": []
+            },
+            "updatedAt": {
+              "name": "updatedAt",
+              "isArray": false,
+              "type": "AWSDateTime",
+              "isRequired": false,
+              "attributes": []
+            }
+          },
+          "syncable": true,
+          "pluralName": "GoldStandardEssays",
+          "attributes": [
+            {
+              "type": "model",
+              "properties": {}
+            },
+            {
+              "type": "key",
+              "properties": {
+                "fields": [
+                  "id"
+                ]
+              }
+            },
+            {
+              "type": "key",
+              "properties": {
+                "name": "goldStandardEssaysByTopic",
+                "queryField": "listGoldStandardEssayByTopic",
+                "fields": [
+                  "topic"
+                ]
+              }
+            },
+            {
+              "type": "key",
+              "properties": {
+                "name": "goldStandardEssaysByScoreRange",
+                "queryField": "listGoldStandardEssayByScoreRange",
+                "fields": [
+                  "scoreRange"
+                ]
+              }
+            },
+            {
+              "type": "auth",
+              "properties": {
+                "rules": [
+                  {
+                    "allow": "private",
+                    "operations": [
+                      "read"
+                    ]
+                  },
+                  {
+                    "groupClaim": "cognito:groups",
+                    "provider": "userPools",
+                    "allow": "groups",
+                    "operations": [
+                      "create",
+                      "update",
+                      "delete"
+                    ],
+                    "groups": [
+                      "Admin"
+                    ]
+                  }
+                ]
+              }
+            }
+          ],
+          "primaryKeyInfo": {
+            "isCustomPrimaryKey": false,
+            "primaryKeyFieldName": "id",
+            "sortKeyFieldNames": []
+          }
         }
       },
       "enums": {
@@ -752,6 +917,16 @@
             "EASY",
             "MEDIUM",
             "HARD"
+          ]
+        },
+        "GoldStandardEssayCategory": {
+          "name": "GoldStandardEssayCategory",
+          "values": [
+            "AGREE_DISAGREE",
+            "DISCUSS_BOTH_VIEWS",
+            "ADVANTAGES_DISADVANTAGES",
+            "PROBLEM_SOLUTION",
+            "POSITIVE_NEGATIVE"
           ]
         }
       },

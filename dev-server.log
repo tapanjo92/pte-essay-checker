@@ -1,0 +1,85 @@
+
+> app@0.1.0 dev
+> next dev --turbopack --hostname 0.0.0.0 --port 3000
+
+   ▲ Next.js 15.4.2 (Turbopack)
+   - Local:        http://localhost:3000
+   - Network:      http://0.0.0.0:3000
+
+ ✓ Starting...
+ ✓ Ready in 1075ms
+ ○ Compiling / ...
+ ✓ Compiled / in 3.1s
+ HEAD / 200 in 3507ms
+ ○ Compiling /dashboard/history ...
+ ✓ Compiled /dashboard/history in 950ms
+ ⨯ [Error: ENOENT: no such file or directory, open '/root/pte-essay-checker/app/.next/static/development/_buildManifest.js.tmp.dbo0pkgbfuk'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/root/pte-essay-checker/app/.next/static/development/_buildManifest.js.tmp.dbo0pkgbfuk'
+}
+ ○ Compiling /_error ...
+ ✓ Compiled /_error in 1215ms
+ ⨯ [Error: ENOENT: no such file or directory, open '/root/pte-essay-checker/app/.next/static/development/_buildManifest.js.tmp.1fdtyetomj2'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/root/pte-essay-checker/app/.next/static/development/_buildManifest.js.tmp.1fdtyetomj2'
+}
+[Error: ENOENT: no such file or directory, open '/root/pte-essay-checker/app/.next/static/development/_buildManifest.js.tmp.dbo0pkgbfuk'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/root/pte-essay-checker/app/.next/static/development/_buildManifest.js.tmp.dbo0pkgbfuk'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/root/pte-essay-checker/app/.next/static/development/_buildManifest.js.tmp.stkbf5deew8'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/root/pte-essay-checker/app/.next/static/development/_buildManifest.js.tmp.stkbf5deew8'
+}
+[Error: ENOENT: no such file or directory, open '/root/pte-essay-checker/app/.next/static/development/_buildManifest.js.tmp.8rc13a6x4rt'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/root/pte-essay-checker/app/.next/static/development/_buildManifest.js.tmp.8rc13a6x4rt'
+}
+ ✓ Compiled /favicon.ico in 167ms
+ ⨯ [Error: ENOENT: no such file or directory, open '/root/pte-essay-checker/app/.next/static/development/_buildManifest.js.tmp.cb6s0elp6o'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/root/pte-essay-checker/app/.next/static/development/_buildManifest.js.tmp.cb6s0elp6o'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/root/pte-essay-checker/app/.next/server/app/page/app-build-manifest.json'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/root/pte-essay-checker/app/.next/server/app/page/app-build-manifest.json'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/root/pte-essay-checker/app/.next/static/development/_buildManifest.js.tmp.xobfcse7jdq'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/root/pte-essay-checker/app/.next/static/development/_buildManifest.js.tmp.xobfcse7jdq'
+}
+[Error: ENOENT: no such file or directory, open '/root/pte-essay-checker/app/.next/server/app/page/app-build-manifest.json'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/root/pte-essay-checker/app/.next/server/app/page/app-build-manifest.json'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/root/pte-essay-checker/app/.next/static/development/_buildManifest.js.tmp.y1qt9uyu0ug'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/root/pte-essay-checker/app/.next/static/development/_buildManifest.js.tmp.y1qt9uyu0ug'
+}
+[Error: ENOENT: no such file or directory, open '/root/pte-essay-checker/app/.next/static/development/_buildManifest.js.tmp.lhnhtvqqc6e'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/root/pte-essay-checker/app/.next/static/development/_buildManifest.js.tmp.lhnhtvqqc6e'
+}
+[?25h
