@@ -212,3 +212,24 @@ Read more: https://nextjs.org/docs/app/api-reference/config/next-config-js/allow
   syscall: 'open',
   path: '/root/pte-essay-checker/app/.next/static/development/_buildManifest.js.tmp.mvqff1njty'
 }
+ ⚠ Found a change in next.config.ts. Restarting the server to apply the changes...
+   ▲ Next.js 15.4.2 (Turbopack)
+   - Local:        http://localhost:3000
+   - Network:      http://0.0.0.0:3000
+
+ ✓ Starting...
+ ✓ Ready in 1047ms
+ ⚠ Found a change in next.config.ts. Restarting the server to apply the changes...
+   ▲ Next.js 15.4.2 (Turbopack)
+   - Local:        http://localhost:3000
+   - Network:      http://0.0.0.0:3000
+
+ ✓ Starting...
+ ✓ Ready in 1069ms
+ ⚠ Found a change in next.config.ts. Restarting the server to apply the changes...
+   ▲ Next.js 15.4.2 (Turbopack)
+   - Local:        http://localhost:3000
+   - Network:      http://0.0.0.0:3000
+
+ ✓ Starting...
+ ✓ Ready in 1040ms
