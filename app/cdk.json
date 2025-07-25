@@ -1,0 +1,8 @@
+{
+  "app": "npx tsx amplify/backend.ts",
+  "context": {
+    "@aws-cdk/core:bootstrapQualifier": "hnb659fds",
+    "@aws-cdk/core:enableStackNameDuplicates": false,
+    "aws-cdk:enableDiffNoFail": true
+  }
+}
