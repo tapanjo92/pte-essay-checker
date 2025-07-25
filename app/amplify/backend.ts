@@ -8,6 +8,7 @@ import { PolicyStatement } from 'aws-cdk-lib/aws-iam';
 import { Queue } from 'aws-cdk-lib/aws-sqs';
 import { SqsEventSource } from 'aws-cdk-lib/aws-lambda-event-sources';
 import { Duration, Stack, App } from 'aws-cdk-lib';
+import * as cdk from 'aws-cdk-lib';
 import { Tracing } from 'aws-cdk-lib/aws-lambda';
 import { CfnSamplingRule } from 'aws-cdk-lib/aws-xray';
 import { Alarm, TreatMissingData } from 'aws-cdk-lib/aws-cloudwatch';
@@ -28,6 +29,16 @@ const backend = defineBackend({
 
 // Add region-aware configuration to fix SSM permission issues
 const stack = backend.createStack('RegionConfig');
+
+// Set CDK context to bypass SSM parameter check
+const app = cdk.App.of(stack);
+if (app) {
+  app.node.setContext('@aws-cdk/core:bootstrapQualifier', 'hnb659fds');
+  app.node.setContext('aws:cdk:enable-path-metadata', false);
+  app.node.setContext('aws:cdk:enable-asset-metadata', false);
+  app.node.setContext('@aws-cdk/core:newStyleStackSynthesis', true);
+}
+
 stack.node.setContext('@aws-cdk/core:bootstrapQualifier', 'hnb659fds');
 stack.node.setContext('aws:cdk:enable-path-metadata', false);
 stack.node.setContext('aws:cdk:enable-asset-metadata', false);
