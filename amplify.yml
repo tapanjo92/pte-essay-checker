@@ -18,7 +18,7 @@ frontend:
         - npm ci --cache .npm --prefer-offline
     build:
       commands:
-        - npx @aws-amplify/adapter-nextjs@latest build
+        - npm run build
   artifacts:
     baseDirectory: app/.amplify-hosting
     files:
