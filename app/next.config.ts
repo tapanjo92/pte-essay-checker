@@ -1,12 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  output: 'standalone',
-  experimental: {
-    serverActions: {
-      bodySizeLimit: '2mb'
-    }
-  }
+  // Amplify Gen 2 handles the configuration
 };
 
 export default nextConfig;
