@@ -210,7 +210,7 @@ dlqAlertTopic.addSubscription(
 
 // Create CloudWatch alarm for DLQ
 const dlqAlarm = new Alarm(dataStack, 'DLQMessagesAlarm', {
-  alarmName: 'pte-essay-dlq-messages',
+  alarmName: `pte-dlq-msgs-${uniqueSuffix}`,
   alarmDescription: 'Alert when essays fail processing and end up in DLQ',
   metric: dlq.metricApproximateNumberOfMessagesVisible({
     period: Duration.minutes(1),
@@ -225,7 +225,7 @@ dlqAlarm.addAlarmAction(new SnsAction(dlqAlertTopic));
 
 // Also monitor if messages are sitting in DLQ too long
 const dlqOldMessagesAlarm = new Alarm(dataStack, 'DLQOldMessagesAlarm', {
-  alarmName: 'pte-essay-dlq-old-messages',
+  alarmName: `pte-dlq-old-${uniqueSuffix}`,
   alarmDescription: 'Alert when messages in DLQ are older than 1 hour',
   metric: dlq.metricApproximateAgeOfOldestMessage({
     period: Duration.minutes(5),
