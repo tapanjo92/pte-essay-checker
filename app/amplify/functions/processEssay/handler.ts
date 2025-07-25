@@ -17,23 +17,42 @@ const dynamoClient = captureAWSv3Client(new DynamoDBClient({}));
 const docClient = DynamoDBDocumentClient.from(dynamoClient);
 const sesClient = captureAWSv3Client(new SESClient({ region: process.env.AWS_REGION || 'ap-south-1' }));
 
-// PTE scoring criteria
+// PTE scoring criteria - Official 7 criteria mapped to 14 points
 const PTE_CRITERIA = {
-  taskResponse: {
-    weight: 0.25,
-    description: 'How well the essay addresses the topic and task requirements'
+  content: {
+    maxPoints: 3,
+    weight: 3/14, // 21.4%
+    description: 'Topic relevance, idea development, and completeness'
   },
-  coherence: {
-    weight: 0.25,
-    description: 'Logical flow and organization of ideas'
-  },
-  vocabulary: {
-    weight: 0.25,
-    description: 'Range and accuracy of vocabulary used'
+  form: {
+    maxPoints: 2,
+    weight: 2/14, // 14.3%
+    description: 'Essay structure, paragraphing, and word count (200-300)'
   },
   grammar: {
-    weight: 0.25,
+    maxPoints: 2,
+    weight: 2/14, // 14.3%
     description: 'Grammatical accuracy and sentence structure'
+  },
+  vocabulary: {
+    maxPoints: 2,
+    weight: 2/14, // 14.3%
+    description: 'Range and accuracy of vocabulary used'
+  },
+  spelling: {
+    maxPoints: 1,
+    weight: 1/14, // 7.1%
+    description: 'Spelling accuracy'
+  },
+  developmentCoherence: {
+    maxPoints: 2,
+    weight: 2/14, // 14.3%
+    description: 'Logical flow, cohesion, and paragraph development'
+  },
+  linguisticRange: {
+    maxPoints: 2,
+    weight: 2/14, // 14.3%
+    description: 'Variety in sentence patterns and linguistic structures'
   }
 };
 
@@ -47,25 +66,48 @@ interface EssayProcessingEvent {
 
 interface ScoringResult {
   overallScore: number;
+  // Legacy scores for backward compatibility
   taskResponseScore: number;
   coherenceScore: number;
   vocabularyScore: number;
   grammarScore: number;
+  // New PTE scores
+  pteScores?: {
+    content: number;
+    form: number;
+    grammar: number;
+    vocabulary: number;
+    spelling: number;
+    developmentCoherence: number;
+    linguisticRange: number;
+  };
+  // Topic relevance for transparency
+  topicRelevance?: {
+    isOnTopic: boolean;
+    relevanceScore: number;
+    explanation: string;
+  };
   feedback: {
     summary: string;
     strengths: string[];
     improvements: string[];
     detailedFeedback: {
-      taskResponse: string;
-      coherence: string;
-      vocabulary: string;
+      content?: string;
+      form?: string;
       grammar: string;
+      vocabulary: string;
+      spelling?: string;
+      developmentCoherence?: string;
+      linguisticRange?: string;
+      // Legacy fields
+      taskResponse?: string;
+      coherence?: string;
     };
   };
   suggestions: string[];
   highlightedErrors: Array<{
     text: string;
-    type: 'grammar' | 'vocabulary' | 'coherence';
+    type: 'grammar' | 'vocabulary' | 'coherence' | 'spelling';
     suggestion: string;
     startIndex: number;
     endIndex: number;
@@ -103,6 +145,15 @@ export const handler: SQSHandler = async (event: SQSEvent) => {
         wordCount: args.wordCount, 
         userId: args.userId 
       });
+      
+      // Validate word count (PTE requirement: 200-300 words)
+      if (args.wordCount < 200 || args.wordCount > 300) {
+        structuredLog('WARN', 'Essay word count outside PTE requirements', {
+          essayId: args.essayId,
+          wordCount: args.wordCount,
+          required: '200-300'
+        });
+      }
       
       // 1. Update essay status to PROCESSING
       console.log('Updating essay status to PROCESSING...');
@@ -214,19 +265,42 @@ async function createRAGEnhancedPrompt(topic: string, content: string, wordCount
   }
   
   // Build RAG context
-  const ragContext = similarEssays.map(essay => `
+  const ragContext = similarEssays.map(essay => {
+    // Check if essay has new PTE format
+    if (essay.scoreBreakdown && typeof essay.scoreBreakdown.content === 'number') {
+      return `
+Example Essay (Official PTE Score: ${essay.officialScore}/90):
+Topic: ${essay.topic}
+Word Count: ${essay.wordCount}
+PTE Score Breakdown (Raw scores out of 14 points):
+- Content: ${essay.scoreBreakdown.content}/3
+- Form: ${essay.scoreBreakdown.form}/2
+- Grammar: ${essay.scoreBreakdown.grammar}/2
+- Vocabulary: ${essay.scoreBreakdown.vocabulary}/2
+- Spelling: ${essay.scoreBreakdown.spelling}/1
+- Development & Coherence: ${essay.scoreBreakdown.developmentCoherence}/2
+- Linguistic Range: ${essay.scoreBreakdown.linguisticRange}/2
+Key Strengths: ${essay.strengths?.join(', ') || 'N/A'}
+Key Weaknesses: ${essay.weaknesses?.join(', ') || 'N/A'}
+Essay Excerpt: ${essay.essayText.substring(0, 200)}...
+`;
+    } else {
+      // Fallback for old format
+      return `
 Example Essay (Official PTE Score: ${essay.officialScore}/90):
 Topic: ${essay.topic}
 Word Count: ${essay.wordCount}
 Score Breakdown:
-- Task Response: ${essay.scoreBreakdown.task}/90
+- Task Response: ${essay.scoreBreakdown.task || essay.scoreBreakdown.taskResponse}/90
 - Coherence: ${essay.scoreBreakdown.coherence}/90
 - Vocabulary: ${essay.scoreBreakdown.vocabulary}/90
 - Grammar: ${essay.scoreBreakdown.grammar}/90
 Key Strengths: ${essay.strengths?.join(', ') || 'N/A'}
 Key Weaknesses: ${essay.weaknesses?.join(', ') || 'N/A'}
 Essay Excerpt: ${essay.essayText.substring(0, 200)}...
-`).join('\n---\n');
+`;
+    }
+  }).join('\n---\n');
 
   // Create enhanced prompt
   return `You are an expert PTE Academic essay evaluator. You have access to similar essays with official PTE scores for reference.
@@ -244,38 +318,70 @@ Word Count: ${wordCount}
 Essay:
 ${content}
 
-Please evaluate the essay on these criteria:
-1. Task Response (0-90): How well does the essay address the topic and fulfill task requirements?
-2. Coherence and Cohesion (0-90): Is the essay well-organized with clear progression of ideas?
-3. Vocabulary (0-90): Range, accuracy, and appropriateness of vocabulary
-4. Grammar (0-90): Grammatical accuracy, sentence variety, and complexity
+CRITICAL PTE SCORING RULES:
+1. FIRST, check if the essay addresses the given topic. If the essay is completely off-topic or unrelated to the prompt, it MUST receive 0/3 for Content (0/90 scaled).
+   - Example: If topic is about "AI replacing workers" but essay discusses "AWS cloud services", it's OFF-TOPIC
+   - Example: If topic is about "remote work" but essay discusses "climate change", it's OFF-TOPIC
+2. An off-topic essay CANNOT score higher than 25/90 overall, regardless of grammar or vocabulary quality.
+3. Essays that partially address the topic but miss key aspects should receive no more than 1/3 for Content.
+4. Word count violations (under 200 or over 300 words) result in reduced Form score.
+5. IMPORTANT: Evaluate topic relevance BEFORE any other criteria. A well-written essay on the wrong topic is still a failure in PTE.
 
-Compare this essay's quality to the reference essays and ensure your scores are consistent with the official scoring patterns.
+Please evaluate the essay using the official PTE Academic scoring criteria (total 14 points scaled to 90):
+1. Content (3 points): Topic relevance, idea development, and completeness
+2. Form (2 points): Essay structure, paragraphing, and word count compliance (200-300 words)
+3. Grammar (2 points): Grammatical accuracy and sentence structure
+4. Vocabulary (2 points): Range and accuracy of vocabulary used
+5. Spelling (1 point): Spelling accuracy
+6. Development & Coherence (2 points): Logical flow, cohesion, and paragraph development
+7. Linguistic Range (2 points): Variety in sentence patterns and linguistic structures
+
+IMPORTANT: The reference essays above use the official PTE scoring. Compare this essay's quality to the reference essays and ensure your scores are consistent with the official scoring patterns shown.
 
 Provide your response as a valid JSON object (no markdown, no code blocks, just pure JSON) in the following format:
 {
-  "scores": {
-    "taskResponse": <score>,
-    "coherence": <score>,
-    "vocabulary": <score>,
-    "grammar": <score>
+  "topicRelevance": {
+    "isOnTopic": <true/false>,
+    "relevanceScore": <0-100>,
+    "explanation": "<brief explanation of why the essay is on/off topic>"
+  },
+  "pteScores": {
+    "content": <0-3>,
+    "form": <0-2>,
+    "grammar": <0-2>,
+    "vocabulary": <0-2>,
+    "spelling": <0-1>,
+    "developmentCoherence": <0-2>,
+    "linguisticRange": <0-2>
+  },
+  "scaledScores": {
+    "content": <scaled to 90>,
+    "form": <scaled to 90>,
+    "grammar": <scaled to 90>,
+    "vocabulary": <scaled to 90>,
+    "spelling": <scaled to 90>,
+    "developmentCoherence": <scaled to 90>,
+    "linguisticRange": <scaled to 90>
   },
   "feedback": {
     "summary": "<overall assessment>",
     "strengths": ["<strength1>", "<strength2>", ...],
     "improvements": ["<improvement1>", "<improvement2>", ...],
     "detailedFeedback": {
-      "taskResponse": "<detailed feedback>",
-      "coherence": "<detailed feedback>",
+      "content": "<detailed feedback>",
+      "form": "<detailed feedback>",
+      "grammar": "<detailed feedback>",
       "vocabulary": "<detailed feedback>",
-      "grammar": "<detailed feedback>"
+      "spelling": "<detailed feedback>",
+      "developmentCoherence": "<detailed feedback>",
+      "linguisticRange": "<detailed feedback>"
     }
   },
   "suggestions": ["<suggestion1>", "<suggestion2>", ...],
   "highlightedErrors": [
     {
       "text": "<error text>",
-      "type": "grammar|vocabulary|coherence",
+      "type": "grammar|vocabulary|coherence|spelling",
       "correction": "<suggested correction>",
       "startIndex": <number>,
       "endIndex": <number>
@@ -286,43 +392,75 @@ Provide your response as a valid JSON object (no markdown, no code blocks, just 
 }
 
 function createAnalysisPrompt(topic: string, content: string): string {
-  return `You are an expert PTE Academic essay evaluator. Analyze the following essay and provide detailed scoring and feedback based on PTE criteria.
+  return `You are an expert PTE Academic essay evaluator. Analyze the following essay and provide detailed scoring and feedback based on official PTE criteria.
 
 Topic: ${topic}
 
 Essay:
 ${content}
 
-Please evaluate the essay on these criteria:
-1. Task Response (0-90): How well does the essay address the topic and fulfill task requirements?
-2. Coherence and Cohesion (0-90): Is the essay well-organized with clear progression of ideas?
-3. Vocabulary (0-90): Range, accuracy, and appropriateness of vocabulary
-4. Grammar (0-90): Grammatical accuracy, sentence variety, and complexity
+CRITICAL PTE SCORING RULES:
+1. FIRST, check if the essay addresses the given topic. If the essay is completely off-topic or unrelated to the prompt, it MUST receive 0/3 for Content (0/90 scaled).
+   - Example: If topic is about "AI replacing workers" but essay discusses "AWS cloud services", it's OFF-TOPIC
+   - Example: If topic is about "remote work" but essay discusses "climate change", it's OFF-TOPIC
+2. An off-topic essay CANNOT score higher than 25/90 overall, regardless of grammar or vocabulary quality.
+3. Essays that partially address the topic but miss key aspects should receive no more than 1/3 for Content.
+4. Word count violations (under 200 or over 300 words) result in reduced Form score.
+5. IMPORTANT: Evaluate topic relevance BEFORE any other criteria. A well-written essay on the wrong topic is still a failure in PTE.
+
+Please evaluate the essay using the official PTE Academic scoring criteria (total 14 points scaled to 90):
+1. Content (3 points): Topic relevance, idea development, and completeness
+2. Form (2 points): Essay structure, paragraphing, and word count compliance (200-300 words)
+3. Grammar (2 points): Grammatical accuracy and sentence structure
+4. Vocabulary (2 points): Range and accuracy of vocabulary used
+5. Spelling (1 point): Spelling accuracy
+6. Development & Coherence (2 points): Logical flow, cohesion, and paragraph development
+7. Linguistic Range (2 points): Variety in sentence patterns and linguistic structures
 
 Provide your response as a valid JSON object (no markdown, no code blocks, just pure JSON) in the following format:
 {
-  "scores": {
-    "taskResponse": <score>,
-    "coherence": <score>,
-    "vocabulary": <score>,
-    "grammar": <score>
+  "topicRelevance": {
+    "isOnTopic": <true/false>,
+    "relevanceScore": <0-100>,
+    "explanation": "<brief explanation of why the essay is on/off topic>"
+  },
+  "pteScores": {
+    "content": <0-3>,
+    "form": <0-2>,
+    "grammar": <0-2>,
+    "vocabulary": <0-2>,
+    "spelling": <0-1>,
+    "developmentCoherence": <0-2>,
+    "linguisticRange": <0-2>
+  },
+  "scaledScores": {
+    "content": <scaled to 90>,
+    "form": <scaled to 90>,
+    "grammar": <scaled to 90>,
+    "vocabulary": <scaled to 90>,
+    "spelling": <scaled to 90>,
+    "developmentCoherence": <scaled to 90>,
+    "linguisticRange": <scaled to 90>
   },
   "feedback": {
     "summary": "<overall assessment>",
     "strengths": ["<strength1>", "<strength2>", ...],
     "improvements": ["<improvement1>", "<improvement2>", ...],
     "detailedFeedback": {
-      "taskResponse": "<detailed feedback>",
-      "coherence": "<detailed feedback>",
+      "content": "<detailed feedback>",
+      "form": "<detailed feedback>",
+      "grammar": "<detailed feedback>",
       "vocabulary": "<detailed feedback>",
-      "grammar": "<detailed feedback>"
+      "spelling": "<detailed feedback>",
+      "developmentCoherence": "<detailed feedback>",
+      "linguisticRange": "<detailed feedback>"
     }
   },
   "suggestions": ["<specific suggestion 1>", "<specific suggestion 2>", ...],
   "highlightedErrors": [
     {
       "text": "<error text>",
-      "type": "grammar|vocabulary|coherence",
+      "type": "grammar|vocabulary|coherence|spelling",
       "suggestion": "<correction>",
       "context": "<surrounding text>"
     }
@@ -486,24 +624,108 @@ async function callBedrockAI(prompt: string): Promise<any> {
 }
 
 function parseAIResponse(aiResponse: any): ScoringResult {
-  // Calculate overall score based on PTE weighting
-  const overallScore = Math.round(
-    (aiResponse.scores.taskResponse * PTE_CRITERIA.taskResponse.weight +
-     aiResponse.scores.coherence * PTE_CRITERIA.coherence.weight +
-     aiResponse.scores.vocabulary * PTE_CRITERIA.vocabulary.weight +
-     aiResponse.scores.grammar * PTE_CRITERIA.grammar.weight)
-  );
+  let overallScore: number;
+  let result: ScoringResult;
   
-  return {
-    overallScore,
-    taskResponseScore: aiResponse.scores.taskResponse,
-    coherenceScore: aiResponse.scores.coherence,
-    vocabularyScore: aiResponse.scores.vocabulary,
-    grammarScore: aiResponse.scores.grammar,
-    feedback: aiResponse.feedback,
-    suggestions: aiResponse.suggestions || [],
-    highlightedErrors: aiResponse.highlightedErrors || []
-  };
+  // CRITICAL: Check for off-topic essays first
+  if (aiResponse.topicRelevance) {
+    const relevanceScore = aiResponse.topicRelevance.relevanceScore || 100;
+    const isOnTopic = aiResponse.topicRelevance.isOnTopic !== false;
+    
+    structuredLog('INFO', 'Topic relevance check', {
+      isOnTopic,
+      relevanceScore,
+      explanation: aiResponse.topicRelevance.explanation
+    });
+    
+    // If essay is off-topic, enforce strict scoring rules
+    if (!isOnTopic || relevanceScore < 50) {
+      structuredLog('WARN', 'Essay is off-topic, applying PTE penalty', {
+        relevanceScore,
+        originalContentScore: aiResponse.pteScores?.content
+      });
+      
+      // Force content score to 0 for off-topic essays
+      if (aiResponse.pteScores) {
+        aiResponse.pteScores.content = 0;
+      }
+      
+      // Add warning to feedback
+      if (!aiResponse.feedback) {
+        aiResponse.feedback = {};
+      }
+      aiResponse.feedback.summary = `CRITICAL: This essay is off-topic and does not address the given prompt. In PTE Academic, off-topic essays receive very low scores regardless of language quality. ${aiResponse.feedback.summary || ''}`;
+    }
+  }
+  
+  // Check if AI returned new PTE format
+  if (aiResponse.pteScores) {
+    // Calculate overall score from PTE raw scores (out of 14)
+    const rawTotal = 
+      aiResponse.pteScores.content +
+      aiResponse.pteScores.form +
+      aiResponse.pteScores.grammar +
+      aiResponse.pteScores.vocabulary +
+      aiResponse.pteScores.spelling +
+      aiResponse.pteScores.developmentCoherence +
+      aiResponse.pteScores.linguisticRange;
+    
+    // Scale to 90
+    overallScore = Math.round((rawTotal / 14) * 90);
+    
+    // CRITICAL: Apply off-topic veto - cap score at 25/90 if content is 0
+    if (aiResponse.pteScores.content === 0) {
+      overallScore = Math.min(overallScore, 25);
+      structuredLog('WARN', 'Applied off-topic score cap', {
+        originalScore: Math.round((rawTotal / 14) * 90),
+        cappedScore: overallScore
+      });
+    }
+    
+    // Map new scores to legacy format for backward compatibility
+    result = {
+      overallScore,
+      // Map roughly to old system
+      taskResponseScore: aiResponse.scaledScores?.content || Math.round((aiResponse.pteScores.content / 3) * 90),
+      coherenceScore: aiResponse.scaledScores?.developmentCoherence || Math.round((aiResponse.pteScores.developmentCoherence / 2) * 90),
+      vocabularyScore: aiResponse.scaledScores?.vocabulary || Math.round((aiResponse.pteScores.vocabulary / 2) * 90),
+      grammarScore: aiResponse.scaledScores?.grammar || Math.round((aiResponse.pteScores.grammar / 2) * 90),
+      pteScores: aiResponse.scaledScores || {
+        content: Math.round((aiResponse.pteScores.content / 3) * 90),
+        form: Math.round((aiResponse.pteScores.form / 2) * 90),
+        grammar: Math.round((aiResponse.pteScores.grammar / 2) * 90),
+        vocabulary: Math.round((aiResponse.pteScores.vocabulary / 2) * 90),
+        spelling: Math.round((aiResponse.pteScores.spelling / 1) * 90),
+        developmentCoherence: Math.round((aiResponse.pteScores.developmentCoherence / 2) * 90),
+        linguisticRange: Math.round((aiResponse.pteScores.linguisticRange / 2) * 90)
+      },
+      topicRelevance: aiResponse.topicRelevance,
+      feedback: aiResponse.feedback,
+      suggestions: aiResponse.suggestions || [],
+      highlightedErrors: aiResponse.highlightedErrors || []
+    };
+  } else {
+    // Fallback to old format
+    overallScore = Math.round(
+      (aiResponse.scores.taskResponse * 0.25 +
+       aiResponse.scores.coherence * 0.25 +
+       aiResponse.scores.vocabulary * 0.25 +
+       aiResponse.scores.grammar * 0.25)
+    );
+    
+    result = {
+      overallScore,
+      taskResponseScore: aiResponse.scores.taskResponse,
+      coherenceScore: aiResponse.scores.coherence,
+      vocabularyScore: aiResponse.scores.vocabulary,
+      grammarScore: aiResponse.scores.grammar,
+      feedback: aiResponse.feedback,
+      suggestions: aiResponse.suggestions || [],
+      highlightedErrors: aiResponse.highlightedErrors || []
+    };
+  }
+  
+  return result;
 }
 
 async function updateEssayStatus(essayId: string, status: string, resultId?: string) {

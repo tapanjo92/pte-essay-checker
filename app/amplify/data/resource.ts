@@ -63,8 +63,13 @@ const schema = a.schema({
     id: a.id(),
     title: a.string().required(),
     description: a.string().required(),
-    category: a.enum(['AGREE_DISAGREE', 'DISCUSS_BOTH_VIEWS', 'ADVANTAGES_DISADVANTAGES', 'PROBLEM_SOLUTION', 'POSITIVE_NEGATIVE']),
+    category: a.enum(['AGREE_DISAGREE', 'DISCUSS_BOTH_VIEWS', 'ADVANTAGES_DISADVANTAGES', 'PROBLEM_SOLUTION', 'POSITIVE_NEGATIVE', 'CAUSES_EFFECTS']),
     difficulty: a.enum(['EASY', 'MEDIUM', 'HARD']),
+    frequency: a.string(), // e.g., "35%"
+    keyVocabulary: a.json(), // ["automation", "displacement", "augmentation"]
+    wordCountMin: a.integer().default(200),
+    wordCountMax: a.integer().default(300),
+    timeLimit: a.integer().default(20), // minutes
     sampleEssays: a.json(),
     isActive: a.boolean(),
     createdAt: a.datetime(),
@@ -78,7 +83,8 @@ const schema = a.schema({
   GoldStandardEssay: a.model({
     id: a.id(),
     topic: a.string().required(),
-    category: a.enum(['AGREE_DISAGREE', 'DISCUSS_BOTH_VIEWS', 'ADVANTAGES_DISADVANTAGES', 'PROBLEM_SOLUTION', 'POSITIVE_NEGATIVE']),
+    topicId: a.string(), // Reference to Topic.id
+    category: a.enum(['AGREE_DISAGREE', 'DISCUSS_BOTH_VIEWS', 'ADVANTAGES_DISADVANTAGES', 'PROBLEM_SOLUTION', 'POSITIVE_NEGATIVE', 'CAUSES_EFFECTS']),
     essayText: a.string().required(),
     wordCount: a.integer().required(),
     officialScore: a.integer().required(), // Out of 90

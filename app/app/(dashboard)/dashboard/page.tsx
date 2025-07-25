@@ -11,19 +11,19 @@ import { useNetworkStatus, retryWithBackoff, isNetworkError } from '@/lib/networ
 
 const ESSAY_TOPICS = [
   {
-    id: '1',
-    title: 'Technology and Society',
-    description: 'Do you agree or disagree with the following statement? Technology has made our lives more complicated than it was in the past.',
+    id: 'pte_2025_001',
+    title: 'Artificial intelligence will eventually replace human workers in most industries.',
+    description: 'To what extent do you agree or disagree with this statement? Support your opinion with relevant examples and explanations.',
   },
   {
-    id: '2',
-    title: 'Education',
-    description: 'Some people believe that university education should be free for all students. Others think students should pay for their education. Discuss both views and give your opinion.',
+    id: 'pte_2025_003',
+    title: 'The rise of remote work has fundamentally changed the traditional office culture.',
+    description: 'What are the advantages and disadvantages of this trend? Provide specific examples to support your answer.',
   },
   {
-    id: '3',
-    title: 'Environment',
-    description: 'Climate change is one of the biggest challenges facing humanity. What are the main causes of climate change and what can individuals do to help solve this problem?',
+    id: 'pte_2025_005',
+    title: 'Social media influencers have more impact on young people than traditional role models like teachers and parents.',
+    description: 'What are the causes of this phenomenon and what effects does it have on society? Support your answer with examples.',
   },
 ];
 
@@ -310,7 +310,7 @@ export default function DashboardPage() {
         () => client.mutations.submitEssayToQueue({
           essayId: essayId,
           content: essayContent,
-          topic: selectedTopic.description,
+          topic: selectedTopic.title,
           wordCount: wordCount,
         }),
         { maxRetries: 2 }

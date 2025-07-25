@@ -9,7 +9,9 @@ const docClient = DynamoDBDocumentClient.from(dynamoClient);
 
 // Read the gold standard essays
 const essaysPath = path.join(__dirname, '../app/data/gold-standard-essays.json');
-const essays = JSON.parse(fs.readFileSync(essaysPath, 'utf-8'));
+const rawData = JSON.parse(fs.readFileSync(essaysPath, 'utf-8'));
+// Filter out the instructions key to get only essay objects
+const essays = rawData.filter((item: any) => typeof item === 'object' && item.id);
 
 // Table name - update this based on your actual table name
 const TABLE_NAME = 'GoldStandardEssay-3jvy5oiy4fewzg24gsbnrxx5oi-NONE';

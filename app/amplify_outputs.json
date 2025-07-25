@@ -631,6 +631,41 @@
               "isRequired": false,
               "attributes": []
             },
+            "frequency": {
+              "name": "frequency",
+              "isArray": false,
+              "type": "String",
+              "isRequired": false,
+              "attributes": []
+            },
+            "keyVocabulary": {
+              "name": "keyVocabulary",
+              "isArray": false,
+              "type": "AWSJSON",
+              "isRequired": false,
+              "attributes": []
+            },
+            "wordCountMin": {
+              "name": "wordCountMin",
+              "isArray": false,
+              "type": "Int",
+              "isRequired": false,
+              "attributes": []
+            },
+            "wordCountMax": {
+              "name": "wordCountMax",
+              "isArray": false,
+              "type": "Int",
+              "isRequired": false,
+              "attributes": []
+            },
+            "timeLimit": {
+              "name": "timeLimit",
+              "isArray": false,
+              "type": "Int",
+              "isRequired": false,
+              "attributes": []
+            },
             "sampleEssays": {
               "name": "sampleEssays",
               "isArray": false,
@@ -723,6 +758,13 @@
               "isArray": false,
               "type": "String",
               "isRequired": true,
+              "attributes": []
+            },
+            "topicId": {
+              "name": "topicId",
+              "isArray": false,
+              "type": "String",
+              "isRequired": false,
               "attributes": []
             },
             "category": {
@@ -908,7 +950,8 @@
             "DISCUSS_BOTH_VIEWS",
             "ADVANTAGES_DISADVANTAGES",
             "PROBLEM_SOLUTION",
-            "POSITIVE_NEGATIVE"
+            "POSITIVE_NEGATIVE",
+            "CAUSES_EFFECTS"
           ]
         },
         "TopicDifficulty": {
@@ -926,7 +969,8 @@
             "DISCUSS_BOTH_VIEWS",
             "ADVANTAGES_DISADVANTAGES",
             "PROBLEM_SOLUTION",
-            "POSITIVE_NEGATIVE"
+            "POSITIVE_NEGATIVE",
+            "CAUSES_EFFECTS"
           ]
         }
       },

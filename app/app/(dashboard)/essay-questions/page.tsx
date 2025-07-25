@@ -9,34 +9,44 @@ import { Label } from '@/components/ui/label';
 
 const PTE_ESSAY_TOPICS = [
   {
-    id: '1',
-    title: 'Technology and Society',
-    description: 'Do you agree or disagree with the following statement? Technology has made our lives more complicated than it was in the past. Use specific reasons and examples to support your answer.',
-    category: 'Agree/Disagree'
+    id: 'pte_2025_001',
+    title: 'Artificial intelligence will eventually replace human workers in most industries.',
+    description: 'To what extent do you agree or disagree with this statement? Support your opinion with relevant examples and explanations.',
+    category: 'Agree/Disagree',
+    frequency: '35%',
+    difficulty: 'MEDIUM'
   },
   {
-    id: '2',
-    title: 'Education System',
-    description: 'Some people believe that university education should be free for all students. Others think students should pay for their education. Discuss both views and give your opinion.',
-    category: 'Discussion'
+    id: 'pte_2025_002',
+    title: 'Some people believe that unpaid internships exploit young workers, while others see them as valuable learning opportunities.',
+    description: 'Discuss both these views and give your own opinion. Include relevant examples from your knowledge or experience.',
+    category: 'Discussion',
+    frequency: '28%',
+    difficulty: 'HARD'
   },
   {
-    id: '3',
-    title: 'Climate Change',
-    description: 'Climate change is one of the biggest challenges facing humanity. What are the main causes of climate change and what can individuals do to help solve this problem?',
-    category: 'Problem/Solution'
+    id: 'pte_2025_003',
+    title: 'The rise of remote work has fundamentally changed the traditional office culture.',
+    description: 'What are the advantages and disadvantages of this trend? Provide specific examples to support your answer.',
+    category: 'Advantages/Disadvantages',
+    frequency: '25%',
+    difficulty: 'EASY'
   },
   {
-    id: '4',
-    title: 'Work-Life Balance',
-    description: 'In many countries, people are working longer hours than ever before. What are the reasons for this? Is this a positive or negative development?',
-    category: 'Causes/Effects'
+    id: 'pte_2025_004',
+    title: 'Governments should prioritize funding for space exploration over addressing problems on Earth.',
+    description: 'To what extent do you agree or disagree? Give reasons for your answer and include any relevant examples.',
+    category: 'Agree/Disagree',
+    frequency: '22%',
+    difficulty: 'HARD'
   },
   {
-    id: '5',
-    title: 'Social Media Impact',
-    description: 'Social media has revolutionized the way we communicate. Do the advantages of social media outweigh the disadvantages? Support your answer with relevant examples.',
-    category: 'Advantages/Disadvantages'
+    id: 'pte_2025_005',
+    title: 'Social media influencers have more impact on young people than traditional role models like teachers and parents.',
+    description: 'What are the causes of this phenomenon and what effects does it have on society? Support your answer with examples.',
+    category: 'Causes/Effects',
+    frequency: '20%',
+    difficulty: 'MEDIUM'
   }
 ];
 
@@ -95,10 +105,20 @@ export default function EssayQuestionsPage() {
                       <RadioGroupItem value={topic.id} id={topic.id} className="mt-1" />
                       <Label htmlFor={topic.id} className="flex-1 cursor-pointer">
                         <div className="space-y-2">
-                          <div className="flex items-center gap-2">
+                          <div className="flex items-center gap-2 flex-wrap">
                             <span className="font-semibold">{topic.title}</span>
                             <span className="text-xs bg-primary/10 text-primary px-2 py-1 rounded">
                               {topic.category}
+                            </span>
+                            <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded">
+                              {topic.frequency} frequency
+                            </span>
+                            <span className={`text-xs px-2 py-1 rounded ${
+                              topic.difficulty === 'EASY' ? 'bg-blue-100 text-blue-800' :
+                              topic.difficulty === 'MEDIUM' ? 'bg-yellow-100 text-yellow-800' :
+                              'bg-red-100 text-red-800'
+                            }`}>
+                              {topic.difficulty}
                             </span>
                           </div>
                           <p className="text-sm text-muted-foreground leading-relaxed">
