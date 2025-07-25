@@ -1,7 +1,12 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  // Amplify SSR adapter handles the output configuration
+  output: 'standalone',
+  experimental: {
+    serverActions: {
+      bodySizeLimit: '2mb'
+    }
+  }
 };
 
 export default nextConfig;

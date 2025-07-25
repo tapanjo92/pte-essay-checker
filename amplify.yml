@@ -19,8 +19,11 @@ frontend:
     build:
       commands:
         - npm run build
+        - cp -r public .next/standalone/app/ || true
+        - cp -r .next/static .next/standalone/app/.next/ || true
+        - cp amplify-server.js .next/standalone/app/server.js || true
   artifacts:
-    baseDirectory: app/.next
+    baseDirectory: app/.next/standalone/app
     files:
       - '**/*'
   cache:
