@@ -8,15 +8,6 @@ backend:
         - npm ci --cache .npm --prefer-offline
         - cd amplify/functions/processEssay && npm ci && cd ../../..
         - cd amplify/functions/submitEssayToQueue && npm ci && cd ../../..
-        - |
-          # Workaround for SSM permission issue
-          echo "Setting up CDK context to bypass SSM check..."
-          cat > cdk.context.json << 'EOF'
-          {
-            "bootstrap-version": "28",
-            "@aws-cdk/core:bootstrapQualifier": "hnb659fds"
-          }
-          EOF
         - npx ampx pipeline-deploy --branch $AWS_BRANCH --app-id $AWS_APP_ID
 frontend:
   phases:
