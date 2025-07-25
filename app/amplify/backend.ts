@@ -109,9 +109,10 @@ backend.data.resources.cfnResources.cfnGraphqlApi.xrayEnabled = true;
 const dataStack = Stack.of(backend.data);
 
 // Basic sampling rule - sample 10% of requests after the first one per second
+const uniqueSuffix = Stack.of(dataStack).stackName.slice(-8); // Last 8 chars of stack name
 new CfnSamplingRule(dataStack, 'BasicSamplingRule', {
   samplingRule: {
-    ruleName: `BasicSampling-${Stack.of(dataStack).stackName}`,
+    ruleName: `BasicSampling-${uniqueSuffix}`,
     priority: 9000,
     fixedRate: 0.1, // 10% sampling rate
     reservoirSize: 1, // 1 request per second guaranteed
@@ -128,7 +129,7 @@ new CfnSamplingRule(dataStack, 'BasicSamplingRule', {
 // High priority rule for essay processing - sample more aggressively for debugging
 new CfnSamplingRule(dataStack, 'EssayProcessingSamplingRule', {
   samplingRule: {
-    ruleName: `EssayProcessing-${Stack.of(dataStack).stackName}`,
+    ruleName: `EssayProc-${uniqueSuffix}`,
     priority: 8000,
     fixedRate: 0.25, // 25% sampling for essay processing
     reservoirSize: 2, // 2 requests per second guaranteed
@@ -145,7 +146,7 @@ new CfnSamplingRule(dataStack, 'EssayProcessingSamplingRule', {
 // Low sampling for health checks and routine operations
 new CfnSamplingRule(dataStack, 'HealthCheckSamplingRule', {
   samplingRule: {
-    ruleName: `HealthChecks-${Stack.of(dataStack).stackName}`,
+    ruleName: `HealthCheck-${uniqueSuffix}`,
     priority: 7000,
     fixedRate: 0.01, // 1% sampling for health checks
     reservoirSize: 0,
