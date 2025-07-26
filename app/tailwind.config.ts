@@ -52,6 +52,45 @@ const config = {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
+        // Add actual color palettes for the gradients and glass effects
+        blue: {
+          400: '#60a5fa',
+          500: '#3b82f6',
+          600: '#2563eb',
+          700: '#1d4ed8',
+        },
+        purple: {
+          400: '#a78bfa',
+          500: '#8b5cf6',
+          600: '#7c3aed',
+          700: '#6d28d9',
+        },
+        pink: {
+          400: '#f472b6',
+          500: '#ec4899',
+          600: '#db2777',
+        },
+        white: '#ffffff',
+        gray: {
+          300: '#d1d5db',
+          400: '#9ca3af',
+        },
+        green: {
+          400: '#4ade80',
+          500: '#22c55e',
+        },
+        yellow: {
+          400: '#facc15',
+          500: '#eab308',
+        },
+        red: {
+          400: '#f87171',
+          500: '#ef4444',
+          600: '#dc2626',
+        },
+        orange: {
+          600: '#ea580c',
+        },
       },
       borderRadius: {
         lg: "var(--radius)",

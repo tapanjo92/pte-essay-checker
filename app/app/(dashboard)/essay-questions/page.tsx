@@ -100,7 +100,7 @@ export default function EssayQuestionsPage() {
               <div className="space-y-4">
                 {PTE_ESSAY_TOPICS.map((topic) => (
                   <div key={topic.id} className="relative">
-                    <div className="flex items-start space-x-3 p-4 rounded-lg border border-white/10 hover:bg-white/5 cursor-pointer transition-all duration-200 backdrop-blur-sm">
+                    <div className="flex items-start space-x-3 p-4 rounded-lg border border-border hover:bg-accent/50 cursor-pointer transition-all duration-200 backdrop-blur-sm">
                       <RadioGroupItem value={topic.id} id={topic.id} className="mt-1" />
                       <Label htmlFor={topic.id} className="flex-1 cursor-pointer">
                         <div className="space-y-2">

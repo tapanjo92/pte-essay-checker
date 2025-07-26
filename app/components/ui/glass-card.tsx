@@ -13,9 +13,9 @@ export function GlassCard({
   ...props 
 }: GlassCardProps) {
   const variants = {
-    default: "bg-white/5 backdrop-blur-xl border-white/10",
-    gradient: "bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-xl border-white/10",
-    blur: "bg-white/3 backdrop-blur-md border-white/10"
+    default: "bg-card/50 backdrop-blur-xl border-border/50",
+    gradient: "bg-gradient-to-br from-primary/10 to-secondary/5 backdrop-blur-xl border-border/50",
+    blur: "bg-card/30 backdrop-blur-md border-border/30"
   };
 
   return (

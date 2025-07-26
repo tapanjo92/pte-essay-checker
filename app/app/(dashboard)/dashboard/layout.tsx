@@ -128,7 +128,7 @@ export default function DashboardLayout({
 
   return (
     <GradientBackground variant="subtle">
-      <header className="sticky top-0 z-50 border-b border-white/10 bg-black/50 backdrop-blur-xl backdrop-saturate-150">
+      <header className="sticky top-0 z-50 border-b border-border/50 bg-background/80 backdrop-blur-xl backdrop-saturate-150">
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-between py-4">
             <div className="flex items-center gap-3">
@@ -156,7 +156,7 @@ export default function DashboardLayout({
               <Button 
                 variant="outline" 
                 onClick={handleSignOut} 
-                className="hidden md:block border-white/10 hover:bg-white/10 text-white backdrop-blur-sm"
+                className="hidden md:block border-border hover:bg-accent hover:text-accent-foreground backdrop-blur-sm"
               >
                 Sign Out
               </Button>
@@ -178,8 +178,8 @@ export default function DashboardLayout({
                 variant="ghost" 
                 className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all ${
                   pathname === '/essay-questions' 
-                    ? 'bg-white/10 text-white backdrop-blur-sm' 
-                    : 'text-gray-400 hover:text-white hover:bg-white/5'
+                    ? 'bg-primary/20 text-primary-foreground backdrop-blur-sm' 
+                    : 'text-muted-foreground hover:text-foreground hover:bg-primary/10'
                 }`}
               >
                 <List className="h-4 w-4" />
@@ -191,8 +191,8 @@ export default function DashboardLayout({
                 variant="ghost" 
                 className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all ${
                   pathname === '/dashboard' 
-                    ? 'bg-white/10 text-white backdrop-blur-sm' 
-                    : 'text-gray-400 hover:text-white hover:bg-white/5'
+                    ? 'bg-primary/20 text-primary-foreground backdrop-blur-sm' 
+                    : 'text-muted-foreground hover:text-foreground hover:bg-primary/10'
                 }`}
               >
                 <PenTool className="h-4 w-4" />
@@ -204,8 +204,8 @@ export default function DashboardLayout({
                 variant="ghost" 
                 className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all ${
                   pathname === '/dashboard/history' 
-                    ? 'bg-white/10 text-white backdrop-blur-sm' 
-                    : 'text-gray-400 hover:text-white hover:bg-white/5'
+                    ? 'bg-primary/20 text-primary-foreground backdrop-blur-sm' 
+                    : 'text-muted-foreground hover:text-foreground hover:bg-primary/10'
                 }`}
               >
                 <FileText className="h-4 w-4" />

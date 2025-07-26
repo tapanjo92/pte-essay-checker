@@ -1035,3 +1035,41 @@ Error: Cannot apply unknown utility class `top-2`
  GET /_next/src/uint32ArrayFrom.ts 404 in 394ms
  GET /_next/src/index.ts 404 in 286ms
  GET /_next/src/jsSha256.ts 404 in 231ms
+Error: Cannot apply unknown utility class `top-2`
+    [2m[at onInvalidCandidate (/root/pte-essay-checker/app/node_modules/tailwindcss/dist/lib.js:18:1509)][0m
+    [2m[at ge (/root/pte-essay-checker/app/node_modules/tailwindcss/dist/lib.js:13:29803)][0m
+    [2m[at /root/pte-essay-checker/app/node_modules/tailwindcss/dist/lib.js:18:373][0m
+    [2m[at I (/root/pte-essay-checker/app/node_modules/tailwindcss/dist/lib.js:3:1656)][0m
+    [2m[at je (/root/pte-essay-checker/app/node_modules/tailwindcss/dist/lib.js:18:172)][0m
+    [2m[at bi (/root/pte-essay-checker/app/node_modules/tailwindcss/dist/lib.js:35:780)][0m
+    [2m[at process.processTicksAndRejections (node:internal/process/task_queues:95:5)][0m
+    [2m[at async yi (/root/pte-essay-checker/app/node_modules/tailwindcss/dist/lib.js:35:1123)][0m
+    [2m[at async _r (/root/pte-essay-checker/app/node_modules/@tailwindcss/node/dist/index.js:10:3384)][0m
+    [2m[at async p (/root/pte-essay-checker/app/node_modules/@tailwindcss/postcss/dist/index.js:10:4019)][0m
+ ✓ Compiled in 11ms
+Error: Cannot apply unknown utility class `top-2`
+    [2m[at onInvalidCandidate (/root/pte-essay-checker/app/node_modules/tailwindcss/dist/lib.js:18:1509)][0m
+    [2m[at ge (/root/pte-essay-checker/app/node_modules/tailwindcss/dist/lib.js:13:29803)][0m
+    [2m[at /root/pte-essay-checker/app/node_modules/tailwindcss/dist/lib.js:18:373][0m
+    [2m[at I (/root/pte-essay-checker/app/node_modules/tailwindcss/dist/lib.js:3:1656)][0m
+    [2m[at je (/root/pte-essay-checker/app/node_modules/tailwindcss/dist/lib.js:18:172)][0m
+    [2m[at bi (/root/pte-essay-checker/app/node_modules/tailwindcss/dist/lib.js:35:780)][0m
+    [2m[at process.processTicksAndRejections (node:internal/process/task_queues:95:5)][0m
+    [2m[at async yi (/root/pte-essay-checker/app/node_modules/tailwindcss/dist/lib.js:35:1123)][0m
+    [2m[at async _r (/root/pte-essay-checker/app/node_modules/@tailwindcss/node/dist/index.js:10:3384)][0m
+    [2m[at async p (/root/pte-essay-checker/app/node_modules/@tailwindcss/postcss/dist/index.js:10:4019)][0m
+ ✓ Compiled in 13ms
+ ✓ Compiled in 9ms
+ GET /auth 200 in 96ms
+ GET /_next/internal/helpers.ts 404 in 74ms
+ GET /_next/static/runtime.ts 404 in 62ms
+ GET /favicon.ico?favicon.45db1c09.ico 200 in 224ms
+ GET /_next/src/constants.ts 404 in 155ms
+ GET /_next/src/RawSha256.ts 404 in 210ms
+ GET /_next/src/convertToBuffer.ts 404 in 257ms
+ GET /_next/src/isEmptyData.ts 404 in 302ms
+ GET /_next/src/numToUint8.ts 404 in 364ms
+ GET /_next/src/uint32ArrayFrom.ts 404 in 380ms
+ GET /_next/src/index.ts 404 in 318ms
+ GET /_next/src/jsSha256.ts 404 in 237ms
+ ✓ Compiled in 11ms

@@ -14,7 +14,7 @@ export function GradientBackground({
   const prefersReducedMotion = usePrefersReducedMotion();
 
   return (
-    <div className="relative min-h-screen bg-black text-white overflow-hidden">
+    <div className="relative min-h-screen bg-background text-foreground overflow-hidden">
       {/* Base gradient */}
       <div className="absolute inset-0">
         <div className="absolute inset-0 bg-gradient-to-tr from-blue-600/20 via-purple-600/20 to-pink-600/20" />
