@@ -163,10 +163,10 @@ export function AuthForm() {
   };
 
   return (
-    <div className="relative min-h-screen bg-black text-white overflow-hidden">
+    <div className="relative min-h-screen bg-gradient-to-br from-purple-950 via-violet-900 to-pink-950 text-white overflow-hidden">
       {/* Animated gradient mesh background */}
       <div className="absolute inset-0">
-        <div className="absolute inset-0 bg-gradient-to-tr from-blue-600/20 via-purple-600/20 to-pink-600/20" />
+        <div className="absolute inset-0 bg-gradient-to-tr from-cyan-500/30 via-purple-500/30 to-pink-500/30" />
         <div 
           className="absolute inset-0 opacity-50"
           style={{
@@ -181,9 +181,9 @@ export function AuthForm() {
         }} />
 
         {/* Floating gradient orbs */}
-        <div className={`absolute top-20 left-10 w-72 h-72 bg-blue-500 rounded-full mix-blend-screen filter blur-[128px] opacity-30 ${!prefersReducedMotion && 'animate-float'}`} />
-        <div className={`absolute bottom-20 right-10 w-96 h-96 bg-purple-500 rounded-full mix-blend-screen filter blur-[128px] opacity-30 ${!prefersReducedMotion && 'animate-float-delayed'}`} />
-        <div className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 h-80 bg-pink-500 rounded-full mix-blend-screen filter blur-[128px] opacity-30 ${!prefersReducedMotion && 'animate-float-slow'}`} />
+        <div className={`absolute top-20 left-10 w-72 h-72 bg-cyan-400 rounded-full mix-blend-screen filter blur-[128px] opacity-50 ${!prefersReducedMotion && 'animate-float'}`} />
+        <div className={`absolute bottom-20 right-10 w-96 h-96 bg-purple-400 rounded-full mix-blend-screen filter blur-[128px] opacity-50 ${!prefersReducedMotion && 'animate-float-delayed'}`} />
+        <div className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 h-80 bg-pink-400 rounded-full mix-blend-screen filter blur-[128px] opacity-50 ${!prefersReducedMotion && 'animate-float-slow'}`} />
       </div>
 
       {/* Main content */}
@@ -288,7 +288,7 @@ export function AuthForm() {
                     <Chrome className="w-5 h-5" />
                     Continue with Google
                   </button>
-                  <button className="w-full flex items-center justify-center gap-3 px-4 py-3 bg-gray-800 text-white rounded-lg font-medium hover:bg-gray-700 transition-colors border border-gray-700">
+                  <button className="w-full flex items-center justify-center gap-3 px-4 py-3 bg-gradient-to-r from-purple-600/20 to-pink-600/20 text-white rounded-lg font-medium hover:from-purple-600/30 hover:to-pink-600/30 transition-all border border-purple-500/50 backdrop-blur-sm">
                     <Github className="w-5 h-5" />
                     Continue with GitHub
                   </button>
@@ -321,7 +321,7 @@ export function AuthForm() {
                         type="text"
                         value={firstName}
                         onChange={(e) => setFirstName(e.target.value)}
-                        className="w-full px-3 py-2.5 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none transition-colors"
+                        className="w-full px-3 py-2.5 bg-purple-900/30 border border-purple-500/30 rounded-lg text-white placeholder-purple-300/50 focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400 focus:outline-none transition-all backdrop-blur-sm"
                         placeholder="John"
                         required
                       />
@@ -334,7 +334,7 @@ export function AuthForm() {
                         type="text"
                         value={lastName}
                         onChange={(e) => setLastName(e.target.value)}
-                        className="w-full px-3 py-2.5 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none transition-colors"
+                        className="w-full px-3 py-2.5 bg-purple-900/30 border border-purple-500/30 rounded-lg text-white placeholder-purple-300/50 focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400 focus:outline-none transition-all backdrop-blur-sm"
                         placeholder="Doe"
                         required
                       />
@@ -352,7 +352,7 @@ export function AuthForm() {
                         type="email"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
-                        className="w-full px-3 py-2.5 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none transition-colors"
+                        className="w-full px-3 py-2.5 bg-purple-900/30 border border-purple-500/30 rounded-lg text-white placeholder-purple-300/50 focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400 focus:outline-none transition-all backdrop-blur-sm"
                         placeholder="you@example.com"
                         required
                       />
@@ -367,7 +367,7 @@ export function AuthForm() {
                           type={showPassword ? 'text' : 'password'}
                           value={password}
                           onChange={(e) => setPassword(e.target.value)}
-                          className="w-full px-3 py-2.5 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none transition-colors pr-10"
+                          className="w-full px-3 py-2.5 bg-purple-900/30 border border-purple-500/30 rounded-lg text-white placeholder-purple-300/50 focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400 focus:outline-none transition-all backdrop-blur-sm pr-10"
                           placeholder="••••••••"
                           required
                         />
@@ -417,7 +417,7 @@ export function AuthForm() {
                       type="text"
                       value={code}
                       onChange={(e) => setCode(e.target.value)}
-                      className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white text-center text-xl font-mono placeholder-gray-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none transition-colors tracking-widest"
+                      className="w-full px-4 py-3 bg-purple-900/30 border border-purple-500/30 rounded-lg text-white text-center text-xl font-mono placeholder-purple-300/50 focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400 focus:outline-none transition-all backdrop-blur-sm tracking-widest"
                       placeholder="000000"
                       maxLength={6}
                       required
@@ -428,7 +428,7 @@ export function AuthForm() {
                 {/* Submit Button */}
                 <Button 
                   type="submit" 
-                  className="w-full py-3 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-medium rounded-lg transition-all duration-200 transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                  className="w-full py-3 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-medium rounded-lg transition-all duration-200 transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none shadow-lg shadow-purple-500/25"
                   disabled={loading}
                 >
                   {loading ? (

@@ -461,7 +461,14 @@ export default function DashboardPage() {
   }
 
   return (
-    <>
+    <div className="min-h-screen bg-gradient-to-br from-purple-950 via-violet-900 to-pink-950">
+      {/* Animated gradient orbs */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-20 left-10 w-72 h-72 bg-cyan-400 rounded-full mix-blend-screen filter blur-3xl opacity-40 animate-float" />
+        <div className="absolute bottom-20 right-10 w-96 h-96 bg-purple-400 rounded-full mix-blend-screen filter blur-3xl opacity-40 animate-float-delayed" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 h-80 bg-pink-400 rounded-full mix-blend-screen filter blur-3xl opacity-40 animate-float-slow" />
+      </div>
+      
       {/* Welcome Modal */}
       <WelcomeModal
         isOpen={showWelcomeModal}
@@ -470,7 +477,7 @@ export default function DashboardPage() {
         essaysRemaining={userSubscription?.essaysRemaining || 5}
       />
       
-      <div className="w-full space-y-6">
+      <div className="relative w-full space-y-6 text-white">
       {/* Offline indicator */}
       {!isOnline && (
         <div className="rounded-md bg-yellow-50 dark:bg-yellow-900/20 p-3 text-sm text-yellow-600 dark:text-yellow-400 flex items-center gap-2">
@@ -612,7 +619,7 @@ export default function DashboardPage() {
               <Button
               onClick={handleSubmit}
               disabled={isSubmitting || wordCount < 200 || wordCount > 300}
-              className={`${timeRemaining === 0 ? 'animate-pulse' : ''} min-h-[44px] bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white`}
+              className={`${timeRemaining === 0 ? 'animate-pulse' : ''} min-h-[44px] bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white shadow-lg shadow-purple-500/25`}
               aria-label={isSubmitting ? 'Submitting essay' : 'Submit essay for grading'}
               aria-busy={isSubmitting}
             >
@@ -625,6 +632,6 @@ export default function DashboardPage() {
         </GlassCardContent>
       </GlassCard>
     </div>
-    </>
+    </div>
   );
 }
