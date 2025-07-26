@@ -4,11 +4,16 @@ import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
 import React from "react";
 
-interface ModernButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+interface ModernButtonProps {
   variant?: "primary" | "secondary" | "ghost" | "glow" | "neon";
   size?: "sm" | "md" | "lg";
   loading?: boolean;
   icon?: React.ReactNode;
+  className?: string;
+  disabled?: boolean;
+  children?: React.ReactNode;
+  onClick?: () => void;
+  type?: "button" | "submit" | "reset";
 }
 
 export const ModernButton = React.forwardRef<HTMLButtonElement, ModernButtonProps>(
@@ -20,7 +25,8 @@ export const ModernButton = React.forwardRef<HTMLButtonElement, ModernButtonProp
     icon,
     children, 
     disabled,
-    ...props 
+    onClick,
+    type = "button"
   }, ref) => {
     const variants = {
       primary: `
@@ -89,7 +95,8 @@ export const ModernButton = React.forwardRef<HTMLButtonElement, ModernButtonProp
         )}
         disabled={disabled || loading}
         whileTap={{ scale: disabled ? 1 : 0.98 }}
-        {...props}
+        onClick={onClick}
+        type={type}
       >
         {/* Loading spinner overlay */}
         {loading && (

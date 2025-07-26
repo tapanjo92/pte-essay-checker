@@ -4,10 +4,13 @@ import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
 import React from "react";
 
-interface ModernCardProps extends React.HTMLAttributes<HTMLDivElement> {
+interface ModernCardProps {
   variant?: "default" | "hover-glow" | "gradient-border" | "neon";
   glowColor?: string;
   children: React.ReactNode;
+  className?: string;
+  onClick?: () => void;
+  onMouseMove?: (e: React.MouseEvent<HTMLDivElement>) => void;
 }
 
 export function ModernCard({
@@ -15,7 +18,8 @@ export function ModernCard({
   glowColor = "rgba(94, 92, 230, 0.5)",
   className,
   children,
-  ...props
+  onClick,
+  onMouseMove
 }: ModernCardProps) {
   const [mousePosition, setMousePosition] = React.useState({ x: 0, y: 0 });
 
@@ -39,7 +43,7 @@ export function ModernCard({
       <div
         className={cn("relative group", className)}
         onMouseMove={handleMouseMove}
-        {...props}
+        onClick={onClick}
       >
         {/* Animated gradient border */}
         <div
@@ -70,7 +74,8 @@ export function ModernCard({
         )}
         whileHover={{ scale: 1.02 }}
         transition={{ duration: 0.2 }}
-        {...props}
+        onClick={onClick}
+        onMouseMove={onMouseMove}
       >
         {/* Glow effect on hover */}
         <div className="absolute inset-0 opacity-0 hover:opacity-100 transition-opacity duration-300">
@@ -91,7 +96,8 @@ export function ModernCard({
         variants[variant],
         className
       )}
-      {...props}
+      onClick={onClick}
+      onMouseMove={onMouseMove}
     >
       {children}
     </div>
@@ -100,11 +106,13 @@ export function ModernCard({
 
 export function ModernCardHeader({
   className,
-  children,
-  ...props
-}: React.HTMLAttributes<HTMLDivElement>) {
+  children
+}: {
+  className?: string;
+  children: React.ReactNode;
+}) {
   return (
-    <div className={cn("mb-6", className)} {...props}>
+    <div className={cn("mb-6", className)}>
       {children}
     </div>
   );
@@ -112,11 +120,13 @@ export function ModernCardHeader({
 
 export function ModernCardTitle({
   className,
-  children,
-  ...props
-}: React.HTMLAttributes<HTMLHeadingElement>) {
+  children
+}: {
+  className?: string;
+  children: React.ReactNode;
+}) {
   return (
-    <h3 className={cn("text-2xl font-semibold tracking-tight", className)} {...props}>
+    <h3 className={cn("text-2xl font-semibold tracking-tight", className)}>
       {children}
     </h3>
   );
@@ -124,11 +134,13 @@ export function ModernCardTitle({
 
 export function ModernCardDescription({
   className,
-  children,
-  ...props
-}: React.HTMLAttributes<HTMLParagraphElement>) {
+  children
+}: {
+  className?: string;
+  children: React.ReactNode;
+}) {
   return (
-    <p className={cn("text-gray-400 mt-2", className)} {...props}>
+    <p className={cn("text-gray-400 mt-2", className)}>
       {children}
     </p>
   );
@@ -136,11 +148,13 @@ export function ModernCardDescription({
 
 export function ModernCardContent({
   className,
-  children,
-  ...props
-}: React.HTMLAttributes<HTMLDivElement>) {
+  children
+}: {
+  className?: string;
+  children: React.ReactNode;
+}) {
   return (
-    <div className={cn("", className)} {...props}>
+    <div className={cn("", className)}>
       {children}
     </div>
   );

@@ -205,7 +205,7 @@
   
   /* Skip link for accessibility */
   .skip-link {
-    @apply absolute left-[-9999px] top-2 z-50 rounded-md bg-primary px-4 py-2 text-primary-foreground focus:left-2;
+    @apply absolute left-[-9999px] top-[0.5rem] z-50 rounded-md bg-primary px-4 py-2 text-primary-foreground focus:left-[0.5rem];
   }
   
   /* Floating animations */
