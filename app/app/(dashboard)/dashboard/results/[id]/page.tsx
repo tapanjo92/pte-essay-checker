@@ -8,6 +8,27 @@ import Link from 'next/link';
 import { EssayProcessingStatus } from '@/components/essay-processing-status';
 import { Skeleton } from '@/components/ui/skeleton';
 import { createTracedClient } from '@/lib/xray-client';
+import { 
+  Trophy, 
+  Target, 
+  BookOpen, 
+  PenTool, 
+  Link2, 
+  TrendingUp,
+  Clock,
+  ArrowRight,
+  FileText,
+  BarChart3,
+  CheckCircle2,
+  XCircle,
+  AlertCircle,
+  Sparkles,
+  ChevronRight,
+  Download,
+  Share2,
+  Brain,
+  Zap
+} from 'lucide-react';
 
 interface Result {
   overallScore: number;
@@ -42,6 +63,7 @@ export default function ResultsPage() {
   const [result2, setResult2] = useState<Result | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [currentView, setCurrentView] = useState<'essay1' | 'essay2' | 'both'>('essay1');
+  const [selectedSection, setSelectedSection] = useState<'overview' | 'feedback' | 'essay'>('overview');
 
   const fetchEssayAndResult = async (essayId: string, client: any) => {
     const essayResponse = await client.models.Essay.get({ id: essayId });
@@ -115,9 +137,15 @@ export default function ResultsPage() {
   }, [essay1Id, essay2Id]);
 
   const getScoreColor = (score: number) => {
-    if (score >= 79) return 'text-green-600';
-    if (score >= 65) return 'text-yellow-600';
-    return 'text-red-600';
+    if (score >= 79) return 'text-green-500';
+    if (score >= 65) return 'text-yellow-500';
+    return 'text-red-500';
+  };
+
+  const getScoreGradient = (score: number) => {
+    if (score >= 79) return 'from-green-400 to-emerald-600';
+    if (score >= 65) return 'from-yellow-400 to-orange-500';
+    return 'from-red-400 to-rose-600';
   };
 
   const getScoreLabel = (score: number) => {
@@ -127,61 +155,52 @@ export default function ResultsPage() {
     return 'Needs Improvement';
   };
 
+  const getScoreIcon = (score: number) => {
+    if (score >= 79) return <Trophy className="w-6 h-6 text-green-500" />;
+    if (score >= 65) return <Target className="w-6 h-6 text-yellow-500" />;
+    return <AlertCircle className="w-6 h-6 text-red-500" />;
+  };
+
   if (loading) {
     return (
-      <div className="mx-auto max-w-4xl space-y-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <Skeleton className="h-9 w-48" />
-            <Skeleton className="mt-2 h-5 w-64" />
+      <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white dark:from-gray-950 dark:to-gray-900 p-8">
+        <div className="mx-auto max-w-7xl space-y-8">
+          <div className="flex items-center justify-between">
+            <div>
+              <Skeleton className="h-12 w-64" />
+              <Skeleton className="mt-3 h-6 w-96" />
+            </div>
+            <div className="flex gap-3">
+              <Skeleton className="h-10 w-32" />
+              <Skeleton className="h-10 w-40" />
+            </div>
           </div>
-          <Skeleton className="h-10 w-32" />
+          
+          <div className="grid gap-6 lg:grid-cols-4">
+            {[1, 2, 3, 4].map((i) => (
+              <Skeleton key={i} className="h-32 rounded-xl" />
+            ))}
+          </div>
+          
+          <Skeleton className="h-96 rounded-xl" />
         </div>
-        
-        <Card>
-          <CardHeader>
-            <Skeleton className="h-6 w-32" />
-            <Skeleton className="mt-2 h-4 w-48" />
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <Skeleton className="h-32 w-full" />
-            <div className="flex justify-between">
-              <Skeleton className="h-4 w-24" />
-              <Skeleton className="h-4 w-24" />
-            </div>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardHeader>
-            <Skeleton className="h-6 w-40" />
-          </CardHeader>
-          <CardContent>
-            <div className="grid gap-4 md:grid-cols-2">
-              {[1, 2, 3, 4].map((i) => (
-                <div key={i} className="space-y-2">
-                  <Skeleton className="h-4 w-32" />
-                  <Skeleton className="h-8 w-16" />
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="mx-auto max-w-4xl">
-        <Card>
-          <CardContent className="pt-6">
-            <p className="text-center text-destructive">{error}</p>
-            <div className="mt-4 text-center">
-              <Link href="/dashboard">
-                <Button>Back to Dashboard</Button>
-              </Link>
-            </div>
+      <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white dark:from-gray-950 dark:to-gray-900 p-8 flex items-center justify-center">
+        <Card className="max-w-md w-full">
+          <CardContent className="pt-6 text-center">
+            <XCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
+            <h2 className="text-xl font-semibold mb-2">Error Loading Results</h2>
+            <p className="text-gray-600 dark:text-gray-400 mb-6">{error}</p>
+            <Link href="/dashboard">
+              <Button className="bg-gradient-to-r from-blue-600 to-purple-600 text-white">
+                Back to Dashboard
+              </Button>
+            </Link>
           </CardContent>
         </Card>
       </div>
@@ -190,334 +209,669 @@ export default function ResultsPage() {
 
   if ((!result1 && essay1) || (essay2 && !result2)) {
     return (
-      <div className="mx-auto max-w-4xl space-y-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold">Essay Results</h1>
-            <p className="text-muted-foreground">
-              {essay2 ? 'Processing your essays...' : 'Processing your essay...'}
+      <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white dark:from-gray-950 dark:to-gray-900 p-8">
+        <div className="mx-auto max-w-7xl space-y-8">
+          <div className="text-center">
+            <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-4">
+              Processing Your Essay{essay2 ? 's' : ''}
+            </h1>
+            <p className="text-xl text-gray-600 dark:text-gray-400">
+              Our AI is analyzing your writing. This typically takes 30-60 seconds.
             </p>
           </div>
-          <div className="flex gap-2">
-            <Link href="/dashboard/history">
-              <Button variant="outline">View History</Button>
-            </Link>
-            <Link href="/dashboard">
-              <Button variant="outline">Write New Essay</Button>
-            </Link>
-          </div>
+          
+          {essay1 && !result1 && (
+            <div className="space-y-4">
+              <h2 className="text-2xl font-semibold flex items-center gap-2">
+                <FileText className="w-6 h-6 text-blue-600" />
+                Essay 1
+              </h2>
+              <EssayProcessingStatus status={essay1.status} />
+            </div>
+          )}
+          
+          {essay2 && !result2 && (
+            <div className="space-y-4">
+              <h2 className="text-2xl font-semibold flex items-center gap-2">
+                <FileText className="w-6 h-6 text-purple-600" />
+                Essay 2
+              </h2>
+              <EssayProcessingStatus status={essay2.status} />
+            </div>
+          )}
         </div>
-        
-        {/* Essay 1 Status */}
-        {essay1 && !result1 && (
-          <>
-            <div className="text-lg font-semibold">Essay 1</div>
-            <EssayProcessingStatus status={essay1.status} />
-          </>
-        )}
-        
-        {/* Essay 2 Status */}
-        {essay2 && !result2 && (
-          <>
-            <div className="text-lg font-semibold mt-6">Essay 2</div>
-            <EssayProcessingStatus status={essay2.status} />
-          </>
-        )}
-        
-        {/* Show essays while processing */}
-        {essay1 && (
-          <Card>
-            <CardHeader>
-              <CardTitle>Essay 1: {essay1.topic}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="whitespace-pre-wrap rounded-lg bg-muted p-4 text-sm">
-                {essay1.content}
-              </p>
-              <p className="mt-2 text-sm text-muted-foreground">
-                Word count: {essay1.wordCount}
-              </p>
-            </CardContent>
-          </Card>
-        )}
-        
-        {essay2 && (
-          <Card>
-            <CardHeader>
-              <CardTitle>Essay 2: {essay2.topic}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="whitespace-pre-wrap rounded-lg bg-muted p-4 text-sm">
-                {essay2.content}
-              </p>
-              <p className="mt-2 text-sm text-muted-foreground">
-                Word count: {essay2.wordCount}
-              </p>
-            </CardContent>
-          </Card>
-        )}
       </div>
     );
   }
+
+  // Helper function to render score card
+  const renderScoreCard = (label: string, score: number, icon: React.ReactNode, color: string) => (
+    <div className="group relative overflow-hidden rounded-2xl bg-white dark:bg-gray-900 p-6 shadow-lg transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
+      <div className="absolute inset-0 bg-gradient-to-br opacity-0 group-hover:opacity-10 transition-opacity" 
+           style={{ backgroundImage: `linear-gradient(to bottom right, ${color}, ${color})` }} />
+      <div className="relative">
+        <div className="flex items-center justify-between mb-4">
+          <span className="text-sm font-medium text-gray-600 dark:text-gray-400">{label}</span>
+          {icon}
+        </div>
+        <div className="flex items-baseline gap-2">
+          <span className={`text-3xl font-bold ${getScoreColor(score)}`}>{score}</span>
+          <span className="text-sm text-gray-500">/90</span>
+        </div>
+        <div className="mt-3 h-2 w-full overflow-hidden rounded-full bg-gray-200 dark:bg-gray-800">
+          <div 
+            className={`h-full bg-gradient-to-r transition-all duration-1000 ${getScoreGradient(score)}`}
+            style={{ width: `${(score / 90) * 100}%` }}
+          />
+        </div>
+      </div>
+    </div>
+  );
 
   // Helper function to render essay results
   const renderEssayResults = (essay: any, result: Result | null, essayNumber: number) => {
     if (!result) return null;
     
     return (
-      <div className="space-y-6">
-        {/* Overall Score Card with Gradient */}
-        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-blue-600 to-purple-600 p-8 text-white shadow-xl">
-          <div className="absolute inset-0 bg-black/10" />
-          <div className="relative z-10">
-            <div className="mb-4 flex items-center justify-between">
-              <div>
-                <h3 className="text-2xl font-bold">Essay {essayNumber} Results</h3>
-                <p className="mt-1 text-blue-100">{essay.topic}</p>
-              </div>
-              <div className="rounded-full bg-white/20 px-4 py-2 backdrop-blur">
-                <span className="text-sm font-medium">{getScoreLabel(result.overallScore)}</span>
-              </div>
-            </div>
-            <div className="flex items-baseline space-x-3">
-              <span className="text-7xl font-bold">{result.overallScore}</span>
-              <span className="text-2xl font-light opacity-80">/ 90</span>
-            </div>
-          </div>
-        </div>
-
-        {/* Score Breakdown Grid */}
-        <div className="grid gap-4 md:grid-cols-2">
+      <div className="space-y-8">
+        {/* Section Navigation */}
+        <div className="flex gap-2 p-1 bg-gray-100 dark:bg-gray-900 rounded-xl">
           {[
-            { label: 'Task Response', score: result.taskResponseScore, icon: '📝' },
-            { label: 'Coherence & Cohesion', score: result.coherenceScore, icon: '🔗' },
-            { label: 'Vocabulary', score: result.vocabularyScore, icon: '📚' },
-            { label: 'Grammar', score: result.grammarScore, icon: '✏️' }
-          ].map((item, index) => (
-            <Card key={index} className="overflow-hidden border-0 shadow-lg transition-all duration-300 hover:shadow-xl">
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div className="space-y-2">
-                    <p className="text-sm font-medium text-gray-600 dark:text-gray-400">{item.label}</p>
-                    <div className="flex items-baseline space-x-2">
-                      <span className={`text-3xl font-bold ${getScoreColor(item.score)}`}>
-                        {item.score}
-                      </span>
-                      <span className="text-sm text-gray-500">/ 90</span>
-                    </div>
-                  </div>
-                  <div className="text-4xl">{item.icon}</div>
-                </div>
-                <div className="mt-4">
-                  <div className="h-2 w-full overflow-hidden rounded-full bg-gray-200 dark:bg-gray-800">
-                    <div 
-                      className={`h-full transition-all duration-500 ${
-                        item.score >= 79 ? 'bg-green-500' :
-                        item.score >= 65 ? 'bg-yellow-500' :
-                        'bg-red-500'
-                      }`}
-                      style={{ width: `${(item.score / 90) * 100}%` }}
-                    />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+            { id: 'overview', label: 'Overview', icon: <BarChart3 className="w-4 h-4" /> },
+            { id: 'feedback', label: 'Detailed Feedback', icon: <Brain className="w-4 h-4" /> },
+            { id: 'essay', label: 'Your Essay', icon: <FileText className="w-4 h-4" /> }
+          ].map((section) => (
+            <button
+              key={section.id}
+              onClick={() => setSelectedSection(section.id as any)}
+              className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-lg font-medium transition-all ${
+                selectedSection === section.id
+                  ? 'bg-white dark:bg-gray-800 shadow-md text-blue-600 dark:text-blue-400'
+                  : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100'
+              }`}
+            >
+              {section.icon}
+              <span>{section.label}</span>
+            </button>
           ))}
         </div>
 
-        {/* Detailed Feedback */}
-        <Card className="overflow-hidden border-0 shadow-lg">
-          <CardHeader className="bg-gray-50 dark:bg-gray-900/50">
-            <CardTitle className="flex items-center space-x-2">
-              <svg className="h-5 w-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-              </svg>
-              <span>Detailed Feedback</span>
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-6 p-6">
-            {result.feedback && (
-              <>
-                <div className="rounded-lg bg-blue-50 dark:bg-blue-950/20 p-4">
-                  <h3 className="mb-2 font-semibold text-blue-900 dark:text-blue-100">Summary</h3>
-                  <p className="text-sm leading-relaxed text-blue-800 dark:text-blue-200">
-                    {result.feedback.summary || 'No summary available'}
-                  </p>
+        {/* Overview Section */}
+        {selectedSection === 'overview' && (
+          <div className="space-y-8 animate-fadeIn">
+            {/* Hero Score Card */}
+            <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-blue-600 via-purple-600 to-pink-600 p-1">
+              <div className="absolute inset-0 bg-gradient-to-br from-blue-400 via-purple-400 to-pink-400 opacity-50 blur-3xl" />
+              <div className="relative rounded-[23px] bg-gray-900/90 backdrop-blur-xl p-8 text-white">
+                <div className="flex items-center justify-between mb-6">
+                  <div>
+                    <h2 className="text-3xl font-bold mb-2">Essay {essayNumber} Score</h2>
+                    <p className="text-blue-200/80 text-lg">{essay.topic}</p>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    {getScoreIcon(result.overallScore)}
+                    <span className="text-lg font-medium bg-white/20 px-4 py-2 rounded-full backdrop-blur">
+                      {getScoreLabel(result.overallScore)}
+                    </span>
+                  </div>
                 </div>
-                {result.feedback.detailedFeedback && (
-                  <div className="grid gap-4 md:grid-cols-2">
-                    <div className="rounded-lg border border-gray-200 dark:border-gray-800 p-4">
-                      <h3 className="mb-2 flex items-center space-x-2 font-semibold">
-                        <span className="text-lg">📝</span>
-                        <span>Task Response</span>
-                      </h3>
-                      <p className="text-sm leading-relaxed text-gray-600 dark:text-gray-400">
-                        {result.feedback.detailedFeedback.taskResponse || 'No feedback available'}
-                      </p>
-                    </div>
-                    <div className="rounded-lg border border-gray-200 dark:border-gray-800 p-4">
-                      <h3 className="mb-2 flex items-center space-x-2 font-semibold">
-                        <span className="text-lg">🔗</span>
-                        <span>Coherence & Cohesion</span>
-                      </h3>
-                      <p className="text-sm leading-relaxed text-gray-600 dark:text-gray-400">
-                        {result.feedback.detailedFeedback.coherence || 'No feedback available'}
-                      </p>
-                    </div>
-                    <div className="rounded-lg border border-gray-200 dark:border-gray-800 p-4">
-                      <h3 className="mb-2 flex items-center space-x-2 font-semibold">
-                        <span className="text-lg">📚</span>
-                        <span>Vocabulary</span>
-                      </h3>
-                      <p className="text-sm leading-relaxed text-gray-600 dark:text-gray-400">
-                        {result.feedback.detailedFeedback.vocabulary || 'No feedback available'}
-                      </p>
-                    </div>
-                    <div className="rounded-lg border border-gray-200 dark:border-gray-800 p-4">
-                      <h3 className="mb-2 flex items-center space-x-2 font-semibold">
-                        <span className="text-lg">✏️</span>
-                        <span>Grammar</span>
-                      </h3>
-                      <p className="text-sm leading-relaxed text-gray-600 dark:text-gray-400">
-                        {result.feedback.detailedFeedback.grammar || 'No feedback available'}
-                      </p>
+                
+                <div className="flex items-center justify-between">
+                  <div className="flex items-baseline gap-4">
+                    <span className="text-7xl font-black">{result.overallScore}</span>
+                    <span className="text-2xl text-blue-200/60">out of 90</span>
+                  </div>
+                  
+                  <div className="text-right">
+                    <p className="text-sm text-blue-200/60 mb-1">Word Count</p>
+                    <p className="text-2xl font-semibold">{essay.wordCount}</p>
+                  </div>
+                </div>
+
+                {/* Quick Stats */}
+                <div className="grid grid-cols-4 gap-4 mt-8 pt-8 border-t border-white/20">
+                  <div>
+                    <p className="text-sm text-blue-200/60 mb-1">Task Response</p>
+                    <p className="text-xl font-semibold">{result.taskResponseScore}/90</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-blue-200/60 mb-1">Coherence</p>
+                    <p className="text-xl font-semibold">{result.coherenceScore}/90</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-blue-200/60 mb-1">Vocabulary</p>
+                    <p className="text-xl font-semibold">{result.vocabularyScore}/90</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-blue-200/60 mb-1">Grammar</p>
+                    <p className="text-xl font-semibold">{result.grammarScore}/90</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Score Breakdown Cards */}
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+              {renderScoreCard(
+                'Task Response',
+                result.taskResponseScore,
+                <Target className="w-5 h-5 text-blue-600" />,
+                '#3b82f6'
+              )}
+              {renderScoreCard(
+                'Coherence & Cohesion',
+                result.coherenceScore,
+                <Link2 className="w-5 h-5 text-purple-600" />,
+                '#9333ea'
+              )}
+              {renderScoreCard(
+                'Vocabulary',
+                result.vocabularyScore,
+                <BookOpen className="w-5 h-5 text-pink-600" />,
+                '#ec4899'
+              )}
+              {renderScoreCard(
+                'Grammar',
+                result.grammarScore,
+                <PenTool className="w-5 h-5 text-orange-600" />,
+                '#f97316'
+              )}
+            </div>
+
+            {/* Summary Card */}
+            {result.feedback?.summary && (
+              <Card className="border-0 shadow-lg overflow-hidden">
+                <CardHeader className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-950/20 dark:to-purple-950/20">
+                  <CardTitle className="flex items-center gap-2">
+                    <Sparkles className="w-5 h-5 text-blue-600" />
+                    AI Summary
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="pt-6">
+                  <p className="text-lg leading-relaxed text-gray-700 dark:text-gray-300">
+                    {result.feedback.summary}
+                  </p>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Strengths & Improvements */}
+            <div className="grid gap-6 md:grid-cols-2">
+              {result.feedback?.strengths && result.feedback.strengths.length > 0 && (
+                <Card className="border-0 shadow-lg overflow-hidden">
+                  <CardHeader className="bg-green-50 dark:bg-green-950/20">
+                    <CardTitle className="flex items-center gap-2 text-green-700 dark:text-green-400">
+                      <CheckCircle2 className="w-5 h-5" />
+                      Strengths
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="pt-6">
+                    <ul className="space-y-3">
+                      {result.feedback.strengths.map((strength, index) => (
+                        <li key={index} className="flex items-start gap-3">
+                          <CheckCircle2 className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
+                          <span className="text-gray-700 dark:text-gray-300">{strength}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </CardContent>
+                </Card>
+              )}
+
+              {result.feedback?.improvements && result.feedback.improvements.length > 0 && (
+                <Card className="border-0 shadow-lg overflow-hidden">
+                  <CardHeader className="bg-amber-50 dark:bg-amber-950/20">
+                    <CardTitle className="flex items-center gap-2 text-amber-700 dark:text-amber-400">
+                      <TrendingUp className="w-5 h-5" />
+                      Areas for Improvement
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="pt-6">
+                    <ul className="space-y-3">
+                      {result.feedback.improvements.map((improvement, index) => (
+                        <li key={index} className="flex items-start gap-3">
+                          <ArrowRight className="w-5 h-5 text-amber-500 mt-0.5 flex-shrink-0" />
+                          <span className="text-gray-700 dark:text-gray-300">{improvement}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </CardContent>
+                </Card>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Detailed Feedback Section */}
+        {selectedSection === 'feedback' && result.feedback?.detailedFeedback && (
+          <div className="space-y-6 animate-fadeIn">
+            <div className="grid gap-6 md:grid-cols-2">
+              {/* Task Response Feedback */}
+              <Card className="border-0 shadow-lg overflow-hidden group hover:shadow-xl transition-all">
+                <CardHeader className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950/20 dark:to-blue-900/20">
+                  <CardTitle className="flex items-center gap-2">
+                    <Target className="w-5 h-5 text-blue-600" />
+                    Task Response
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="pt-6">
+                  <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
+                    {result.feedback.detailedFeedback.taskResponse || 'No specific feedback available.'}
+                  </p>
+                  <div className="mt-4 pt-4 border-t">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-medium text-gray-600 dark:text-gray-400">Score</span>
+                      <span className={`text-2xl font-bold ${getScoreColor(result.taskResponseScore)}`}>
+                        {result.taskResponseScore}/90
+                      </span>
                     </div>
                   </div>
-                )}
-              </>
-            )}
-          </CardContent>
-        </Card>
+                </CardContent>
+              </Card>
 
-        {/* Your Essay */}
-        <Card className="overflow-hidden border-0 shadow-lg">
-          <CardHeader className="bg-gray-50 dark:bg-gray-900/50">
-            <div className="flex items-center justify-between">
-              <CardTitle>Your Essay</CardTitle>
-              <span className="rounded-full bg-gray-200 px-3 py-1 text-sm font-medium dark:bg-gray-800">
-                {essay.wordCount} words
-              </span>
+              {/* Coherence Feedback */}
+              <Card className="border-0 shadow-lg overflow-hidden group hover:shadow-xl transition-all">
+                <CardHeader className="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-950/20 dark:to-purple-900/20">
+                  <CardTitle className="flex items-center gap-2">
+                    <Link2 className="w-5 h-5 text-purple-600" />
+                    Coherence & Cohesion
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="pt-6">
+                  <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
+                    {result.feedback.detailedFeedback.coherence || 'No specific feedback available.'}
+                  </p>
+                  <div className="mt-4 pt-4 border-t">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-medium text-gray-600 dark:text-gray-400">Score</span>
+                      <span className={`text-2xl font-bold ${getScoreColor(result.coherenceScore)}`}>
+                        {result.coherenceScore}/90
+                      </span>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Vocabulary Feedback */}
+              <Card className="border-0 shadow-lg overflow-hidden group hover:shadow-xl transition-all">
+                <CardHeader className="bg-gradient-to-br from-pink-50 to-pink-100 dark:from-pink-950/20 dark:to-pink-900/20">
+                  <CardTitle className="flex items-center gap-2">
+                    <BookOpen className="w-5 h-5 text-pink-600" />
+                    Vocabulary
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="pt-6">
+                  <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
+                    {result.feedback.detailedFeedback.vocabulary || 'No specific feedback available.'}
+                  </p>
+                  <div className="mt-4 pt-4 border-t">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-medium text-gray-600 dark:text-gray-400">Score</span>
+                      <span className={`text-2xl font-bold ${getScoreColor(result.vocabularyScore)}`}>
+                        {result.vocabularyScore}/90
+                      </span>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Grammar Feedback */}
+              <Card className="border-0 shadow-lg overflow-hidden group hover:shadow-xl transition-all">
+                <CardHeader className="bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-950/20 dark:to-orange-900/20">
+                  <CardTitle className="flex items-center gap-2">
+                    <PenTool className="w-5 h-5 text-orange-600" />
+                    Grammar
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="pt-6">
+                  <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
+                    {result.feedback.detailedFeedback.grammar || 'No specific feedback available.'}
+                  </p>
+                  <div className="mt-4 pt-4 border-t">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-medium text-gray-600 dark:text-gray-400">Score</span>
+                      <span className={`text-2xl font-bold ${getScoreColor(result.grammarScore)}`}>
+                        {result.grammarScore}/90
+                      </span>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
             </div>
-          </CardHeader>
-          <CardContent className="p-6">
-            <p className="whitespace-pre-wrap rounded-lg bg-gray-50 dark:bg-gray-900/50 p-6 text-base leading-relaxed">
-              {essay.content}
-            </p>
-          </CardContent>
-        </Card>
+
+            {/* Suggestions */}
+            {result.suggestions && result.suggestions.length > 0 && (
+              <Card className="border-0 shadow-lg overflow-hidden">
+                <CardHeader className="bg-gradient-to-r from-indigo-50 to-blue-50 dark:from-indigo-950/20 dark:to-blue-950/20">
+                  <CardTitle className="flex items-center gap-2">
+                    <Zap className="w-5 h-5 text-indigo-600" />
+                    Actionable Suggestions
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="pt-6">
+                  <div className="space-y-4">
+                    {result.suggestions.map((suggestion, index) => (
+                      <div key={index} className="flex items-start gap-3 p-4 rounded-lg bg-gray-50 dark:bg-gray-900/50">
+                        <span className="flex-shrink-0 w-8 h-8 bg-indigo-100 dark:bg-indigo-900/50 rounded-full flex items-center justify-center text-sm font-semibold text-indigo-600 dark:text-indigo-400">
+                          {index + 1}
+                        </span>
+                        <p className="text-gray-700 dark:text-gray-300">{suggestion}</p>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+          </div>
+        )}
+
+        {/* Essay Section */}
+        {selectedSection === 'essay' && (
+          <div className="animate-fadeIn">
+            <Card className="border-0 shadow-lg overflow-hidden">
+              <CardHeader className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle className="text-2xl">Your Essay</CardTitle>
+                    <CardDescription className="mt-2 text-base">{essay.topic}</CardDescription>
+                  </div>
+                  <div className="flex items-center gap-4">
+                    <div className="text-right">
+                      <p className="text-sm text-gray-600 dark:text-gray-400">Word Count</p>
+                      <p className="text-xl font-semibold">{essay.wordCount}</p>
+                    </div>
+                    <Button variant="outline" size="sm" className="flex items-center gap-2">
+                      <Download className="w-4 h-4" />
+                      Export
+                    </Button>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent className="pt-8 pb-8">
+                <div className="prose prose-lg dark:prose-invert max-w-none">
+                  <p className="whitespace-pre-wrap leading-relaxed text-gray-700 dark:text-gray-300">
+                    {essay.content}
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
       </div>
     );
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-950 dark:to-slate-900 py-8">
-      <div className="mx-auto max-w-6xl px-4 space-y-8">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-              Essay Results
-            </h1>
-            <p className="mt-2 text-lg text-gray-600 dark:text-gray-400">
-              {essay2 ? 'Complete assessment for both essays' : 'Complete assessment for your essay'}
-            </p>
-          </div>
-          <div className="flex gap-3">
-            <Link href="/dashboard/history">
-              <Button variant="outline" className="flex items-center space-x-2">
-                <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                <span>View History</span>
-              </Button>
-            </Link>
-            <Link href="/dashboard">
-              <Button className="bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:from-blue-700 hover:to-purple-700">
-                Write Another Essay
-              </Button>
-            </Link>
-          </div>
-        </div>
-
-        {/* Navigation tabs for 2 essays */}
-        {essay2 && (
-          <div className="flex rounded-lg bg-white dark:bg-gray-950 p-1 shadow-lg">
-            <Button
-              variant={currentView === 'essay1' ? 'default' : 'ghost'}
-              className={`flex-1 rounded-md transition-all ${
-                currentView === 'essay1' 
-                  ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-md' 
-                  : 'hover:bg-gray-100 dark:hover:bg-gray-800'
-              }`}
-              onClick={() => setCurrentView('essay1')}
-            >
-              Essay 1
-            </Button>
-            <Button
-              variant={currentView === 'essay2' ? 'default' : 'ghost'}
-              className={`flex-1 rounded-md transition-all ${
-                currentView === 'essay2' 
-                  ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-md' 
-                  : 'hover:bg-gray-100 dark:hover:bg-gray-800'
-              }`}
-              onClick={() => setCurrentView('essay2')}
-            >
-              Essay 2
-            </Button>
-            <Button
-              variant={currentView === 'both' ? 'default' : 'ghost'}
-              className={`flex-1 rounded-md transition-all ${
-                currentView === 'both' 
-                  ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-md' 
-                  : 'hover:bg-gray-100 dark:hover:bg-gray-800'
-              }`}
-              onClick={() => setCurrentView('both')}
-            >
-              Combined Results
-            </Button>
-          </div>
-        )}
-
-      {/* Display based on current view */}
-      {currentView === 'essay1' && essay1 && renderEssayResults(essay1, result1, 1)}
-      {currentView === 'essay2' && essay2 && renderEssayResults(essay2, result2, 2)}
-      {currentView === 'both' && essay2 && (
-        <div className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Combined Results</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-2 gap-6 text-center">
-                <div>
-                  <h3 className="font-semibold mb-2">Essay 1</h3>
-                  <div className={`text-4xl font-bold ${getScoreColor(result1?.overallScore || 0)}`}>
-                    {result1?.overallScore || 0}/90
-                  </div>
-                  <p className="text-sm text-muted-foreground mt-1">{essay1?.topic}</p>
-                </div>
-                <div>
-                  <h3 className="font-semibold mb-2">Essay 2</h3>
-                  <div className={`text-4xl font-bold ${getScoreColor(result2?.overallScore || 0)}`}>
-                    {result2?.overallScore || 0}/90
-                  </div>
-                  <p className="text-sm text-muted-foreground mt-1">{essay2?.topic}</p>
-                </div>
-              </div>
-              <div className="mt-4 pt-4 border-t text-center">
-                <p className="text-sm text-muted-foreground">Average Score</p>
-                <div className={`text-2xl font-bold ${getScoreColor(((result1?.overallScore || 0) + (result2?.overallScore || 0)) / 2)}`}>
-                  {Math.round(((result1?.overallScore || 0) + (result2?.overallScore || 0)) / 2)}/90
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      )}
-
-        {/* Show essay 1 results if only 1 essay */}
-        {!essay2 && essay1 && renderEssayResults(essay1, result1, 1)}
+    <div className="min-h-screen bg-gradient-to-b from-gray-50 via-white to-gray-50 dark:from-gray-950 dark:via-gray-900 dark:to-gray-950">
+      {/* Animated background elements */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute -top-40 -right-40 w-80 h-80 bg-purple-300 dark:bg-purple-900 rounded-full mix-blend-multiply dark:mix-blend-screen filter blur-3xl opacity-20 animate-float" />
+        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-blue-300 dark:bg-blue-900 rounded-full mix-blend-multiply dark:mix-blend-screen filter blur-3xl opacity-20 animate-float-delayed" />
       </div>
+
+      <div className="relative z-10 px-4 py-8 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-7xl">
+          {/* Header */}
+          <div className="mb-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div>
+              <h1 className="text-4xl sm:text-5xl font-bold bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-400 bg-clip-text text-transparent">
+                Essay Analysis Results
+              </h1>
+              <p className="mt-2 text-lg text-gray-600 dark:text-gray-400">
+                Comprehensive feedback powered by AI
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-3">
+              <Button variant="outline" className="flex items-center gap-2">
+                <Share2 className="w-4 h-4" />
+                Share
+              </Button>
+              <Link href="/dashboard/history">
+                <Button variant="outline" className="flex items-center gap-2">
+                  <Clock className="w-4 h-4" />
+                  History
+                </Button>
+              </Link>
+              <Link href="/dashboard">
+                <Button className="bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:from-blue-700 hover:to-purple-700 flex items-center gap-2">
+                  <PenTool className="w-4 h-4" />
+                  Write New Essay
+                </Button>
+              </Link>
+            </div>
+          </div>
+
+          {/* Navigation tabs for multiple essays */}
+          {essay2 && (
+            <div className="mb-8 p-1 bg-white dark:bg-gray-900 rounded-2xl shadow-lg">
+              <div className="grid grid-cols-3 gap-1">
+                {[
+                  { value: 'essay1', label: 'Essay 1' },
+                  { value: 'essay2', label: 'Essay 2' },
+                  { value: 'both', label: 'Compare' }
+                ].map((tab) => (
+                  <button
+                    key={tab.value}
+                    onClick={() => setCurrentView(tab.value as any)}
+                    className={`relative px-6 py-3 rounded-xl font-medium transition-all duration-300 ${
+                      currentView === tab.value
+                        ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg scale-105'
+                        : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100'
+                    }`}
+                  >
+                    {tab.label}
+                    {currentView === tab.value && (
+                      <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 opacity-20 blur-xl" />
+                    )}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Content based on view */}
+          {currentView === 'essay1' && essay1 && renderEssayResults(essay1, result1, 1)}
+          {currentView === 'essay2' && essay2 && renderEssayResults(essay2, result2, 2)}
+          
+          {/* Comparison View */}
+          {currentView === 'both' && essay2 && (
+            <div className="space-y-8 animate-fadeIn">
+              <div className="grid gap-6 lg:grid-cols-2">
+                {/* Essay 1 Summary */}
+                <Card className="border-0 shadow-lg overflow-hidden">
+                  <CardHeader className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950/20 dark:to-blue-900/20">
+                    <CardTitle className="flex items-center justify-between">
+                      <span>Essay 1</span>
+                      {result1 && getScoreIcon(result1.overallScore)}
+                    </CardTitle>
+                    <CardDescription>{essay1.topic}</CardDescription>
+                  </CardHeader>
+                  <CardContent className="pt-6">
+                    <div className="text-center">
+                      <div className={`text-5xl font-bold mb-2 ${result1 ? getScoreColor(result1.overallScore) : ''}`}>
+                        {result1?.overallScore || 0}/90
+                      </div>
+                      <p className="text-lg font-medium text-gray-600 dark:text-gray-400">
+                        {result1 ? getScoreLabel(result1.overallScore) : 'Processing...'}
+                      </p>
+                    </div>
+                    {result1 && (
+                      <div className="grid grid-cols-2 gap-4 mt-6 pt-6 border-t">
+                        <div>
+                          <p className="text-sm text-gray-600 dark:text-gray-400">Task Response</p>
+                          <p className="text-lg font-semibold">{result1.taskResponseScore}/90</p>
+                        </div>
+                        <div>
+                          <p className="text-sm text-gray-600 dark:text-gray-400">Coherence</p>
+                          <p className="text-lg font-semibold">{result1.coherenceScore}/90</p>
+                        </div>
+                        <div>
+                          <p className="text-sm text-gray-600 dark:text-gray-400">Vocabulary</p>
+                          <p className="text-lg font-semibold">{result1.vocabularyScore}/90</p>
+                        </div>
+                        <div>
+                          <p className="text-sm text-gray-600 dark:text-gray-400">Grammar</p>
+                          <p className="text-lg font-semibold">{result1.grammarScore}/90</p>
+                        </div>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+
+                {/* Essay 2 Summary */}
+                <Card className="border-0 shadow-lg overflow-hidden">
+                  <CardHeader className="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-950/20 dark:to-purple-900/20">
+                    <CardTitle className="flex items-center justify-between">
+                      <span>Essay 2</span>
+                      {result2 && getScoreIcon(result2.overallScore)}
+                    </CardTitle>
+                    <CardDescription>{essay2.topic}</CardDescription>
+                  </CardHeader>
+                  <CardContent className="pt-6">
+                    <div className="text-center">
+                      <div className={`text-5xl font-bold mb-2 ${result2 ? getScoreColor(result2.overallScore) : ''}`}>
+                        {result2?.overallScore || 0}/90
+                      </div>
+                      <p className="text-lg font-medium text-gray-600 dark:text-gray-400">
+                        {result2 ? getScoreLabel(result2.overallScore) : 'Processing...'}
+                      </p>
+                    </div>
+                    {result2 && (
+                      <div className="grid grid-cols-2 gap-4 mt-6 pt-6 border-t">
+                        <div>
+                          <p className="text-sm text-gray-600 dark:text-gray-400">Task Response</p>
+                          <p className="text-lg font-semibold">{result2.taskResponseScore}/90</p>
+                        </div>
+                        <div>
+                          <p className="text-sm text-gray-600 dark:text-gray-400">Coherence</p>
+                          <p className="text-lg font-semibold">{result2.coherenceScore}/90</p>
+                        </div>
+                        <div>
+                          <p className="text-sm text-gray-600 dark:text-gray-400">Vocabulary</p>
+                          <p className="text-lg font-semibold">{result2.vocabularyScore}/90</p>
+                        </div>
+                        <div>
+                          <p className="text-sm text-gray-600 dark:text-gray-400">Grammar</p>
+                          <p className="text-lg font-semibold">{result2.grammarScore}/90</p>
+                        </div>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* Comparison Chart */}
+              {result1 && result2 && (
+                <Card className="border-0 shadow-lg overflow-hidden">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <BarChart3 className="w-5 h-5 text-blue-600" />
+                      Score Comparison
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-6">
+                      {[
+                        { label: 'Overall Score', score1: result1.overallScore, score2: result2.overallScore },
+                        { label: 'Task Response', score1: result1.taskResponseScore, score2: result2.taskResponseScore },
+                        { label: 'Coherence', score1: result1.coherenceScore, score2: result2.coherenceScore },
+                        { label: 'Vocabulary', score1: result1.vocabularyScore, score2: result2.vocabularyScore },
+                        { label: 'Grammar', score1: result1.grammarScore, score2: result2.grammarScore }
+                      ].map((item, index) => (
+                        <div key={index}>
+                          <div className="flex items-center justify-between mb-2">
+                            <span className="font-medium">{item.label}</span>
+                            <div className="flex items-center gap-4 text-sm">
+                              <span className={`font-semibold ${getScoreColor(item.score1)}`}>
+                                Essay 1: {item.score1}
+                              </span>
+                              <span className={`font-semibold ${getScoreColor(item.score2)}`}>
+                                Essay 2: {item.score2}
+                              </span>
+                            </div>
+                          </div>
+                          <div className="relative h-8 bg-gray-200 dark:bg-gray-800 rounded-lg overflow-hidden">
+                            <div 
+                              className={`absolute top-0 left-0 h-4 bg-gradient-to-r ${getScoreGradient(item.score1)} opacity-70`}
+                              style={{ width: `${(item.score1 / 90) * 100}%` }}
+                            />
+                            <div 
+                              className={`absolute bottom-0 left-0 h-4 bg-gradient-to-r ${getScoreGradient(item.score2)} opacity-70`}
+                              style={{ width: `${(item.score2 / 90) * 100}%` }}
+                            />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    
+                    <div className="mt-8 pt-8 border-t text-center">
+                      <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">Average Score</p>
+                      <div className={`text-3xl font-bold ${
+                        getScoreColor(Math.round((result1.overallScore + result2.overallScore) / 2))
+                      }`}>
+                        {Math.round((result1.overallScore + result2.overallScore) / 2)}/90
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+            </div>
+          )}
+
+          {/* Show single essay results if no comparison */}
+          {!essay2 && essay1 && renderEssayResults(essay1, result1, 1)}
+        </div>
+      </div>
+
+      <style jsx>{`
+        @keyframes float {
+          0%, 100% {
+            transform: translateY(0) translateX(0);
+          }
+          33% {
+            transform: translateY(-30px) translateX(20px);
+          }
+          66% {
+            transform: translateY(20px) translateX(-10px);
+          }
+        }
+        
+        @keyframes float-delayed {
+          0%, 100% {
+            transform: translateY(0) translateX(0);
+          }
+          33% {
+            transform: translateY(20px) translateX(-20px);
+          }
+          66% {
+            transform: translateY(-20px) translateX(10px);
+          }
+        }
+        
+        .animate-float {
+          animation: float 15s ease-in-out infinite;
+        }
+        
+        .animate-float-delayed {
+          animation: float-delayed 20s ease-in-out infinite;
+          animation-delay: 5s;
+        }
+        
+        @keyframes fadeIn {
+          from {
+            opacity: 0;
+            transform: translateY(10px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        
+        .animate-fadeIn {
+          animation: fadeIn 0.5s ease-out;
+        }
+      `}</style>
     </div>
   );
 }
