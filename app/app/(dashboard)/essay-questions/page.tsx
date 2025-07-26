@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { GlassCard, GlassCardContent, GlassCardDescription, GlassCardHeader, GlassCardTitle } from '@/components/ui/glass-card';
 import { Button } from '@/components/ui/button';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
@@ -78,50 +78,49 @@ export default function EssayQuestionsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background py-8">
-      <div className="mx-auto max-w-4xl px-4 space-y-8">
+    <div className="w-full space-y-8">
         {/* Header */}
         <div className="text-center space-y-2">
-          <h1 className="text-4xl font-bold">PTE Essay Questions</h1>
-          <p className="text-lg text-muted-foreground">
+          <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent animate-gradient">PTE Essay Questions</h1>
+          <p className="text-lg text-gray-300">
             Choose one topic from the list below. You'll have 20 minutes to write a 200-300 word essay.
           </p>
         </div>
 
         {/* Topics */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Available Essay Topics</CardTitle>
-            <CardDescription>
+        <GlassCard variant="gradient">
+          <GlassCardHeader>
+            <GlassCardTitle className="text-xl">Available Essay Topics</GlassCardTitle>
+            <GlassCardDescription className="text-gray-300">
               Select a topic that you feel most comfortable writing about
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
+            </GlassCardDescription>
+          </GlassCardHeader>
+          <GlassCardContent>
             <RadioGroup value={selectedTopic} onValueChange={setSelectedTopic}>
               <div className="space-y-4">
                 {PTE_ESSAY_TOPICS.map((topic) => (
                   <div key={topic.id} className="relative">
-                    <div className="flex items-start space-x-3 p-4 rounded-lg border hover:bg-accent cursor-pointer transition-colors">
+                    <div className="flex items-start space-x-3 p-4 rounded-lg border border-white/10 hover:bg-white/5 cursor-pointer transition-all duration-200 backdrop-blur-sm">
                       <RadioGroupItem value={topic.id} id={topic.id} className="mt-1" />
                       <Label htmlFor={topic.id} className="flex-1 cursor-pointer">
                         <div className="space-y-2">
                           <div className="flex items-center gap-2 flex-wrap">
-                            <span className="font-semibold">{topic.title}</span>
-                            <span className="text-xs bg-primary/10 text-primary px-2 py-1 rounded">
+                            <span className="font-semibold text-white">{topic.title}</span>
+                            <span className="text-xs bg-blue-500/20 text-blue-400 px-2 py-1 rounded">
                               {topic.category}
                             </span>
-                            <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded">
+                            <span className="text-xs bg-green-500/20 text-green-400 px-2 py-1 rounded">
                               {topic.frequency} frequency
                             </span>
                             <span className={`text-xs px-2 py-1 rounded ${
-                              topic.difficulty === 'EASY' ? 'bg-blue-100 text-blue-800' :
-                              topic.difficulty === 'MEDIUM' ? 'bg-yellow-100 text-yellow-800' :
-                              'bg-red-100 text-red-800'
+                              topic.difficulty === 'EASY' ? 'bg-blue-500/20 text-blue-400' :
+                              topic.difficulty === 'MEDIUM' ? 'bg-yellow-500/20 text-yellow-400' :
+                              'bg-red-500/20 text-red-400'
                             }`}>
                               {topic.difficulty}
                             </span>
                           </div>
-                          <p className="text-sm text-muted-foreground leading-relaxed">
+                          <p className="text-sm text-gray-300 leading-relaxed">
                             {topic.description}
                           </p>
                         </div>
@@ -131,8 +130,8 @@ export default function EssayQuestionsPage() {
                 ))}
               </div>
             </RadioGroup>
-          </CardContent>
-        </Card>
+          </GlassCardContent>
+        </GlassCard>
 
         {/* Action Button */}
         <div className="flex justify-center">
@@ -140,26 +139,25 @@ export default function EssayQuestionsPage() {
             size="lg" 
             onClick={handleStartEssay}
             disabled={!selectedTopic || isLoading}
-            className="min-w-[200px]"
+            className="min-w-[200px] bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white"
           >
             {isLoading ? 'Loading...' : 'Start Writing Essay'}
           </Button>
         </div>
 
         {/* Instructions */}
-        <Card className="bg-muted/50">
-          <CardHeader>
-            <CardTitle className="text-lg">Essay Writing Guidelines</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-2 text-sm">
+        <GlassCard variant="default">
+          <GlassCardHeader>
+            <GlassCardTitle className="text-lg">Essay Writing Guidelines</GlassCardTitle>
+          </GlassCardHeader>
+          <GlassCardContent className="space-y-2 text-sm text-gray-300">
             <p>• You will have <strong>20 minutes</strong> to complete your essay</p>
             <p>• Your essay must be between <strong>200-300 words</strong></p>
             <p>• The timer will start automatically when you begin typing</p>
             <p>• Your essay will be evaluated on task response, coherence, vocabulary, and grammar</p>
             <p>• Make sure to address all parts of the question</p>
-          </CardContent>
-        </Card>
-      </div>
+          </GlassCardContent>
+        </GlassCard>
     </div>
   );
 }

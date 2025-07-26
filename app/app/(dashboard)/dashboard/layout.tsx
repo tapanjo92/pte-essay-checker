@@ -8,9 +8,10 @@ import { Amplify } from 'aws-amplify';
 import amplifyConfig from '@/amplify_outputs.json';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { FileText, PenTool, List, User, Menu, X } from 'lucide-react';
+import { FileText, PenTool, List, User, Menu, X, Sparkles } from 'lucide-react';
 import { initializeUserIfNeeded } from '@/lib/user-init';
 import { createTracedClient } from '@/lib/xray-client';
+import { GradientBackground } from '@/components/ui/gradient-background';
 
 const client = createTracedClient();
 
@@ -26,6 +27,7 @@ export default function DashboardLayout({
   const [loading, setLoading] = useState(true);
   const [initialized, setInitialized] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [userSubscription, setUserSubscription] = useState<any>(null);
 
   useEffect(() => {
     checkAuth();
@@ -75,6 +77,16 @@ export default function DashboardLayout({
           if (userResult.data) {
             setUserData(userResult.data);
             console.log('User data loaded:', userResult.data);
+            
+            // Load subscription data
+            if (userResult.data.subscriptionId) {
+              const subResult = await client.models.UserSubscription.get({ 
+                id: userResult.data.subscriptionId 
+              });
+              if (subResult.data) {
+                setUserSubscription(subResult.data);
+              }
+            }
           }
         } catch (err) {
           console.error('Error loading user data:', err);
@@ -115,11 +127,22 @@ export default function DashboardLayout({
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <header className="border-b">
+    <GradientBackground variant="subtle">
+      <header className="sticky top-0 z-50 border-b border-white/10 bg-black/50 backdrop-blur-xl backdrop-saturate-150">
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-between py-4">
-            <h1 className="text-xl md:text-2xl font-bold">PTE Essay Checker</h1>
+            <div className="flex items-center gap-3">
+              <h1 className="text-xl md:text-2xl font-bold bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent animate-gradient">PTE Essay Checker</h1>
+              {userSubscription && (
+                <span className="hidden md:inline-flex items-center gap-1.5 px-3 py-1 text-xs font-medium bg-blue-500/10 text-blue-400 border border-blue-500/20 rounded-full">
+                  <span className="relative flex h-2 w-2">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span>
+                  </span>
+                  {userSubscription.essaysRemaining} essays remaining
+                </span>
+              )}
+            </div>
             <div className="flex items-center gap-2 md:gap-4">
               <Link href="/dashboard/profile" className="hidden md:block">
                 <Button variant="ghost" size="sm" className="flex items-center gap-2">
@@ -130,7 +153,11 @@ export default function DashboardLayout({
                   }
                 </Button>
               </Link>
-              <Button variant="outline" onClick={handleSignOut} className="hidden md:block">
+              <Button 
+                variant="outline" 
+                onClick={handleSignOut} 
+                className="hidden md:block border-white/10 hover:bg-white/10 text-white backdrop-blur-sm"
+              >
                 Sign Out
               </Button>
               <Button 
@@ -145,14 +172,14 @@ export default function DashboardLayout({
             </div>
           </div>
           {/* Desktop Navigation */}
-          <nav className="hidden md:flex gap-6 border-t pt-2">
+          <nav id="navigation" className="hidden md:flex gap-2 border-t border-white/10 pt-2">
             <Link href="/essay-questions">
               <Button 
                 variant="ghost" 
-                className={`flex items-center gap-2 rounded-none border-b-2 ${
+                className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all ${
                   pathname === '/essay-questions' 
-                    ? 'border-primary text-primary' 
-                    : 'border-transparent text-muted-foreground hover:text-foreground'
+                    ? 'bg-white/10 text-white backdrop-blur-sm' 
+                    : 'text-gray-400 hover:text-white hover:bg-white/5'
                 }`}
               >
                 <List className="h-4 w-4" />
@@ -162,10 +189,10 @@ export default function DashboardLayout({
             <Link href="/dashboard">
               <Button 
                 variant="ghost" 
-                className={`flex items-center gap-2 rounded-none border-b-2 ${
+                className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all ${
                   pathname === '/dashboard' 
-                    ? 'border-primary text-primary' 
-                    : 'border-transparent text-muted-foreground hover:text-foreground'
+                    ? 'bg-white/10 text-white backdrop-blur-sm' 
+                    : 'text-gray-400 hover:text-white hover:bg-white/5'
                 }`}
               >
                 <PenTool className="h-4 w-4" />
@@ -175,10 +202,10 @@ export default function DashboardLayout({
             <Link href="/dashboard/history">
               <Button 
                 variant="ghost" 
-                className={`flex items-center gap-2 rounded-none border-b-2 ${
+                className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all ${
                   pathname === '/dashboard/history' 
-                    ? 'border-primary text-primary' 
-                    : 'border-transparent text-muted-foreground hover:text-foreground'
+                    ? 'bg-white/10 text-white backdrop-blur-sm' 
+                    : 'text-gray-400 hover:text-white hover:bg-white/5'
                 }`}
               >
                 <FileText className="h-4 w-4" />
@@ -251,9 +278,11 @@ export default function DashboardLayout({
           )}
         </div>
       </header>
-      <main className="container mx-auto px-4 py-8">
-        {children}
+      <main id="main-content" className="relative z-10 w-full">
+        <div className="container mx-auto max-w-7xl px-4 py-8 md:px-6 lg:px-8">
+          {children}
+        </div>
       </main>
-    </div>
+    </GradientBackground>
   );
 }

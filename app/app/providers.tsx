@@ -18,10 +18,15 @@ export function Providers({ children }: { children: React.ReactNode }) {
       Amplify.configure(amplifyConfig);
     }
     setIsConfigured(true);
+    
+    // Enable dark mode by default
+    document.documentElement.classList.add('dark');
   }, []);
 
   if (!isConfigured) {
-    return <div>Loading...</div>;
+    return <div className="min-h-screen bg-gray-950 flex items-center justify-center">
+      <div className="text-lg text-gray-300">Loading...</div>
+    </div>;
   }
 
   return (

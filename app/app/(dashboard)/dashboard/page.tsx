@@ -3,11 +3,12 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { GlassCard, GlassCardContent, GlassCardDescription, GlassCardHeader, GlassCardTitle } from '@/components/ui/glass-card';
 import { getCurrentUser } from 'aws-amplify/auth';
 import { toast } from 'sonner';
 import { createTracedClient } from '@/lib/xray-client';
 import { useNetworkStatus, retryWithBackoff, isNetworkError } from '@/lib/network-utils';
+import { WelcomeModal } from '@/components/ui/welcome-modal';
 
 const ESSAY_TOPICS = [
   {
@@ -50,8 +51,65 @@ export default function DashboardPage() {
   const [hasStartedWriting, setHasStartedWriting] = useState(false);
   const [essay1Completed, setEssay1Completed] = useState(false);
   
+  // Welcome modal state
+  const [showWelcomeModal, setShowWelcomeModal] = useState(false);
+  const [userData, setUserData] = useState<any>(null);
+  const [userSubscription, setUserSubscription] = useState<any>(null);
+  const [authChecking, setAuthChecking] = useState(true);
+  
   // Initialize Amplify client inside component
   const client = createTracedClient();
+
+  // Load user data and check for first visit
+  useEffect(() => {
+    let hasShownWelcome = false;
+    
+    const loadUserData = async () => {
+      try {
+        const currentUser = await getCurrentUser();
+        const userResult = await client.models.User.get({ id: currentUser.userId });
+        
+        if (userResult.data) {
+          setUserData(userResult.data);
+          
+          // Check if user has a subscription
+          if (userResult.data.subscriptionId) {
+            const subResult = await client.models.UserSubscription.get({ 
+              id: userResult.data.subscriptionId 
+            });
+            if (subResult.data) {
+              setUserSubscription(subResult.data);
+            }
+          }
+          
+          // Check if this is the first visit
+          const welcomeShown = localStorage.getItem('welcome-modal-shown');
+          if (!welcomeShown && userResult.data && !hasShownWelcome) {
+            hasShownWelcome = true;
+            setShowWelcomeModal(true);
+            // Show welcome toast only once
+            toast.success(`Welcome to PTE Essay Checker, ${userResult.data.firstName || 'there'}! 🎉`, {
+              duration: 5000,
+            });
+          }
+        }
+      } catch (error) {
+        // Check if it's an authentication error
+        if (error instanceof Error && 
+            (error.name === 'UserUnAuthenticatedException' || 
+             error.message.includes('User needs to be authenticated'))) {
+          console.log('User not authenticated in dashboard, redirecting...');
+          router.push('/auth');
+          return;
+        }
+        console.error('Error loading user data:', error);
+      } finally {
+        setAuthChecking(false);
+      }
+    };
+    
+    loadUserData();
+  }, []); // Remove client from dependencies
 
   // Load draft on mount
   useEffect(() => {
@@ -388,8 +446,31 @@ export default function DashboardPage() {
     }
   };
 
+  const handleCloseWelcome = () => {
+    setShowWelcomeModal(false);
+    localStorage.setItem('welcome-modal-shown', 'true');
+  };
+
+  // Show loading state while checking authentication
+  if (authChecking) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <div className="text-lg">Loading...</div>
+      </div>
+    );
+  }
+
   return (
-    <div className="mx-auto max-w-4xl space-y-6">
+    <>
+      {/* Welcome Modal */}
+      <WelcomeModal
+        isOpen={showWelcomeModal}
+        onClose={handleCloseWelcome}
+        userName={userData?.firstName}
+        essaysRemaining={userSubscription?.essaysRemaining || 5}
+      />
+      
+      <div className="w-full space-y-6">
       {/* Offline indicator */}
       {!isOnline && (
         <div className="rounded-md bg-yellow-50 dark:bg-yellow-900/20 p-3 text-sm text-yellow-600 dark:text-yellow-400 flex items-center gap-2">
@@ -402,8 +483,8 @@ export default function DashboardPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-3xl font-bold">PTE Essay Writing Task</h2>
-          <p className="mt-2 text-muted-foreground">
+          <h2 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent animate-gradient">PTE Essay Writing Task</h2>
+          <p className="mt-2 text-gray-300">
             {totalEssays > 1 ? `Essay ${currentEssayNumber} of ${totalEssays} •` : ''} Write 200-300 words • 20 minutes per essay
           </p>
         </div>
@@ -444,36 +525,36 @@ export default function DashboardPage() {
       {/* Progress indicator - only show for 2 essays */}
       {totalEssays > 1 && (
         <div className="flex gap-2">
-          <div className={`flex-1 h-2 rounded-full ${
-            currentEssayNumber >= 1 || essay1Completed ? 'bg-primary' : 'bg-muted'
+          <div className={`flex-1 h-2 rounded-full transition-all duration-500 ${
+            currentEssayNumber >= 1 || essay1Completed ? 'bg-gradient-to-r from-blue-500 to-purple-500' : 'bg-white/10'
           }`} />
-          <div className={`flex-1 h-2 rounded-full ${
-            currentEssayNumber >= 2 || essay1Completed ? 'bg-primary' : 'bg-muted'
+          <div className={`flex-1 h-2 rounded-full transition-all duration-500 ${
+            currentEssayNumber >= 2 || essay1Completed ? 'bg-gradient-to-r from-purple-500 to-pink-500' : 'bg-white/10'
           }`} />
         </div>
       )}
 
       {/* Topic Card */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Essay Topic{totalEssays > 1 ? ` ${currentEssayNumber}` : ''}</CardTitle>
-          <CardDescription>Read the topic carefully before you start writing</CardDescription>
-        </CardHeader>
-        <CardContent>
+      <GlassCard variant="gradient">
+        <GlassCardHeader>
+          <GlassCardTitle className="text-xl">Essay Topic{totalEssays > 1 ? ` ${currentEssayNumber}` : ''}</GlassCardTitle>
+          <GlassCardDescription className="text-gray-400">Read the topic carefully before you start writing</GlassCardDescription>
+        </GlassCardHeader>
+        <GlassCardContent>
           <div className="space-y-2">
             <h3 className="font-semibold">{selectedTopic.title}</h3>
             <p className="text-sm text-muted-foreground">{selectedTopic.description}</p>
           </div>
-        </CardContent>
-      </Card>
+        </GlassCardContent>
+      </GlassCard>
 
       {/* Writing Area */}
-      <Card>
-        <CardHeader>
+      <GlassCard>
+        <GlassCardHeader>
           <div className="flex items-start justify-between">
             <div>
-              <CardTitle>Write Your Essay</CardTitle>
-              <CardDescription>
+              <GlassCardTitle className="text-xl">Write Your Essay</GlassCardTitle>
+              <GlassCardDescription className="text-gray-400">
                 <span
                   role="status"
                   aria-live="polite"
@@ -484,7 +565,7 @@ export default function DashboardPage() {
                   {wordCount < 200 && wordCount > 0 && ' (Too short)'}
                   {wordCount > 300 && ' (Too long)'}
                 </span>
-              </CardDescription>
+              </GlassCardDescription>
             </div>
             {lastSaved && (
               <p className="text-xs text-muted-foreground">
@@ -492,10 +573,10 @@ export default function DashboardPage() {
               </p>
             )}
           </div>
-        </CardHeader>
-        <CardContent>
+        </GlassCardHeader>
+        <GlassCardContent>
           <textarea
-            className="min-h-[300px] md:min-h-[400px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-ring"
+            className="min-h-[300px] md:min-h-[400px] w-full rounded-lg border border-white/10 bg-white/5 px-4 py-3 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent text-white placeholder-gray-400 backdrop-blur-sm transition-all"
             placeholder="Start writing your essay here... (Timer will start when you begin typing)"
             value={essayContent}
             onChange={handleContentChange}
@@ -531,7 +612,7 @@ export default function DashboardPage() {
               <Button
               onClick={handleSubmit}
               disabled={isSubmitting || wordCount < 200 || wordCount > 300}
-              className={`${timeRemaining === 0 ? 'animate-pulse' : ''} min-h-[44px]`}
+              className={`${timeRemaining === 0 ? 'animate-pulse' : ''} min-h-[44px] bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white`}
               aria-label={isSubmitting ? 'Submitting essay' : 'Submit essay for grading'}
               aria-busy={isSubmitting}
             >
@@ -541,8 +622,9 @@ export default function DashboardPage() {
             </Button>
             </div>
           </div>
-        </CardContent>
-      </Card>
+        </GlassCardContent>
+      </GlassCard>
     </div>
+    </>
   );
 }

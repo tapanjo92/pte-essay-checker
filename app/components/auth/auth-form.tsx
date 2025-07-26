@@ -6,6 +6,7 @@ import { signIn, signUp, confirmSignUp } from 'aws-amplify/auth';
 import { Button } from '@/components/ui/button';
 import { Amplify } from 'aws-amplify';
 import amplifyConfig from '@/amplify_outputs.json';
+import { usePrefersReducedMotion } from '@/lib/motion-safe';
 import { 
   Mail, 
   Lock, 
@@ -49,14 +50,17 @@ export function AuthForm() {
 
   // Add floating animation
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+  const prefersReducedMotion = usePrefersReducedMotion();
   
   useEffect(() => {
+    if (prefersReducedMotion) return;
+    
     const handleMouseMove = (e: MouseEvent) => {
       setMousePosition({ x: e.clientX, y: e.clientY });
     };
     window.addEventListener('mousemove', handleMouseMove);
     return () => window.removeEventListener('mousemove', handleMouseMove);
-  }, []);
+  }, [prefersReducedMotion]);
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -177,9 +181,9 @@ export function AuthForm() {
         }} />
 
         {/* Floating gradient orbs */}
-        <div className="absolute top-20 left-10 w-72 h-72 bg-blue-500 rounded-full mix-blend-screen filter blur-[128px] opacity-30 animate-float" />
-        <div className="absolute bottom-20 right-10 w-96 h-96 bg-purple-500 rounded-full mix-blend-screen filter blur-[128px] opacity-30 animate-float-delayed" />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 h-80 bg-pink-500 rounded-full mix-blend-screen filter blur-[128px] opacity-30 animate-float-slow" />
+        <div className={`absolute top-20 left-10 w-72 h-72 bg-blue-500 rounded-full mix-blend-screen filter blur-[128px] opacity-30 ${!prefersReducedMotion && 'animate-float'}`} />
+        <div className={`absolute bottom-20 right-10 w-96 h-96 bg-purple-500 rounded-full mix-blend-screen filter blur-[128px] opacity-30 ${!prefersReducedMotion && 'animate-float-delayed'}`} />
+        <div className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 h-80 bg-pink-500 rounded-full mix-blend-screen filter blur-[128px] opacity-30 ${!prefersReducedMotion && 'animate-float-slow'}`} />
       </div>
 
       {/* Main content */}
