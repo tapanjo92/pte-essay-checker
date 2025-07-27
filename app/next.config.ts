@@ -1,16 +1,9 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  // WebSocket configuration for remote development
-  webSocketServer: {
-    options: {
-      path: '/_next/webpack-hmr',
-    },
-  },
-  
   // Allow external IP access
   devIndicators: {
-    buildActivityPosition: 'bottom-right',
+    position: 'bottom-right',
   },
   
   // Ensure proper host binding

@@ -16,7 +16,7 @@ export default function DashboardPage() {
   const client = useRef(createTracedClient()).current; // Stable reference
   
   // Essay state - the core of what matters
-  const [essayTopic, setEssayTopic] = useState(null);
+  const [essayTopic, setEssayTopic] = useState<any>(null);
   const [essayContent, setEssayContent] = useState('');
   const [wordCount, setWordCount] = useState(0);
   const [timeRemaining, setTimeRemaining] = useState(1200);
@@ -24,7 +24,7 @@ export default function DashboardPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   
   // User state - secondary
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState<any>(null);
   
   // Load essay topic IMMEDIATELY - no blocking
   useEffect(() => {
@@ -74,7 +74,7 @@ export default function DashboardPage() {
     return () => clearInterval(timer);
   }, [isTimerActive, timeRemaining]);
   
-  const handleContentChange = (e) => {
+  const handleContentChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const content = e.target.value;
     setEssayContent(content);
     setWordCount(content.trim().split(/\s+/).filter(Boolean).length);
@@ -144,7 +144,7 @@ export default function DashboardPage() {
     }
   };
   
-  const formatTime = (seconds) => {
+  const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;

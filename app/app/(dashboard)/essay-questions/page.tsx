@@ -99,7 +99,7 @@ export default function EssayQuestionsPage() {
         
       } catch (error) {
         console.error('Error in handleStartEssay:', error);
-        alert('Error: ' + error.message);
+        alert('Error: ' + (error instanceof Error ? error.message : 'Unknown error'));
         setIsLoading(false);
       }
     } else {
