@@ -37,7 +37,7 @@ export default function EssayHistoryPage() {
       
       // Fetch all essays for the user
       const essaysResponse = await client.models.Essay.list({
-        filter: { userId: { eq: user.userId } }
+        filter: { userId: { eq: user.username || user.userId } }
       });
 
       if (!essaysResponse.data) {

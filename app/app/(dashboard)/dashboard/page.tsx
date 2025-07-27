@@ -102,7 +102,7 @@ export default function DashboardPage() {
       // Create essay record
       const essayResult = await retryWithBackoff(
         () => client.models.Essay.create({
-          userId: currentUser.userId,
+          userId: currentUser.username || currentUser.userId,
           topic: essayTopic.title,
           content: essayContent,
           wordCount: wordCount,
