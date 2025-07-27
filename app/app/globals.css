@@ -1,6 +1,4 @@
 @tailwind base;
-
-@custom-variant dark (&:is(.dark *));
 @tailwind components;
 @tailwind utilities;
 
@@ -49,7 +47,7 @@
     --color-info-foreground: 0 0% 100%;
   }
 
-  .dark {
+  html.dark {
     --background: 240 21% 4%;
     --foreground: 60 30% 96%;
     --card: 0 0% 3.9%;
@@ -330,4 +328,54 @@
   .toast-notification {
     z-index: 9999;
   }
+  
+  /* DEBUG: Color rendering test */
+  .color-debug-indicator {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    width: 200px;
+    height: 100px;
+    background: linear-gradient(135deg, #8B5CF6 0%, #EC4899 50%, #06B6D4 100%);
+    border-radius: 10px;
+    box-shadow: 0 0 30px rgba(139, 92, 246, 0.5);
+    z-index: 9999;
+    pointer-events: none;
+    animation: gradient 3s ease infinite;
+  }
+  
+  .color-debug-indicator::after {
+    content: 'Colors Working ✓';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: white;
+    font-weight: bold;
+    font-size: 14px;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+  }
+  
+  /* Debug grid to verify CSS loading */
+  .debug-style-check {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    display: grid;
+    grid-template-columns: repeat(4, 40px);
+    gap: 5px;
+    z-index: 9999;
+    pointer-events: none;
+  }
+  
+  .debug-style-check div {
+    width: 40px;
+    height: 40px;
+    border-radius: 5px;
+  }
+  
+  .debug-style-check div:nth-child(1) { background: hsl(var(--primary)); }
+  .debug-style-check div:nth-child(2) { background: hsl(var(--secondary)); }
+  .debug-style-check div:nth-child(3) { background: hsl(var(--accent)); }
+  .debug-style-check div:nth-child(4) { background: hsl(var(--destructive)); }
 }
