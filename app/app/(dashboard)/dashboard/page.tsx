@@ -124,9 +124,9 @@ export default function DashboardPage() {
           updatedAt: new Date().toISOString(),
         }),
         { maxRetries: 3 }
-      );
+      ) as any;
       
-      if (!essayResult.data?.id) {
+      if (!essayResult?.data?.id) {
         throw new Error('Failed to create essay');
       }
       
@@ -138,7 +138,7 @@ export default function DashboardPage() {
         content: essayContent,
         topic: essayTopic.title,
         wordCount: wordCount,
-      }).catch(error => {
+      }).catch((error: any) => {
         console.error('Queue submission error:', error);
         // Don't fail - processing can happen async
       });
