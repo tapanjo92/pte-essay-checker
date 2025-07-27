@@ -9,7 +9,7 @@ const nextConfig: NextConfig = {
   // Ensure proper host binding
   experimental: {
     serverActions: {
-      allowedOrigins: ['3.109.164.76:3000', 'localhost:3000'],
+      allowedOrigins: ['localhost:3000'],
     },
   },
   

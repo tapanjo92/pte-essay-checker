@@ -216,7 +216,7 @@ async function findSimilarEssays(topic: string, wordCount: number): Promise<any[
     
     // Query gold standard essays by topic
     const params = {
-      TableName: process.env.GOLD_STANDARD_TABLE_NAME || 'GoldStandardEssay-3jvy5oiy4fewzg24gsbnrxx5oi-NONE',
+      TableName: process.env.GOLD_STANDARD_TABLE_NAME!,
       IndexName: 'goldStandardEssaysByTopic',
       KeyConditionExpression: '#topic = :topic',
       ExpressionAttributeNames: {
@@ -841,7 +841,7 @@ async function sendResultEmail(
   scoringResult: ScoringResult,
   topic: string
 ) {
-  const appUrl = process.env.APP_URL || 'http://3.109.164.76:3000';
+  const appUrl = process.env.APP_URL || 'https://main.d1hed7gjlm8m1f.amplifyapp.com';
   const resultUrl = `${appUrl}/results/${essayId}`;
   
   const emailParams = {

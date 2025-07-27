@@ -1,0 +1,9 @@
+{
+  "devDependencies": {
+    "@aws-sdk/client-cloudwatch-logs": "^3.849.0",
+    "@aws-sdk/client-dynamodb": "^3.848.0",
+    "@aws-sdk/client-lambda": "^3.851.0",
+    "@aws-sdk/client-sqs": "^3.854.0",
+    "@aws-sdk/lib-dynamodb": "^3.850.0"
+  }
+}
