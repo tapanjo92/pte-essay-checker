@@ -68,7 +68,7 @@ export function WelcomeModal({ isOpen, onClose, userName, essaysRemaining = 5 }:
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50"
+            className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[100]"
             onClick={onClose}
           />
 
@@ -78,9 +78,9 @@ export function WelcomeModal({ isOpen, onClose, userName, essaysRemaining = 5 }:
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
             transition={{ duration: 0.3, ease: "easeOut" }}
-            className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-full max-w-2xl"
+            className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-[101] w-full max-w-2xl"
           >
-            <div className="relative bg-gray-900/95 backdrop-blur-xl border border-gray-800 rounded-2xl shadow-2xl overflow-hidden">
+            <div className="relative bg-gray-900/95 backdrop-blur-xl border border-gray-800 rounded-2xl shadow-2xl overflow-hidden mx-4">
               {/* Gradient decoration */}
               <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 via-purple-500/10 to-pink-500/10 pointer-events-none" />
               
@@ -115,7 +115,7 @@ export function WelcomeModal({ isOpen, onClose, userName, essaysRemaining = 5 }:
                 </div>
 
                 {/* Features Grid */}
-                <div className="grid grid-cols-2 gap-4 mb-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
                   {features.map((feature, index) => (
                     <motion.div
                       key={index}

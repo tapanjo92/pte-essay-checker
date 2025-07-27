@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { GlassCard, GlassCardContent, GlassCardDescription, GlassCardHeader, GlassCardTitle } from '@/components/ui/glass-card';
 import { Button } from '@/components/ui/button';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
@@ -56,7 +57,11 @@ export default function EssayQuestionsPage() {
   const [isLoading, setIsLoading] = useState(false);
 
   const handleStartEssay = () => {
+    console.log('handleStartEssay called');
+    console.log('selectedTopic:', selectedTopic);
+    
     if (!selectedTopic) {
+      alert('Please select a topic first');
       return;
     }
 
@@ -64,16 +69,42 @@ export default function EssayQuestionsPage() {
     
     // Store the selected topic in localStorage
     const topic = PTE_ESSAY_TOPICS.find(t => t.id === selectedTopic);
+    console.log('Found topic:', topic);
+    
     if (topic) {
-      localStorage.setItem('selected-essay-topic', JSON.stringify(topic));
-      localStorage.setItem('essay-flow-type', 'single'); // Single essay mode
-      
-      // Clear any existing drafts
-      localStorage.removeItem('current-essay-number');
-      localStorage.removeItem('essay1-completed');
-      
-      // Navigate to dashboard
-      router.push('/dashboard');
+      try {
+        localStorage.setItem('selected-essay-topic', JSON.stringify(topic));
+        localStorage.setItem('essay-flow-type', 'single'); // Single essay mode
+        
+        // Clear any existing drafts
+        localStorage.removeItem('current-essay-number');
+        localStorage.removeItem('essay1-completed');
+        
+        console.log('localStorage set, navigating to dashboard...');
+        
+        // Force navigation with window.location as fallback
+        const dashboardUrl = '/dashboard';
+        console.log('Navigating to:', dashboardUrl);
+        
+        // Try router.push first
+        router.push(dashboardUrl);
+        
+        // Fallback after a short delay
+        setTimeout(() => {
+          if (window.location.pathname !== '/dashboard') {
+            console.log('Router push failed, using window.location');
+            window.location.href = dashboardUrl;
+          }
+        }, 500);
+        
+      } catch (error) {
+        console.error('Error in handleStartEssay:', error);
+        alert('Error: ' + error.message);
+        setIsLoading(false);
+      }
+    } else {
+      console.error('Topic not found in list');
+      setIsLoading(false);
     }
   };
 
@@ -134,7 +165,7 @@ export default function EssayQuestionsPage() {
         </GlassCard>
 
         {/* Action Button */}
-        <div className="flex justify-center">
+        <div className="flex justify-center gap-4">
           <Button 
             size="lg" 
             onClick={handleStartEssay}
@@ -143,6 +174,25 @@ export default function EssayQuestionsPage() {
           >
             {isLoading ? 'Loading...' : 'Start Writing Essay'}
           </Button>
+          
+          {/* Debug: Direct link */}
+          {selectedTopic && (
+            <Link href="/dashboard">
+              <Button 
+                size="lg" 
+                variant="outline"
+                onClick={() => {
+                  const topic = PTE_ESSAY_TOPICS.find(t => t.id === selectedTopic);
+                  if (topic) {
+                    localStorage.setItem('selected-essay-topic', JSON.stringify(topic));
+                    localStorage.setItem('essay-flow-type', 'single');
+                  }
+                }}
+              >
+                Direct Link to Dashboard
+              </Button>
+            </Link>
+          )}
         </div>
 
         {/* Instructions */}
