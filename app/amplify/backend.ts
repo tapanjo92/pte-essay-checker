@@ -251,38 +251,6 @@ backend.addOutput({
   },
 });
 
-// Set environment variables dynamically
-backend.processEssay.resources.lambda.addEnvironment(
-  'ESSAY_TABLE_NAME',
-  backend.data.resources.tables["Essay"].tableName
-);
-backend.processEssay.resources.lambda.addEnvironment(
-  'RESULT_TABLE_NAME',
-  backend.data.resources.tables["Result"].tableName
-);
-backend.processEssay.resources.lambda.addEnvironment(
-  'USER_TABLE_NAME',
-  backend.data.resources.tables["User"].tableName
-);
-backend.processEssay.resources.lambda.addEnvironment(
-  'GOLD_STANDARD_TABLE_NAME',
-  backend.data.resources.tables["GoldStandardEssay"].tableName
-);
-
-// Add APP_URL environment variable
-const appId = process.env.AWS_APP_ID || 'd1hed7gjlm8m1f';
-const branch = process.env.AWS_BRANCH || 'main';
-backend.processEssay.resources.lambda.addEnvironment(
-  'APP_URL',
-  `https://${branch}.${appId}.amplifyapp.com`
-);
-
-// Set environment variables for submitEssayToQueue
-backend.submitEssayToQueue.resources.lambda.addEnvironment(
-  'ESSAY_TABLE_NAME',
-  backend.data.resources.tables["Essay"].tableName
-);
-backend.submitEssayToQueue.resources.lambda.addEnvironment(
-  'ESSAY_QUEUE_URL',
-  essayQueue.queueUrl
-);
+// IMPORTANT: After deployment, you need to update the Lambda environment variables
+// with the actual table names and queue URLs that were created.
+// The placeholders in resource.ts files will need to be replaced with actual values.
