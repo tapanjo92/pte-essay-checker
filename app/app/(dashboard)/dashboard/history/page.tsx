@@ -36,8 +36,15 @@ export default function EssayHistoryPage() {
       const user = await getCurrentUser();
       
       // Fetch all essays for the user
+      // Try to get essays by userId (new) or by owner (Amplify default)
+      const userId = user.username || user.userId;
       const essaysResponse = await client.models.Essay.list({
-        filter: { userId: { eq: user.username || user.userId } }
+        filter: { 
+          or: [
+            { userId: { eq: userId } },
+            { owner: { contains: userId } }
+          ]
+        }
       });
 
       if (!essaysResponse.data) {

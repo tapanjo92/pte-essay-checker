@@ -13,7 +13,8 @@ import { useNetworkStatus, retryWithBackoff, isNetworkError } from '@/lib/networ
 export default function DashboardPage() {
   const router = useRouter();
   const isOnline = useNetworkStatus();
-  const client = useRef(createTracedClient()).current; // Stable reference
+  // Don't create client at module level - need auth context
+  const [client, setClient] = useState<any>(null);
   
   // Essay state - the core of what matters
   const [essayTopic, setEssayTopic] = useState<any>(null);
@@ -46,13 +47,18 @@ export default function DashboardPage() {
     }
   }, [router]);
   
-  // Load user data ASYNC - don't block UI
+  // Load user data and create client with auth context
   useEffect(() => {
     getCurrentUser()
-      .then(setUser)
+      .then(user => {
+        setUser(user);
+        // Create client after we have auth context
+        setClient(createTracedClient());
+      })
       .catch(() => {
         // Silent fail - essay writing should work even if auth is wonky
         console.log('Auth check failed, continuing anyway');
+        setClient(createTracedClient());
       });
   }, []);
   
@@ -87,6 +93,11 @@ export default function DashboardPage() {
   };
   
   const handleSubmit = async () => {
+    if (!client) {
+      toast.error('Please wait, initializing...');
+      return;
+    }
+    
     if (wordCount < 200 || wordCount > 300) {
       toast.error(`Word count must be 200-300 (current: ${wordCount})`);
       return;
@@ -100,6 +111,7 @@ export default function DashboardPage() {
       const currentUser = await getCurrentUser();
       
       // Create essay record
+      // The owner field will be automatically set by Amplify based on the authenticated user
       const essayResult = await retryWithBackoff(
         () => client.models.Essay.create({
           userId: currentUser.username || currentUser.userId,
@@ -107,6 +119,9 @@ export default function DashboardPage() {
           content: essayContent,
           wordCount: wordCount,
           status: 'PENDING',
+          // Explicitly set timestamps to ensure they're saved
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
         }),
         { maxRetries: 3 }
       );
