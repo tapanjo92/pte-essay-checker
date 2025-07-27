@@ -3,7 +3,6 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Providers } from './providers';
 import { Toaster } from "sonner";
-import { ColorDebug } from './components/debug/ColorDebug';
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -50,8 +49,6 @@ export default function RootLayout({
             },
           }}
         />
-        {/* Color debug component - remove when issue is resolved */}
-        <ColorDebug />
       </body>
     </html>
   );
