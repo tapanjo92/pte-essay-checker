@@ -1,0 +1,55 @@
+Starting embedding generation for gold standard essays...
+Scanning table: GoldStandardEssay-3jvy5oiy4fewzg24gsbnrxx5oi-NONE
+Found 10 essays to process
+
+Processing essay 1/10: gold_009
+✓ Updated essay gold_009 with embedding (1024 dimensions)
+Waiting 1 second before next essay...
+
+Processing essay 2/10: gold_003
+✓ Updated essay gold_003 with embedding (1024 dimensions)
+Waiting 1 second before next essay...
+
+Processing essay 3/10: gold_007
+✓ Updated essay gold_007 with embedding (1024 dimensions)
+Waiting 1 second before next essay...
+
+Processing essay 4/10: gold_006
+✓ Updated essay gold_006 with embedding (1024 dimensions)
+Waiting 1 second before next essay...
+
+Processing essay 5/10: gold_001
+✓ Updated essay gold_001 with embedding (1024 dimensions)
+Waiting 1 second before next essay...
+
+Processing essay 6/10: gold_005
+✓ Updated essay gold_005 with embedding (1024 dimensions)
+Waiting 1 second before next essay...
+
+Processing essay 7/10: gold_004
+✓ Updated essay gold_004 with embedding (1024 dimensions)
+Waiting 1 second before next essay...
+
+Processing essay 8/10: gold_008
+✓ Updated essay gold_008 with embedding (1024 dimensions)
+Waiting 1 second before next essay...
+
+Processing essay 9/10: gold_010
+✓ Updated essay gold_010 with embedding (1024 dimensions)
+Waiting 1 second before next essay...
+
+Processing essay 10/10: gold_002
+✓ Updated essay gold_002 with embedding (1024 dimensions)
+
+========================================
+Embedding generation complete!
+Total: 10
+Successful: 10
+Failed: 0
+
+Final result: {
+  "total": 10,
+  "successful": 10,
+  "failed": 0,
+  "errors": []
+}

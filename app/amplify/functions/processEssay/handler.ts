@@ -1,9 +1,10 @@
 import { SQSHandler, SQSEvent } from 'aws-lambda';
 import { BedrockRuntimeClient, InvokeModelCommand } from '@aws-sdk/client-bedrock-runtime';
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
-import { DynamoDBDocumentClient, GetCommand, UpdateCommand, PutCommand, QueryCommand } from '@aws-sdk/lib-dynamodb';
+import { DynamoDBDocumentClient, GetCommand, UpdateCommand, PutCommand, QueryCommand, ScanCommand } from '@aws-sdk/lib-dynamodb';
 import { SESClient, SendEmailCommand } from '@aws-sdk/client-ses';
 import * as AWSXRay from 'aws-xray-sdk-core';
+import { generateEssayEmbedding, findSimilarVectors, VectorSearchResult } from './vectorUtils';
 
 // Capture AWS SDK v3 clients with X-Ray
 const { captureAWSv3Client } = AWSXRay;
@@ -206,15 +207,58 @@ export const handler: SQSHandler = async (event: SQSEvent) => {
   }
 };
 
-// RAG: Find similar essays from gold standard
-async function findSimilarEssays(topic: string, wordCount: number): Promise<any[]> {
+// RAG: Find similar essays from gold standard using vector search
+async function findSimilarEssays(topic: string, content: string, wordCount: number): Promise<any[]> {
   const segment = AWSXRay.getSegment();
   const subsegment = segment?.addNewSubsegment('RAG.FindSimilarEssays');
   
   try {
     structuredLog('INFO', 'Finding similar essays for RAG', { topic, wordCount });
     
-    // Query gold standard essays by topic
+    // First, try vector-based semantic search
+    try {
+      // Generate embedding for the student's essay
+      const studentEmbedding = await generateEssayEmbedding(topic, content);
+      subsegment?.addAnnotation('vectorSearch', true);
+      
+      // Scan all gold standard essays (in production, use a vector database)
+      const scanParams = {
+        TableName: process.env.GOLD_STANDARD_TABLE_NAME!,
+        FilterExpression: 'attribute_exists(embedding)',
+        ProjectionExpression: 'id, topic, essayText, wordCount, officialScore, scoreBreakdown, strengths, weaknesses, embedding'
+      };
+      
+      const scanResponse = await docClient.send(new ScanCommand(scanParams));
+      
+      if (scanResponse.Items && scanResponse.Items.length > 0) {
+        // Find similar essays using vector similarity
+        const vectorResults = findSimilarVectors(
+          studentEmbedding,
+          scanResponse.Items,
+          5, // Get top 5
+          0.7 // Minimum 70% similarity
+        );
+        
+        if (vectorResults.length > 0) {
+          structuredLog('INFO', 'Found similar essays via vector search', { 
+            count: vectorResults.length,
+            similarities: vectorResults.map(r => r.similarity)
+          });
+          subsegment?.addAnnotation('vectorResultsFound', vectorResults.length);
+          
+          // Return essays sorted by similarity
+          return vectorResults.map(r => ({
+            ...r.item,
+            similarity: r.similarity
+          }));
+        }
+      }
+    } catch (vectorError) {
+      structuredLog('WARN', 'Vector search failed, falling back to topic match', { error: vectorError });
+      subsegment?.addAnnotation('vectorSearchFailed', true);
+    }
+    
+    // Fallback to exact topic matching if vector search fails or returns no results
     const params = {
       TableName: process.env.GOLD_STANDARD_TABLE_NAME!,
       IndexName: 'goldStandardEssaysByTopic',
@@ -225,23 +269,22 @@ async function findSimilarEssays(topic: string, wordCount: number): Promise<any[
       ExpressionAttributeValues: {
         ':topic': topic
       },
-      Limit: 5 // Get up to 5 similar essays
+      Limit: 5
     };
     
     try {
       const response = await docClient.send(new QueryCommand(params));
       
       if (response.Items && response.Items.length > 0) {
-        structuredLog('INFO', 'Found similar essays', { count: response.Items.length });
-        subsegment?.addAnnotation('similarEssaysFound', response.Items.length);
+        structuredLog('INFO', 'Found similar essays via topic match', { count: response.Items.length });
+        subsegment?.addAnnotation('topicMatchFound', response.Items.length);
         
         // Sort by closest word count
         return response.Items.sort((a, b) => 
           Math.abs(a.wordCount - wordCount) - Math.abs(b.wordCount - wordCount)
-        ).slice(0, 3); // Return top 3 most similar
+        ).slice(0, 3);
       }
     } catch (queryError) {
-      // If table doesn't exist or query fails, continue without RAG
       structuredLog('WARN', 'Gold standard query failed', { error: queryError });
     }
     
@@ -257,19 +300,21 @@ async function findSimilarEssays(topic: string, wordCount: number): Promise<any[
 
 // Create RAG-enhanced prompt
 async function createRAGEnhancedPrompt(topic: string, content: string, wordCount: number): Promise<string> {
-  const similarEssays = await findSimilarEssays(topic, wordCount);
+  const similarEssays = await findSimilarEssays(topic, content, wordCount);
   
   if (similarEssays.length === 0) {
     structuredLog('INFO', 'No similar essays found, using standard prompt');
     return createAnalysisPrompt(topic, content);
   }
   
-  // Build RAG context
-  const ragContext = similarEssays.map(essay => {
+  // Build RAG context with similarity scores
+  const ragContext = similarEssays.map((essay, index) => {
+    const similarityInfo = essay.similarity ? `(${Math.round(essay.similarity * 100)}% similar)` : '';
+    
     // Check if essay has new PTE format
     if (essay.scoreBreakdown && typeof essay.scoreBreakdown.content === 'number') {
       return `
-Example Essay (Official PTE Score: ${essay.officialScore}/90):
+Example Essay #${index + 1} ${similarityInfo} (Official PTE Score: ${essay.officialScore}/90):
 Topic: ${essay.topic}
 Word Count: ${essay.wordCount}
 PTE Score Breakdown (Raw scores out of 14 points):
@@ -287,7 +332,7 @@ Essay Excerpt: ${essay.essayText.substring(0, 200)}...
     } else {
       // Fallback for old format
       return `
-Example Essay (Official PTE Score: ${essay.officialScore}/90):
+Example Essay #${index + 1} ${similarityInfo} (Official PTE Score: ${essay.officialScore}/90):
 Topic: ${essay.topic}
 Word Count: ${essay.wordCount}
 Score Breakdown:

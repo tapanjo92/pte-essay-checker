@@ -4,6 +4,7 @@ import { data } from './data/resource';
 import { storage } from './storage/resource';
 import { processEssay } from './functions/processEssay/resource';
 import { submitEssayToQueue } from './functions/submitEssayToQueue/resource';
+import { generateEmbeddings } from './functions/generateEmbeddings/resource';
 import { PolicyStatement } from 'aws-cdk-lib/aws-iam';
 import { Queue } from 'aws-cdk-lib/aws-sqs';
 import { SqsEventSource } from 'aws-cdk-lib/aws-lambda-event-sources';
@@ -24,6 +25,7 @@ const backend = defineBackend({
   storage,
   processEssay,
   submitEssayToQueue,
+  generateEmbeddings,
 });
 
 // Get the stack for adding resources
@@ -67,6 +69,14 @@ backend.processEssay.resources.lambda.addToRolePolicy(
   })
 );
 
+// Grant the generateEmbeddings function access to Bedrock
+backend.generateEmbeddings.resources.lambda.addToRolePolicy(
+  new PolicyStatement({
+    actions: ['bedrock:InvokeModel'],
+    resources: ['*'],
+  })
+);
+
 // Grant the processEssay function access to SES for sending emails
 backend.processEssay.resources.lambda.addToRolePolicy(
   new PolicyStatement({
@@ -90,10 +100,15 @@ backend.data.resources.tables["GoldStandardEssay"].grantReadData(
   backend.processEssay.resources.lambda
 );
 
-// Add explicit permission for querying indexes
+// Grant read/write access to GoldStandardEssay table for generateEmbeddings
+backend.data.resources.tables["GoldStandardEssay"].grantReadWriteData(
+  backend.generateEmbeddings.resources.lambda
+);
+
+// Add explicit permission for querying indexes and scanning
 backend.processEssay.resources.lambda.addToRolePolicy(
   new PolicyStatement({
-    actions: ['dynamodb:Query'],
+    actions: ['dynamodb:Query', 'dynamodb:Scan'],
     resources: [
       backend.data.resources.tables["GoldStandardEssay"].tableArn,
       `${backend.data.resources.tables["GoldStandardEssay"].tableArn}/index/*`
