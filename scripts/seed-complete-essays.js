@@ -8,7 +8,7 @@ const docClient = DynamoDBDocumentClient.from(dynamoClient);
 const bedrockClient = new BedrockRuntimeClient({ region: 'ap-south-1' });
 
 // Table name for vector-v2 sandbox
-const TABLE_NAME = 'GoldStandardEssay-djnwlvdgh5fuxcsmydkedm35s4-NONE';
+const TABLE_NAME = 'GoldStandardEssay-ixwwt7i4bbeshoskcgoux37j5y-NONE';
 
 // Complete seed essays array
 const seedEssays = [
@@ -646,6 +646,180 @@ In conclusion I strongly agree that influencer have too much impact on young peo
       linguisticRange: 0
     },
     scoreRange: '65-74'
+  },
+  
+  // TOPIC 16: Space Exploration (HIGH SCORE - 85-90)
+  {
+    id: 'seed-space-high',
+    topic: 'Governments should prioritize funding for space exploration over addressing problems on Earth. To what extent do you agree or disagree?',
+    category: 'AGREE_DISAGREE',
+    essayText: `While space exploration represents humanity's ambitious quest for knowledge and survival beyond Earth, I strongly disagree that it should receive priority over addressing terrestrial problems. The immediate challenges facing our planet demand urgent attention and resources before we venture into cosmic pursuits.
+
+Earth's pressing issues require immediate intervention. Climate change threatens ecosystems and human civilization, with rising temperatures, extreme weather events, and sea-level rise affecting billions. Poverty afflicts over 700 million people globally, denying basic necessities like food, clean water, and healthcare. Educational inequality perpetuates cycles of disadvantage, while pandemic preparedness remains critically underfunded despite COVID-19's devastating demonstration of our vulnerabilities. These challenges directly impact human survival and quality of life today, not in hypothetical futures.
+
+However, space exploration advocates present compelling arguments. Technological innovations from space programs have yielded practical benefits, including satellite communications, GPS navigation, and medical devices. The search for habitable planets could provide humanity's ultimate insurance policy against extinction events. Additionally, space exploration inspires scientific advancement and international cooperation, fostering innovation that could solve terrestrial problems.
+
+Nevertheless, the opportunity cost of prioritizing space over Earth is unconscionable. The billions spent on Mars missions could eliminate malaria, provide universal education, or develop renewable energy infrastructure. While space exploration should continue, it must remain secondary to solving immediate human suffering and environmental destruction.
+
+In conclusion, although space exploration offers long-term benefits and scientific advancement, governments must prioritize addressing Earth's urgent crises. Only after ensuring basic human needs and planetary sustainability should substantial resources be allocated to cosmic ventures.`,
+    wordCount: 249,
+    officialScore: 88,
+    scoreBreakdown: {
+      content: 3,
+      form: 2,
+      grammar: 2,
+      vocabulary: 2,
+      spelling: 1,
+      developmentCoherence: 2,
+      linguisticRange: 2
+    },
+    scoreRange: '85-90'
+  },
+  
+  // TOPIC 16: Space Exploration (MEDIUM SCORE - 75-84)
+  {
+    id: 'seed-space-medium',
+    topic: 'Governments should prioritize funding for space exploration over addressing problems on Earth. To what extent do you agree or disagree?',
+    category: 'AGREE_DISAGREE',
+    essayText: `I disagree with prioritizing space exploration funding over Earth's problems. While space research is important, our planet's immediate issues need more urgent attention and resources.
+
+First, many serious problems on Earth require immediate solutions. Millions of people lack access to clean water, food, and basic healthcare. Climate change is causing natural disasters that destroy communities and threaten future generations. These problems affect real people right now, while space exploration benefits are mostly theoretical or far in the future. Governments should focus on helping citizens who are suffering today.
+
+Second, the cost of space programs is enormous. A single space mission can cost billions of dollars, money that could build hospitals, schools, or renewable energy systems. For example, the Mars rover program cost over $2 billion, which could have provided clean water to millions or funded cancer research. When people are dying from preventable diseases, spending on space seems irresponsible.
+
+However, space exploration does have some benefits. It leads to new technologies that can help on Earth, like satellite communications and weather monitoring. Space research also inspires young people to study science and engineering. Some argue we need to find other planets in case Earth becomes uninhabitable.
+
+Despite these advantages, Earth's problems are too urgent to ignore. We should solve issues like poverty, disease, and environmental destruction before investing heavily in space. Once basic human needs are met, then governments can increase space funding.
+
+In conclusion, while space exploration has value, governments must prioritize solving Earth's immediate problems first. Human welfare and planetary health should come before cosmic ambitions.`,
+    wordCount: 259,
+    officialScore: 79,
+    scoreBreakdown: {
+      content: 2,
+      form: 2,
+      grammar: 2,
+      vocabulary: 2,
+      spelling: 1,
+      developmentCoherence: 2,
+      linguisticRange: 1
+    },
+    scoreRange: '75-84'
+  },
+  
+  // TOPIC 16: Space Exploration (LOW SCORE - 65-74)
+  {
+    id: 'seed-space-low',
+    topic: 'Governments should prioritize funding for space exploration over addressing problems on Earth. To what extent do you agree or disagree?',
+    category: 'AGREE_DISAGREE',
+    essayText: `I dont agree government should spend more money on space than earth problem. This is very bad idea because many people suffering on earth need help first.
+
+Earth have too many problem need fixing. Poor people everywhere cannot eat food or drink clean water. Many country have war and people dying. Hospital dont have enough doctor and medicine. School also very bad in poor area, children cannot learn properly. Why government want explore space when people on earth suffering so much? This make no sense to me.
+
+Space exploration very expensive. Rocket cost billion dollar to build and launch. If crash then all money waste. This money better use for help poor people and build hospital. My country need more school but government talking about going to moon. Very frustrating for normal people who need help.
+
+Some people say space exploration good for technology. Maybe true but technology not help if people hungry. Also they say maybe we find new planet to live. But this stupid idea because we already have good planet just need take care of it better.
+
+In my opinion government must fix earth problem first before think about space. When no more poverty and everyone have good life, then can explore space. But now is not right time. Too many people need help on earth.
+
+In conclusion space exploration waste of money when earth have so many problem. Government should use tax money help citizen not send rocket to space.`,
+    wordCount: 231,
+    officialScore: 68,
+    scoreBreakdown: {
+      content: 1,
+      form: 2,
+      grammar: 0,
+      vocabulary: 1,
+      spelling: 1,
+      developmentCoherence: 1,
+      linguisticRange: 0
+    },
+    scoreRange: '65-74'
+  },
+  
+  // TOPIC 16: Space Exploration (VERY HIGH SCORE - 90-95)
+  {
+    id: 'seed-space-veryhigh',
+    topic: 'Governments should prioritize funding for space exploration over addressing problems on Earth. To what extent do you agree or disagree?',
+    category: 'AGREE_DISAGREE',
+    essayText: `The proposition that space exploration should supersede terrestrial concerns in governmental funding priorities represents a fundamental misunderstanding of humanity's immediate existential challenges. While acknowledging space exploration's profound significance, I categorically disagree with prioritizing it over Earth's pressing crises.
+
+Terrestrial problems demand immediate resource allocation due to their direct impact on human survival and dignity. Climate change constitutes an existential threat requiring urgent mitigation, with tipping points approaching irreversibility. Approximately one billion people lack access to clean water, while preventable diseases claim millions annually. Educational disparities perpetuate intergenerational poverty, and healthcare inequalities violate basic human rights. These crises affect real lives today, not hypothetical future scenarios.
+
+Admittedly, space exploration yields tangible benefits beyond scientific curiosity. Satellite technology revolutionized communications, weather prediction, and disaster management. Space research catalyzed innovations in materials science, computing, and medicine. Furthermore, establishing extraterrestrial colonies could safeguard humanity against extinction-level events. The psychological impact of space achievements inspires scientific pursuits and international cooperation.
+
+However, the opportunity cost remains unjustifiable. NASA's annual budget could eradicate several tropical diseases or provide universal primary education in developing nations. The ethical imperative to address immediate suffering outweighs speculative future benefits. Moreover, many space-derived technologies could emerge from targeted Earth-focused research at lower costs.
+
+In conclusion, while space exploration merits continued support, it cannot ethically claim priority over addressing poverty, disease, climate change, and inequality. Governments must first ensure basic human needs and planetary sustainability before allocating substantial resources to cosmic ambitions.`,
+    wordCount: 245,
+    officialScore: 93,
+    scoreBreakdown: {
+      content: 3,
+      form: 2,
+      grammar: 2,
+      vocabulary: 2,
+      spelling: 1,
+      developmentCoherence: 2,
+      linguisticRange: 2
+    },
+    scoreRange: '90-95'
+  },
+  
+  // TOPIC 16: Space Exploration (MEDIUM-HIGH SCORE - 80-85)
+  {
+    id: 'seed-space-mediumhigh',
+    topic: 'Governments should prioritize funding for space exploration over addressing problems on Earth. To what extent do you agree or disagree?',
+    category: 'AGREE_DISAGREE',
+    essayText: `The debate over funding priorities between space exploration and earthly problems is complex and important. While I understand the arguments for space investment, I largely disagree that it should take precedence over solving our planet's immediate challenges.
+
+Earth faces numerous critical problems requiring urgent attention and resources. Climate change threatens coastal cities and agricultural systems worldwide, potentially displacing millions within decades. Global poverty affects nearly 10% of the world's population, denying them basic necessities like nutrition and healthcare. Pandemics, as COVID-19 demonstrated, can devastate economies and claim millions of lives without adequate preparation. These issues demand immediate action because they affect human lives and wellbeing today.
+
+Nevertheless, space exploration offers significant long-term benefits that shouldn't be ignored. Space technology has provided GPS systems, weather satellites, and telecommunications infrastructure essential to modern life. Research in zero gravity has advanced our understanding of human biology and materials science. Additionally, discovering potentially habitable planets could ensure humanity's survival if Earth becomes uninhabitable. Space programs also foster international collaboration and inspire young people to pursue scientific careers.
+
+However, the enormous costs of space exploration could address many terrestrial problems more immediately. The billions spent on Mars missions could fund clean water infrastructure, renewable energy development, or pandemic preparedness. While space exploration should continue, it seems morally questionable to prioritize it when preventable diseases still kill millions annually.
+
+In conclusion, although space exploration provides valuable benefits and should receive continued support, governments must prioritize addressing immediate human suffering and environmental crises on Earth before expanding cosmic ambitions.`,
+    wordCount: 253,
+    officialScore: 83,
+    scoreBreakdown: {
+      content: 3,
+      form: 1,  // Slightly over word limit
+      grammar: 2,
+      vocabulary: 2,
+      spelling: 1,
+      developmentCoherence: 2,
+      linguisticRange: 2
+    },
+    scoreRange: '80-85'
+  },
+  
+  // TOPIC 16: Space Exploration (VERY LOW SCORE - 50-65)
+  {
+    id: 'seed-space-verylow',
+    topic: 'Governments should prioritize funding for space exploration over addressing problems on Earth. To what extent do you agree or disagree?',
+    category: 'AGREE_DISAGREE',
+    essayText: `I think government should not spend money for space when earth have problem. This wrong priority and not fair for people who suffering.
+
+First earth problem very serious. Many people no have food and water. Children dying because no medicine. My country have many poor people living street. They need help now not tomorrow. But government want spend money for going mars. This crazy thinking. How can go to mars when people hungry in earth?
+
+Space very expensive and dangerous. Rocket sometime explode and astronaut die. All money gone when this happen. Better use money for hospital and school. One rocket cost can build many hospital. 
+
+Some people say space good for tecnology but I dont agree. We have enough tecnology already. What we need is help poor people and fix environment. Earth getting hot and ice melting but government looking at star instead of fixing earth.
+
+Space exploration just for rich country to show off. They want to say we reach moon first or we have best rocket. But this not important when people suffering. Is like buying expensive car when your children hungry.
+
+In conclusion government must stop wasting money on space and help earth first. After everyone have good life then maybe can think about space. But now wrong time.`,
+    wordCount: 201,
+    officialScore: 58,
+    scoreBreakdown: {
+      content: 1,
+      form: 1,  // Just meets minimum word count
+      grammar: 0,
+      vocabulary: 0,
+      spelling: 0,
+      developmentCoherence: 1,
+      linguisticRange: 0
+    },
+    scoreRange: '50-65'
   }
 ];
 

@@ -1,85 +1,77 @@
 
 > app@0.1.0 dev
-> next dev --turbopack --hostname 0.0.0.0 --port 3000
+> next dev
 
-   ▲ Next.js 15.4.2 (Turbopack)
+ ⚠ Warning: Found multiple lockfiles. Selecting /root/pte-essay-checker/package-lock.json.
+   Consider removing the lockfiles at:
+   * /root/pte-essay-checker/app/package-lock.json
+
+   ▲ Next.js 15.4.2
    - Local:        http://localhost:3000
-   - Network:      http://0.0.0.0:3000
+   - Network:      http://10.120.0.41:3000
+   - Experiments (use with caution):
+     · serverActions
 
  ✓ Starting...
- ✓ Ready in 1075ms
+ ✓ Ready in 1585ms
  ○ Compiling / ...
- ✓ Compiled / in 3.1s
- HEAD / 200 in 3507ms
+ ✓ Compiled / in 6.9s (1859 modules)
+ GET / 200 in 8212ms
+ ✓ Compiled in 802ms (841 modules)
+ GET / 200 in 75ms
+ ⚠ Cross origin request detected from 3.109.164.76 to /_next/* resource. In a future major version of Next.js, you will need to explicitly configure "allowedDevOrigins" in next.config to allow this.
+Read more: https://nextjs.org/docs/app/api-reference/config/next-config-js/allowedDevOrigins
+ ○ Compiling /auth ...
+ ✓ Compiled /auth in 728ms (1848 modules)
+ GET /auth 200 in 936ms
+ ○ Compiling /dashboard ...
+ ✓ Compiled /dashboard in 1973ms (2406 modules)
+ GET /dashboard 200 in 2168ms
+ ○ Compiling /essay-questions ...
+ ✓ Compiled /essay-questions in 667ms (2468 modules)
+ GET /essay-questions 200 in 769ms
+ GET /essay-questions 200 in 12ms
+ GET /dashboard 200 in 29ms
+ ○ Compiling /dashboard/results/[id] ...
+ ✓ Compiled /dashboard/results/[id] in 1229ms (2508 modules)
+ GET /dashboard/results/a444e514-b53e-451d-aa2f-64fe7d13c8ce 200 in 1951ms
+Amplify has not been configured. Please call Amplify.configure() before using this service.
+Amplify has not been configured. Please call Amplify.configure() before using this service.
+ GET /dashboard/results/a444e514-b53e-451d-aa2f-64fe7d13c8ce 200 in 363ms
+ GET /dashboard/results/a444e514-b53e-451d-aa2f-64fe7d13c8ce 200 in 53ms
+ GET /dashboard 200 in 23ms
+ GET /essay-questions 200 in 20ms
+ GET /essay-questions 200 in 10ms
+ GET /dashboard 200 in 12ms
+ GET /dashboard/results/c21370c7-29b6-4f06-b359-9c6a5ee34d0d 200 in 34ms
+ GET /dashboard/results/c21370c7-29b6-4f06-b359-9c6a5ee34d0d 200 in 57ms
+ GET /dashboard 200 in 15ms
+ GET /essay-questions 200 in 12ms
+ GET /essay-questions 200 in 11ms
+ GET /dashboard 200 in 13ms
+ GET /dashboard/results/30ee8d06-0fd3-4c27-81b0-e9be397b2af7 200 in 33ms
+ GET /dashboard 200 in 15ms
+ GET /essay-questions 200 in 11ms
+ GET /essay-questions 200 in 12ms
+ GET /dashboard 200 in 12ms
+ GET /dashboard/results/480a0f71-102d-48bb-b817-c028f9417e03 200 in 37ms
+ GET /dashboard 200 in 11ms
+ GET /essay-questions 200 in 10ms
+ GET /essay-questions 200 in 9ms
+ GET /dashboard 200 in 11ms
+ GET /dashboard/results/25fbc934-154f-4bc4-b3c6-b76c90ba67a7 200 in 38ms
+ GET /dashboard/results/25fbc934-154f-4bc4-b3c6-b76c90ba67a7 200 in 58ms
  ○ Compiling /dashboard/history ...
- ✓ Compiled /dashboard/history in 950ms
- ⨯ [Error: ENOENT: no such file or directory, open '/root/pte-essay-checker/app/.next/static/development/_buildManifest.js.tmp.dbo0pkgbfuk'] {
-  errno: -2,
-  code: 'ENOENT',
-  syscall: 'open',
-  path: '/root/pte-essay-checker/app/.next/static/development/_buildManifest.js.tmp.dbo0pkgbfuk'
-}
- ○ Compiling /_error ...
- ✓ Compiled /_error in 1215ms
- ⨯ [Error: ENOENT: no such file or directory, open '/root/pte-essay-checker/app/.next/static/development/_buildManifest.js.tmp.1fdtyetomj2'] {
-  errno: -2,
-  code: 'ENOENT',
-  syscall: 'open',
-  path: '/root/pte-essay-checker/app/.next/static/development/_buildManifest.js.tmp.1fdtyetomj2'
-}
-[Error: ENOENT: no such file or directory, open '/root/pte-essay-checker/app/.next/static/development/_buildManifest.js.tmp.dbo0pkgbfuk'] {
-  errno: -2,
-  code: 'ENOENT',
-  syscall: 'open',
-  path: '/root/pte-essay-checker/app/.next/static/development/_buildManifest.js.tmp.dbo0pkgbfuk'
-}
- ⨯ [Error: ENOENT: no such file or directory, open '/root/pte-essay-checker/app/.next/static/development/_buildManifest.js.tmp.stkbf5deew8'] {
-  errno: -2,
-  code: 'ENOENT',
-  syscall: 'open',
-  path: '/root/pte-essay-checker/app/.next/static/development/_buildManifest.js.tmp.stkbf5deew8'
-}
-[Error: ENOENT: no such file or directory, open '/root/pte-essay-checker/app/.next/static/development/_buildManifest.js.tmp.8rc13a6x4rt'] {
-  errno: -2,
-  code: 'ENOENT',
-  syscall: 'open',
-  path: '/root/pte-essay-checker/app/.next/static/development/_buildManifest.js.tmp.8rc13a6x4rt'
-}
- ✓ Compiled /favicon.ico in 167ms
- ⨯ [Error: ENOENT: no such file or directory, open '/root/pte-essay-checker/app/.next/static/development/_buildManifest.js.tmp.cb6s0elp6o'] {
-  errno: -2,
-  code: 'ENOENT',
-  syscall: 'open',
-  path: '/root/pte-essay-checker/app/.next/static/development/_buildManifest.js.tmp.cb6s0elp6o'
-}
- ⨯ [Error: ENOENT: no such file or directory, open '/root/pte-essay-checker/app/.next/server/app/page/app-build-manifest.json'] {
-  errno: -2,
-  code: 'ENOENT',
-  syscall: 'open',
-  path: '/root/pte-essay-checker/app/.next/server/app/page/app-build-manifest.json'
-}
- ⨯ [Error: ENOENT: no such file or directory, open '/root/pte-essay-checker/app/.next/static/development/_buildManifest.js.tmp.xobfcse7jdq'] {
-  errno: -2,
-  code: 'ENOENT',
-  syscall: 'open',
-  path: '/root/pte-essay-checker/app/.next/static/development/_buildManifest.js.tmp.xobfcse7jdq'
-}
-[Error: ENOENT: no such file or directory, open '/root/pte-essay-checker/app/.next/server/app/page/app-build-manifest.json'] {
-  errno: -2,
-  code: 'ENOENT',
-  syscall: 'open',
-  path: '/root/pte-essay-checker/app/.next/server/app/page/app-build-manifest.json'
-}
- ⨯ [Error: ENOENT: no such file or directory, open '/root/pte-essay-checker/app/.next/static/development/_buildManifest.js.tmp.y1qt9uyu0ug'] {
-  errno: -2,
-  code: 'ENOENT',
-  syscall: 'open',
-  path: '/root/pte-essay-checker/app/.next/static/development/_buildManifest.js.tmp.y1qt9uyu0ug'
-}
-[Error: ENOENT: no such file or directory, open '/root/pte-essay-checker/app/.next/static/development/_buildManifest.js.tmp.lhnhtvqqc6e'] {
-  errno: -2,
-  code: 'ENOENT',
-  syscall: 'open',
-  path: '/root/pte-essay-checker/app/.next/static/development/_buildManifest.js.tmp.lhnhtvqqc6e'
-}
-[?25h
+ ✓ Compiled /dashboard/history in 949ms (2517 modules)
+ GET /dashboard/history 200 in 1068ms
+ GET /essay-questions 200 in 22ms
+ GET /dashboard 200 in 23ms
+ GET /dashboard/results/f375900a-aad1-4a16-9c8c-00eff2a4fc11 200 in 46ms
+ GET /dashboard 200 in 14ms
+ GET /essay-questions 200 in 9ms
+ GET /essay-questions 200 in 10ms
+ GET /dashboard 200 in 12ms
+ GET /dashboard/results/4d52de3f-5eb9-4a30-bd87-8fca5be204c0 200 in 35ms
+Amplify has not been configured. Please call Amplify.configure() before using this service.
+Amplify has not been configured. Please call Amplify.configure() before using this service.
+ GET /dashboard/results/4d52de3f-5eb9-4a30-bd87-8fca5be204c0 200 in 286ms

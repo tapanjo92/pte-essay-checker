@@ -811,7 +811,15 @@ function parseAIResponse(aiResponse: any, wordCount: number): ScoringResult {
         linguisticRange: Math.round((aiResponse.pteScores.linguisticRange / 2) * 90)
       },
       topicRelevance: aiResponse.topicRelevance,
-      feedback: aiResponse.feedback,
+      feedback: {
+        ...aiResponse.feedback,
+        detailedFeedback: {
+          taskResponse: aiResponse.feedback?.detailedFeedback?.content || 'No specific feedback available.',
+          coherence: aiResponse.feedback?.detailedFeedback?.developmentCoherence || 'No specific feedback available.',
+          vocabulary: aiResponse.feedback?.detailedFeedback?.vocabulary || 'No specific feedback available.',
+          grammar: aiResponse.feedback?.detailedFeedback?.grammar || 'No specific feedback available.'
+        }
+      },
       suggestions: aiResponse.suggestions || [],
       highlightedErrors: aiResponse.highlightedErrors || []
     };
@@ -830,7 +838,15 @@ function parseAIResponse(aiResponse: any, wordCount: number): ScoringResult {
       coherenceScore: aiResponse.scores.coherence,
       vocabularyScore: aiResponse.scores.vocabulary,
       grammarScore: aiResponse.scores.grammar,
-      feedback: aiResponse.feedback,
+      feedback: {
+        ...aiResponse.feedback,
+        detailedFeedback: {
+          taskResponse: aiResponse.feedback?.detailedFeedback?.content || 'No specific feedback available.',
+          coherence: aiResponse.feedback?.detailedFeedback?.developmentCoherence || 'No specific feedback available.',
+          vocabulary: aiResponse.feedback?.detailedFeedback?.vocabulary || 'No specific feedback available.',
+          grammar: aiResponse.feedback?.detailedFeedback?.grammar || 'No specific feedback available.'
+        }
+      },
       suggestions: aiResponse.suggestions || [],
       highlightedErrors: aiResponse.highlightedErrors || []
     };
