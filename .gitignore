@@ -6,7 +6,7 @@ yarn-debug.log*
 yarn-error.log*
 
 # Package lock files
-package-lock.json
+# package-lock.json
 
 # Logs
 *.log
