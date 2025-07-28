@@ -4,7 +4,9 @@ backend:
     build:
       commands:
         - nvm use 20
-        - cd app
+        - ls -la  # Debug: Check directory structure
+        - cd app || true  # Try to cd, but don't fail if it doesn't exist
+        - pwd  # Debug: Show current directory
         - npm ci --cache .npm --prefer-offline
         - cd amplify/functions/processEssay && npm ci && cd ../../..
         - cd amplify/functions/submitEssayToQueue && npm ci && cd ../../..
@@ -14,11 +16,13 @@ frontend:
     preBuild:
       commands:
         - nvm use 20
-        - cd app
+        - ls -la  # Debug: Check directory structure
+        - cd app || true  # Try to cd, but don't fail if it doesn't exist
+        - pwd  # Debug: Show current directory
         - npm ci --cache .npm --prefer-offline
     build:
       commands:
-        - cd app
+        - cd app || true  # Try to cd, but don't fail if it doesn't exist
         - npm run build
   artifacts:
     baseDirectory: app/.next
