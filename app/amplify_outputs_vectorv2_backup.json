@@ -1,9 +1,9 @@
 {
   "auth": {
-    "user_pool_id": "ap-south-1_ycgkw7irZ",
+    "user_pool_id": "ap-south-1_qGfcRyGpJ",
     "aws_region": "ap-south-1",
-    "user_pool_client_id": "pl5jsh1rhkjcl9hifbultnl98",
-    "identity_pool_id": "ap-south-1:70d53cfe-498c-4240-9cc3-09334d30c8a1",
+    "user_pool_client_id": "jaj82g4cmt5kg34bcnqpo8iu0",
+    "identity_pool_id": "ap-south-1:bc6789fb-a88c-4f1e-acc3-aa7320520495",
     "mfa_methods": [],
     "standard_required_attributes": [
       "email"
@@ -26,9 +26,9 @@
     "unauthenticated_identities_enabled": true
   },
   "data": {
-    "url": "https://lt3lrxpdmrec7hq7dkpytodkam.appsync-api.ap-south-1.amazonaws.com/graphql",
+    "url": "https://pztvgvjlfrdonb3cexoxcohvzu.appsync-api.ap-south-1.amazonaws.com/graphql",
     "aws_region": "ap-south-1",
-    "api_key": "da2-5gzsl3cs5jhkja7thkl2coyyya",
+    "api_key": "da2-ww5u3e2xwjdanejwkyk5kubtju",
     "default_authorization_type": "AMAZON_COGNITO_USER_POOLS",
     "authorization_types": [
       "API_KEY",
@@ -1013,7 +1013,47 @@
   },
   "storage": {
     "aws_region": "ap-south-1",
-    "bucket_name": "amplify-app-root-sandbox--pteessaystoragebucketc06-xqiyslyrfhsu"
+    "bucket_name": "amplify-app-vectorv2-sand-pteessaystoragebucketc06-ucyslmsaudzj",
+    "buckets": [
+      {
+        "name": "pteEssayStorage",
+        "bucket_name": "amplify-app-vectorv2-sand-pteessaystoragebucketc06-ucyslmsaudzj",
+        "aws_region": "ap-south-1",
+        "paths": {
+          "essays/*": {
+            "authenticated": [
+              "get",
+              "list",
+              "write",
+              "delete"
+            ],
+            "guest": [
+              "get",
+              "list"
+            ]
+          },
+          "results/*": {
+            "authenticated": [
+              "get",
+              "list"
+            ]
+          },
+          "exports/*": {
+            "authenticated": [
+              "get",
+              "list",
+              "write",
+              "delete"
+            ]
+          }
+        }
+      }
+    ]
   },
-  "version": "1.2"
+  "version": "1.4",
+  "custom": {
+    "DLQUrl": "https://sqs.ap-south-1.amazonaws.com/493093635246/pte-essay-dlq-sbsjpa6j",
+    "DLQName": "pte-essay-dlq-sbsjpa6j",
+    "MainQueueUrl": "https://sqs.ap-south-1.amazonaws.com/493093635246/pte-essay-queue-sbsjpa6j"
+  }
 }

@@ -5,7 +5,6 @@ export const processEssay = defineFunction({
   runtime: 20,
   timeoutSeconds: 300,
   memoryMB: 1024, // Increased to 1GB for better performance with concurrent processing
-  resourceGroupName: 'data',
   environment: {
     BEDROCK_MODEL_ID: 'anthropic.claude-3-haiku-20240307-v1:0',
     BEDROCK_REGION: 'ap-south-1',

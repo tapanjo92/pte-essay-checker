@@ -133,7 +133,7 @@ const dataStack = Stack.of(backend.data);
 const branchName = process.env.AWS_BRANCH || 'main';
 const isSandbox = !process.env.AWS_BRANCH;
 const uniqueSuffix = isSandbox 
-  ? `sb${Math.random().toString(36).substring(2, 8)}` 
+  ? 'sblocal' // Fixed suffix for local sandboxes to avoid creating multiple queues
   : branchName.replace(/[^a-zA-Z0-9]/g, '').slice(0, 8);
 new CfnSamplingRule(dataStack, 'BasicSamplingRule', {
   samplingRule: {

@@ -7,8 +7,8 @@ const dynamoClient = new DynamoDBClient({ region: 'ap-south-1' });
 const docClient = DynamoDBDocumentClient.from(dynamoClient);
 const bedrockClient = new BedrockRuntimeClient({ region: 'ap-south-1' });
 
-// Table name for vector-v2 sandbox
-const TABLE_NAME = 'GoldStandardEssay-ixwwt7i4bbeshoskcgoux37j5y-NONE';
+// Table name for new root sandbox
+const TABLE_NAME = 'GoldStandardEssay-m2naunrofnagdapazpyg44vavq-NONE';
 
 // Complete seed essays array
 const seedEssays = [

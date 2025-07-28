@@ -75,3 +75,191 @@ Amplify has not been configured. Please call Amplify.configure() before using th
 Amplify has not been configured. Please call Amplify.configure() before using this service.
 Amplify has not been configured. Please call Amplify.configure() before using this service.
  GET /dashboard/results/4d52de3f-5eb9-4a30-bd87-8fca5be204c0 200 in 286ms
+ ○ Compiling / ...
+ ✓ Compiled / in 607ms (1369 modules)
+ ⨯ Error: Cannot find module './985.js'
+Require stack:
+- /root/pte-essay-checker/app/.next/server/webpack-runtime.js
+- /root/pte-essay-checker/app/.next/server/app/page.js
+- /root/pte-essay-checker/app/node_modules/next/dist/server/require.js
+- /root/pte-essay-checker/app/node_modules/next/dist/server/load-components.js
+- /root/pte-essay-checker/app/node_modules/next/dist/build/utils.js
+- /root/pte-essay-checker/app/node_modules/next/dist/build/swc/options.js
+- /root/pte-essay-checker/app/node_modules/next/dist/build/swc/index.js
+- /root/pte-essay-checker/app/node_modules/next/dist/build/next-config-ts/transpile-config.js
+- /root/pte-essay-checker/app/node_modules/next/dist/server/config.js
+- /root/pte-essay-checker/app/node_modules/next/dist/server/next.js
+- /root/pte-essay-checker/app/node_modules/next/dist/server/lib/start-server.js
+    at <unknown> (.next/server/app/page.js:2:8004)
+    at Object.<anonymous> (.next/server/app/page.js:2:8058) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [Array],
+  page: '/'
+}
+ ○ Compiling /_error ...
+ ✓ Compiled /_error in 2.1s (2850 modules)
+ GET / 500 in 3510ms
+ GET /dashboard/results/4d52de3f-5eb9-4a30-bd87-8fca5be204c0 200 in 1350ms
+ GET /dashboard/results/4d52de3f-5eb9-4a30-bd87-8fca5be204c0 200 in 18ms
+ ⨯ Failed to generate static paths for /dashboard/results/[id]:
+[Error: Cannot find module './vendor-chunks/@aws-amplify.js'
+Require stack:
+- /root/pte-essay-checker/app/.next/server/webpack-runtime.js
+- /root/pte-essay-checker/app/.next/server/app/(dashboard)/dashboard/results/[id]/page.js
+- /root/pte-essay-checker/app/node_modules/next/dist/server/require.js
+- /root/pte-essay-checker/app/node_modules/next/dist/server/load-components.js
+- /root/pte-essay-checker/app/node_modules/next/dist/build/utils.js
+- /root/pte-essay-checker/app/node_modules/next/dist/server/dev/static-paths-worker.js
+- /root/pte-essay-checker/app/node_modules/next/dist/compiled/jest-worker/processChild.js] {
+  type: 'Error',
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [Array]
+}
+ ⨯ Failed to generate static paths for /dashboard/results/[id]:
+[Error: Cannot find module './vendor-chunks/@aws-amplify.js'
+Require stack:
+- /root/pte-essay-checker/app/.next/server/webpack-runtime.js
+- /root/pte-essay-checker/app/.next/server/app/(dashboard)/dashboard/results/[id]/page.js
+- /root/pte-essay-checker/app/node_modules/next/dist/server/require.js
+- /root/pte-essay-checker/app/node_modules/next/dist/server/load-components.js
+- /root/pte-essay-checker/app/node_modules/next/dist/build/utils.js
+- /root/pte-essay-checker/app/node_modules/next/dist/server/dev/static-paths-worker.js
+- /root/pte-essay-checker/app/node_modules/next/dist/compiled/jest-worker/processChild.js] {
+  type: 'Error',
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [Array]
+}
+ ⨯ Failed to generate static paths for /dashboard/results/[id]:
+[Error: Cannot find module './vendor-chunks/@aws-amplify.js'
+Require stack:
+- /root/pte-essay-checker/app/.next/server/webpack-runtime.js
+- /root/pte-essay-checker/app/.next/server/app/(dashboard)/dashboard/results/[id]/page.js
+- /root/pte-essay-checker/app/node_modules/next/dist/server/require.js
+- /root/pte-essay-checker/app/node_modules/next/dist/server/load-components.js
+- /root/pte-essay-checker/app/node_modules/next/dist/build/utils.js
+- /root/pte-essay-checker/app/node_modules/next/dist/server/dev/static-paths-worker.js
+- /root/pte-essay-checker/app/node_modules/next/dist/compiled/jest-worker/processChild.js] {
+  type: 'Error',
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [Array]
+}
+ ⨯ Failed to generate static paths for /dashboard/results/[id]:
+[Error: Cannot find module './vendor-chunks/@aws-amplify.js'
+Require stack:
+- /root/pte-essay-checker/app/.next/server/webpack-runtime.js
+- /root/pte-essay-checker/app/.next/server/app/(dashboard)/dashboard/results/[id]/page.js
+- /root/pte-essay-checker/app/node_modules/next/dist/server/require.js
+- /root/pte-essay-checker/app/node_modules/next/dist/server/load-components.js
+- /root/pte-essay-checker/app/node_modules/next/dist/build/utils.js
+- /root/pte-essay-checker/app/node_modules/next/dist/server/dev/static-paths-worker.js
+- /root/pte-essay-checker/app/node_modules/next/dist/compiled/jest-worker/processChild.js] {
+  type: 'Error',
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [Array]
+}
+ ○ Compiling /_not-found ...
+ ✓ Compiled /_not-found in 895ms (2855 modules)
+ GET / 200 in 1232ms
+ GET /_next/static/css/app/layout.css?v=1753715185087 404 in 1442ms
+ GET /_next/static/chunks/app-pages-internals.js 404 in 111ms
+ GET /_next/static/chunks/app/page.js 404 in 111ms
+ GET /_next/static/chunks/app/layout.js 404 in 108ms
+ GET /_next/static/chunks/main-app.js?v=1753715186389 404 in 92ms
+ ✓ Compiled /favicon.ico in 395ms (1568 modules)
+ GET /favicon.ico 200 in 553ms
+ ✓ Compiled in 1696ms (2758 modules)
+ ⨯ [Error: Cannot find module './vendor-chunks/@aws-amplify.js'
+Require stack:
+- /root/pte-essay-checker/app/.next/server/webpack-runtime.js
+- /root/pte-essay-checker/app/.next/server/app/(dashboard)/dashboard/results/[id]/page.js
+- /root/pte-essay-checker/app/node_modules/next/dist/server/require.js
+- /root/pte-essay-checker/app/node_modules/next/dist/server/load-components.js
+- /root/pte-essay-checker/app/node_modules/next/dist/build/utils.js
+- /root/pte-essay-checker/app/node_modules/next/dist/server/dev/static-paths-worker.js
+- /root/pte-essay-checker/app/node_modules/next/dist/compiled/jest-worker/processChild.js] {
+  type: 'Error',
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [Array],
+  page: '/dashboard/results/4d52de3f-5eb9-4a30-bd87-8fca5be204c0'
+}
+ ○ Compiling /_error ...
+ ✓ Compiled /_error in 636ms (2845 modules)
+ GET /dashboard/results/4d52de3f-5eb9-4a30-bd87-8fca5be204c0 500 in 1453ms
+ ✓ Compiled / in 426ms (1550 modules)
+ ⨯ [Error: ENOENT: no such file or directory, open '/root/pte-essay-checker/app/.next/routes-manifest.json'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/root/pte-essay-checker/app/.next/routes-manifest.json',
+  page: '/'
+}
+ ⨯ Error: Cannot find module './548.js'
+Require stack:
+- /root/pte-essay-checker/app/.next/server/webpack-runtime.js
+- /root/pte-essay-checker/app/.next/server/app/page.js
+- /root/pte-essay-checker/app/node_modules/next/dist/server/require.js
+- /root/pte-essay-checker/app/node_modules/next/dist/server/load-components.js
+- /root/pte-essay-checker/app/node_modules/next/dist/build/utils.js
+- /root/pte-essay-checker/app/node_modules/next/dist/build/swc/options.js
+- /root/pte-essay-checker/app/node_modules/next/dist/build/swc/index.js
+- /root/pte-essay-checker/app/node_modules/next/dist/build/next-config-ts/transpile-config.js
+- /root/pte-essay-checker/app/node_modules/next/dist/server/config.js
+- /root/pte-essay-checker/app/node_modules/next/dist/server/next.js
+- /root/pte-essay-checker/app/node_modules/next/dist/server/lib/start-server.js
+    at <unknown> (.next/server/pages/_document.js:1:376)
+    at Object.<anonymous> (.next/server/pages/_document.js:1:422) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [Array]
+}
+ GET / 500 in 3994ms
+ ○ Compiling /_not-found ...
+ ✓ Compiled /_not-found in 964ms (2855 modules)
+ GET / 404 in 1270ms
+ GET /_next/static/webpack/518d107a40e195e8.webpack.hot-update.json 404 in 947ms
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+ GET /_next/static/media/569ce4b8f30dc480-s.p.woff2 404 in 39ms
+ GET /_next/static/media/93f479601ee12b01-s.p.woff2 404 in 106ms
+ GET /_next/static/css/app/layout.css?v=1753716294704 404 in 111ms
+ GET /_next/static/chunks/main-app.js?v=1753716294704 404 in 117ms
+ GET /_next/static/chunks/app/layout.js 404 in 118ms
+ GET /_next/static/chunks/app-pages-internals.js 404 in 90ms
+ ⨯ [Error: ENOENT: no such file or directory, open '/root/pte-essay-checker/app/.next/server/app/page.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/root/pte-essay-checker/app/.next/server/app/page.js',
+  page: '/'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/root/pte-essay-checker/app/.next/server/pages/_document.js'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/root/pte-essay-checker/app/.next/server/pages/_document.js'
+}
+ GET / 500 in 74ms
+ GET /_next/static/chunks/fallback/main.js 404 in 138ms
+ GET /_next/static/chunks/fallback/pages/_app.js 404 in 140ms
+ GET /_next/static/chunks/fallback/pages/_error.js 404 in 140ms
+ GET /_next/static/chunks/fallback/webpack.js 404 in 142ms
+ GET /_next/static/chunks/fallback/react-refresh.js 404 in 216ms
+ GET /_next/static/media/93f479601ee12b01-s.p.woff2 404 in 53ms
+ GET /_next/static/media/569ce4b8f30dc480-s.p.woff2 404 in 56ms
+[Error: ENOENT: no such file or directory, stat '/root/pte-essay-checker/app/.next/cache/webpack/server-development/6.pack.gz'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'stat',
+  path: '/root/pte-essay-checker/app/.next/cache/webpack/server-development/6.pack.gz'
+}
+ ⨯ unhandledRejection: [Error: ENOENT: no such file or directory, stat '/root/pte-essay-checker/app/.next/cache/webpack/server-development/6.pack.gz'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'stat',
+  path: '/root/pte-essay-checker/app/.next/cache/webpack/server-development/6.pack.gz'
+}
+ ⨯ unhandledRejection:  [Error: ENOENT: no such file or directory, stat '/root/pte-essay-checker/app/.next/cache/webpack/server-development/6.pack.gz'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'stat',
+  path: '/root/pte-essay-checker/app/.next/cache/webpack/server-development/6.pack.gz'
+}
+<w> [webpack.cache.PackFileCacheStrategy] Caching failed for pack: Error: ENOENT: no such file or directory, stat '/root/pte-essay-checker/app/.next/cache/webpack/server-development/6.pack.gz'

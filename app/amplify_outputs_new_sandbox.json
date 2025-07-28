@@ -1,0 +1,43 @@
+{
+  "auth": {
+    "user_pool_id": "ap-south-1_ycgkw7irZ",
+    "aws_region": "ap-south-1",
+    "user_pool_client_id": "pl5jsh1rhkjcl9hifbultnl98",
+    "identity_pool_id": "ap-south-1:70d53cfe-498c-4240-9cc3-09334d30c8a1",
+    "mfa_methods": [],
+    "standard_required_attributes": [
+      "email"
+    ],
+    "username_attributes": [
+      "email"
+    ],
+    "user_verification_types": [
+      "email"
+    ],
+    "groups": [],
+    "mfa_configuration": "NONE",
+    "password_policy": {
+      "min_length": 8,
+      "require_lowercase": true,
+      "require_numbers": true,
+      "require_symbols": true,
+      "require_uppercase": true
+    },
+    "unauthenticated_identities_enabled": true
+  },
+  "data": {
+    "url": "https://lt3lrxpdmrec7hq7dkpytodkam.appsync-api.ap-south-1.amazonaws.com/graphql",
+    "aws_region": "ap-south-1",
+    "api_key": "da2-5gzsl3cs5jhkja7thkl2coyyya",
+    "default_authorization_type": "AMAZON_COGNITO_USER_POOLS",
+    "authorization_types": [
+      "API_KEY",
+      "AWS_IAM"
+    ]
+  },
+  "storage": {
+    "aws_region": "ap-south-1",
+    "bucket_name": "amplify-app-root-sandbox--pteessaystoragebucketc06-xqiyslyrfhsu"
+  },
+  "version": "1.2"
+}
