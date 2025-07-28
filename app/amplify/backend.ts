@@ -105,6 +105,8 @@ backend.data.resources.tables["GoldStandardEssay"].grantReadWriteData(
   backend.generateEmbeddings.resources.lambda
 );
 
+// Environment variable for generateEmbeddings is set in the resource.ts file
+
 // Add explicit permission for querying indexes and scanning
 backend.processEssay.resources.lambda.addToRolePolicy(
   new PolicyStatement({
@@ -126,7 +128,10 @@ const dataStack = Stack.of(backend.data);
 // Basic sampling rule - sample 10% of requests after the first one per second
 // Generate a simple unique suffix from the branch name
 const branchName = process.env.AWS_BRANCH || 'main';
-const uniqueSuffix = branchName.replace(/[^a-zA-Z0-9]/g, '').slice(0, 8);
+const isSandbox = !process.env.AWS_BRANCH;
+const uniqueSuffix = isSandbox 
+  ? `sb${Math.random().toString(36).substring(2, 8)}` 
+  : branchName.replace(/[^a-zA-Z0-9]/g, '').slice(0, 8);
 new CfnSamplingRule(dataStack, 'BasicSamplingRule', {
   samplingRule: {
     ruleName: `PTE-Basic-${uniqueSuffix}`,
@@ -256,6 +261,26 @@ dlqOldMessagesAlarm.addAlarmAction(new SnsAction(dlqAlertTopic));
 backend.data.resources.tables["Essay"].grantReadWriteData(
   backend.submitEssayToQueue.resources.lambda
 );
+
+// Grant generateEmbeddings function access to GoldStandardEssay table
+backend.data.resources.tables["GoldStandardEssay"].grantReadWriteData(
+  backend.generateEmbeddings.resources.lambda
+);
+
+// Grant generateEmbeddings permission to use Bedrock
+backend.generateEmbeddings.resources.lambda.addToRolePolicy(
+  new PolicyStatement({
+    actions: [
+      'bedrock:InvokeModel',
+      'bedrock:InvokeModelWithResponseStream'
+    ],
+    resources: [
+      `arn:aws:bedrock:ap-south-1::foundation-model/amazon.titan-embed-text-v2:0`
+    ],
+  })
+);
+
+// Environment variable for generateEmbeddings is set in the resource.ts file
 
 // Export DLQ URL for monitoring and manual processing
 backend.addOutput({

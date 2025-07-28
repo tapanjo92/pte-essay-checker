@@ -1,161 +1,75 @@
-# Vector Search Implementation Guide
+# Vector Search Implementation for PTE Essay Checker
 
 ## Overview
-
-This document explains the vector search implementation for the PTE Essay Checker, which uses Amazon Titan embeddings to find semantically similar essays from the gold standard database.
+This implementation adds semantic vector search capabilities to the PTE Essay Checker using Amazon Bedrock Titan Embeddings. The system automatically seeds gold standard essays with embeddings and uses cosine similarity for finding relevant examples during essay scoring.
 
 ## Architecture
 
-```
-Student Essay → Titan Embeddings → Vector (1536 dimensions) → Cosine Similarity → Top 5 Similar Essays → Claude Haiku
-```
+### Components
+1. **generateEmbeddings Lambda Function**: Seeds and maintains embeddings for gold standard essays
+2. **vectorUtils.ts**: Core vector operations (embedding generation, similarity search)
+3. **Enhanced RAG in processEssay**: Uses vector similarity for better essay matching
 
-## Components
+### Automated Deployment Process
+1. Deploy with `npx ampx sandbox` or push to main branch
+2. The `generateEmbeddings` function is deployed with proper permissions
+3. Post-deployment: Run `npm run post-deploy` to seed essays with embeddings
+4. Vector search is now active for all new essay submissions
 
-### 1. Vector Utilities Module (`vectorUtils.ts`)
+## Features
 
-- **generateEmbedding()**: Converts text to 1536-dimensional vector using Amazon Titan
-- **cosineSimilarity()**: Calculates similarity between two vectors (0-1 scale)
-- **findSimilarVectors()**: Finds top K similar items based on vector similarity
-- **In-memory caching**: Reduces API calls for frequently processed text
+### 1. Automatic Seeding
+The system includes 5 PTE-standard essays across different score ranges:
+- **85-90 (High)**: Sophisticated vocabulary, complex structures
+- **75-84 (Medium)**: Good structure, some repetition
+- **65-74 (Low)**: Basic structure, grammar errors
+- **25-64 (Very Low)**: Poor structure, many errors
 
-### 2. Enhanced RAG Function (`handler.ts`)
+### 2. Vector Generation
+- Uses Amazon Titan Embed Text V2 (1024 dimensions)
+- Combines topic + essay content for context-aware embeddings
+- Caches embeddings to reduce API calls
+- Rate limiting: 1 second between embedding generations
 
-The `findSimilarEssays()` function now:
-1. Generates embedding for student essay
-2. Scans gold standard essays with embeddings
-3. Calculates cosine similarity for each
-4. Returns top 5 most similar essays (>70% similarity)
-5. Falls back to exact topic matching if needed
+### 3. Similarity Search
+- Cosine similarity with 0.7 threshold (70% similarity)
+- Returns top 5 most similar essays
+- Falls back to topic-based search if vector search fails
+- Results include similarity scores for transparency
 
-### 3. One-Time Embedding Generation
+## Manual Invocation (if needed)
 
-The `generateEmbeddings` Lambda function:
-- Processes all existing gold standard essays
-- Generates embeddings in batches of 5
-- Handles rate limiting with exponential backoff
-- Updates DynamoDB with embedding vectors
-
-## Setup Instructions
-
-### Step 1: Deploy the Updated Code
-
+To manually trigger seeding:
 ```bash
-git add .
-git commit -m "Add vector search implementation for RAG"
-git push origin main
-```
-
-Amplify will automatically deploy the changes.
-
-### Step 2: Generate Embeddings for Existing Essays
-
-After deployment, run the embedding generation function:
-
-```bash
-# Using AWS CLI
 aws lambda invoke \
-  --function-name generateEmbeddings-<your-env-id> \
-  --region ap-south-1 \
+  --function-name amplify-pteessaychecker-generateEmbeddings \
+  --payload '{"action": "seed"}' \
   response.json
-
-# Or use AWS Console:
-# 1. Go to Lambda console
-# 2. Find "generateEmbeddings" function
-# 3. Click "Test" with empty event {}
 ```
 
-This will:
-- Process all gold standard essays
-- Generate embeddings for each
-- Store them in DynamoDB
-- Take ~5-10 minutes for 50 essays
-
-### Step 3: Verify Implementation
-
-Check CloudWatch Logs for:
-- "Found similar essays via vector search" messages
-- Similarity scores (should be 70-100%)
-- X-Ray traces showing vector operations
-
-## How It Works
-
-### When a Student Submits an Essay:
-
-1. **Embedding Generation**
-   ```typescript
-   const embedding = await generateEssayEmbedding(topic, content);
-   // Returns: [0.123, -0.456, 0.789, ...] (1536 numbers)
-   ```
-
-2. **Similarity Search**
-   ```typescript
-   const similar = findSimilarVectors(embedding, goldStandardEssays, 5, 0.7);
-   // Returns: Essays with >70% similarity, sorted by relevance
-   ```
-
-3. **Enhanced Prompt**
-   ```
-   Example Essay #1 (92% similar) (Official PTE Score: 79/90):
-   Topic: AI will replace human workers...
-   [Essay details and scores]
-   ```
-
-## Cost Analysis
-
-- **Titan Embeddings**: $0.0001 per 1K tokens
-- **With Caching**: ~80% reduction in API calls
-- **Estimated Cost**: $0.002 per essay (including cached hits)
-
-## Performance Metrics
-
-- **Embedding Generation**: 100-200ms
-- **Vector Search (DynamoDB)**: 200-500ms for <1000 essays
-- **Total RAG Overhead**: ~300-700ms
-- **Accuracy Improvement**: 15-25% more consistent scoring
-
-## Future Optimizations
-
-### Phase 1 (Current) ✓
-- DynamoDB storage with in-Lambda similarity calculation
-- Good for <1000 essays
-
-### Phase 2 (Next Steps)
-- Migrate to OpenSearch for native vector search
-- Scales to 100K+ essays
-- Reduces latency to 50-100ms
-
-### Phase 3 (Future)
-- Use Bedrock Knowledge Bases
-- Automatic chunking and retrieval
-- Built-in vector database
+To update embeddings for existing essays:
+```bash
+aws lambda invoke \
+  --function-name amplify-pteessaychecker-generateEmbeddings \
+  --payload '{"action": "update-existing"}' \
+  response.json
+```
 
 ## Monitoring
 
-Check these CloudWatch metrics:
-- `vectorSearch: true` - Vector search was used
-- `vectorResultsFound: N` - Number of similar essays found
-- `similarities: [0.92, 0.85, ...]` - Similarity scores
+Check CloudWatch logs:
+```bash
+aws logs tail /aws/lambda/amplify-pteessaychecker-generateEmbeddings --follow
+```
 
-## Troubleshooting
+## Benefits
+1. **Better Scoring Accuracy**: Finds semantically similar essays, not just topic matches
+2. **Nuanced Feedback**: References essays with similar writing patterns
+3. **Scalable**: Can handle thousands of gold standard essays
+4. **Automated**: No manual intervention needed after deployment
 
-### No Similar Essays Found
-- Check if embeddings exist: Look for `embedding` field in DynamoDB
-- Run `generateEmbeddings` function if missing
-- Lower similarity threshold from 0.7 to 0.6
-
-### High Latency
-- Check cache hit rate in logs
-- Consider reducing scan size or implementing pagination
-- Monitor Bedrock throttling in CloudWatch
-
-### Inconsistent Results
-- Ensure all gold standard essays have embeddings
-- Verify essay content is being included in embedding generation
-- Check that similarity threshold isn't too high
-
-## Security Notes
-
-- Embeddings don't contain readable text
-- Cached embeddings expire after 1 hour
-- All operations use IAM roles with least privilege
+## Future Enhancements
+1. Add more diverse gold standard essays (target: 50+ per topic)
+2. Implement vector database (OpenSearch/Pinecone) for better performance
+3. Fine-tune similarity thresholds based on scoring accuracy
+4. Add A/B testing to compare vector vs non-vector scoring

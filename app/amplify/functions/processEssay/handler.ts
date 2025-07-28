@@ -171,13 +171,19 @@ export const handler: SQSHandler = async (event: SQSEvent) => {
       
       // 4. Parse AI response and calculate scores
       console.log('Parsing AI response...');
-      const scoringResult = parseAIResponse(aiResponse);
+      const scoringResult = parseAIResponse(aiResponse, args.wordCount);
       console.log('Scoring result:', scoringResult.overallScore);
       
       // 5. Save results to DynamoDB
       console.log('Saving results to DynamoDB...');
       const resultId = await saveResults(args.essayId, args.userId || 'anonymous', scoringResult);
       console.log('Results saved with ID:', resultId);
+      
+      // 5a. If essay scored highly, consider adding to gold standard
+      if (scoringResult.overallScore >= 85) {
+        console.log('High-scoring essay detected, considering for gold standard...');
+        await considerForGoldStandard(args.topic, args.content, args.wordCount, scoringResult);
+      }
       
       // 6. Update essay status to COMPLETED
       await updateEssayStatus(args.essayId, 'COMPLETED', resultId);
@@ -668,7 +674,7 @@ async function callBedrockAI(prompt: string): Promise<any> {
   }
 }
 
-function parseAIResponse(aiResponse: any): ScoringResult {
+function parseAIResponse(aiResponse: any, wordCount: number): ScoringResult {
   let overallScore: number;
   let result: ScoringResult;
   
@@ -683,28 +689,76 @@ function parseAIResponse(aiResponse: any): ScoringResult {
       explanation: aiResponse.topicRelevance.explanation
     });
     
-    // If essay is off-topic, enforce strict scoring rules
-    if (!isOnTopic || relevanceScore < 50) {
-      structuredLog('WARN', 'Essay is off-topic, applying PTE penalty', {
-        relevanceScore,
-        originalContentScore: aiResponse.pteScores?.content
-      });
+    // Implement graduated content scoring based on relevance
+    if (aiResponse.pteScores) {
+      const originalContent = aiResponse.pteScores.content || 0;
       
-      // Force content score to 0 for off-topic essays
-      if (aiResponse.pteScores) {
+      if (relevanceScore >= 90) {
+        // 90-100% relevant: Full content score (no change)
+        structuredLog('INFO', 'Essay is fully on-topic', { relevanceScore });
+      } else if (relevanceScore >= 70) {
+        // 70-89% relevant: 2/3 content
+        aiResponse.pteScores.content = Math.min(originalContent, 2);
+        structuredLog('WARN', 'Essay is mostly on-topic, capping content at 2/3', {
+          relevanceScore,
+          originalContentScore: originalContent,
+          adjustedContentScore: aiResponse.pteScores.content
+        });
+      } else if (relevanceScore >= 50) {
+        // 50-69% relevant: 1/3 content
+        aiResponse.pteScores.content = Math.min(originalContent, 1);
+        structuredLog('WARN', 'Essay is partially on-topic, capping content at 1/3', {
+          relevanceScore,
+          originalContentScore: originalContent,
+          adjustedContentScore: aiResponse.pteScores.content
+        });
+      } else {
+        // <50% relevant: 0/3 content
         aiResponse.pteScores.content = 0;
+        structuredLog('WARN', 'Essay is off-topic, setting content to 0/3', {
+          relevanceScore,
+          originalContentScore: originalContent
+        });
       }
       
-      // Add warning to feedback
+      // Add appropriate feedback based on relevance
       if (!aiResponse.feedback) {
         aiResponse.feedback = {};
       }
-      aiResponse.feedback.summary = `CRITICAL: This essay is off-topic and does not address the given prompt. In PTE Academic, off-topic essays receive very low scores regardless of language quality. ${aiResponse.feedback.summary || ''}`;
+      
+      if (relevanceScore < 50) {
+        aiResponse.feedback.summary = `CRITICAL: This essay is off-topic and does not address the given prompt. In PTE Academic, off-topic essays receive very low scores regardless of language quality. ${aiResponse.feedback.summary || ''}`;
+      } else if (relevanceScore < 70) {
+        aiResponse.feedback.summary = `WARNING: This essay only partially addresses the topic. Some key aspects of the prompt are missing or underdeveloped. ${aiResponse.feedback.summary || ''}`;
+      } else if (relevanceScore < 90) {
+        aiResponse.feedback.summary = `NOTE: While this essay addresses the topic, some minor aspects could be more directly related to the prompt. ${aiResponse.feedback.summary || ''}`;
+      }
     }
   }
   
   // Check if AI returned new PTE format
   if (aiResponse.pteScores) {
+    // Apply word count penalty to Form score
+    const originalFormScore = aiResponse.pteScores.form || 0;
+    if (wordCount < 200 || wordCount > 300) {
+      aiResponse.pteScores.form = Math.max(0, originalFormScore - 1);
+      structuredLog('WARN', 'Applied word count penalty to Form score', {
+        wordCount,
+        originalFormScore,
+        adjustedFormScore: aiResponse.pteScores.form,
+        reason: wordCount < 200 ? 'Under 200 words' : 'Over 300 words'
+      });
+      
+      // Add feedback about word count
+      if (!aiResponse.feedback) {
+        aiResponse.feedback = {};
+      }
+      if (!aiResponse.feedback.detailedFeedback) {
+        aiResponse.feedback.detailedFeedback = {};
+      }
+      aiResponse.feedback.detailedFeedback.form = `Word count penalty applied: ${wordCount} words (required: 200-300). ${aiResponse.feedback.detailedFeedback.form || ''}`;
+    }
+    
     // Calculate overall score from PTE raw scores (out of 14)
     const rawTotal = 
       aiResponse.pteScores.content +
@@ -718,10 +772,22 @@ function parseAIResponse(aiResponse: any): ScoringResult {
     // Scale to 90
     overallScore = Math.round((rawTotal / 14) * 90);
     
-    // CRITICAL: Apply off-topic veto - cap score at 25/90 if content is 0
-    if (aiResponse.pteScores.content === 0) {
+    // Apply relevance-based caps
+    const relevanceScore = aiResponse.topicRelevance?.relevanceScore || 100;
+    
+    if (relevanceScore < 50) {
+      // <50% relevant: Cap at 25/90
       overallScore = Math.min(overallScore, 25);
-      structuredLog('WARN', 'Applied off-topic score cap', {
+      structuredLog('WARN', 'Applied off-topic score cap (25/90)', {
+        relevanceScore,
+        originalScore: Math.round((rawTotal / 14) * 90),
+        cappedScore: overallScore
+      });
+    } else if (relevanceScore >= 50 && relevanceScore < 70) {
+      // 50-69% relevant: Cap at 65/90
+      overallScore = Math.min(overallScore, 65);
+      structuredLog('WARN', 'Applied partial relevance score cap (65/90)', {
+        relevanceScore,
         originalScore: Math.round((rawTotal / 14) * 90),
         cappedScore: overallScore
       });
@@ -947,5 +1013,75 @@ async function sendResultEmail(
   } catch (error) {
     console.error('Error sending email:', error);
     // Don't throw - we don't want to fail the whole process if email fails
+  }
+}
+
+// Add high-scoring essays to gold standard with embeddings
+async function considerForGoldStandard(
+  topic: string,
+  essayText: string,
+  wordCount: number,
+  scoringResult: any
+): Promise<void> {
+  try {
+    // Only add essays with score >= 85 and good feedback
+    if (scoringResult.overallScore < 85) {
+      return;
+    }
+
+    // Generate embedding for the essay
+    console.log('Generating embedding for potential gold standard essay...');
+    const embedding = await generateEssayEmbedding(topic, essayText);
+    
+    // Determine score range
+    let scoreRange = '85-90';
+    if (scoringResult.overallScore >= 90) {
+      scoreRange = '90+';
+    }
+    
+    // Extract category from topic (simplified - in production, use AI to classify)
+    let category = 'AGREE_DISAGREE';
+    if (topic.toLowerCase().includes('discuss both')) {
+      category = 'DISCUSS_BOTH_VIEWS';
+    } else if (topic.toLowerCase().includes('advantages') && topic.toLowerCase().includes('disadvantages')) {
+      category = 'ADVANTAGES_DISADVANTAGES';
+    }
+    
+    // Create gold standard entry
+    const goldStandardEntry = {
+      id: `auto-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      topic: topic,
+      category: category,
+      essayText: essayText,
+      wordCount: wordCount,
+      officialScore: scoringResult.overallScore,
+      scoreBreakdown: {
+        content: scoringResult.taskResponseScore,
+        coherence: scoringResult.coherenceScore,
+        vocabulary: scoringResult.vocabularyScore,
+        grammar: scoringResult.grammarScore
+      },
+      strengths: scoringResult.feedback?.strengths || [],
+      weaknesses: scoringResult.feedback?.improvements || [],
+      embedding: embedding,
+      scoreRange: scoreRange,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      source: 'auto-generated'
+    };
+    
+    // Save to GoldStandardEssay table
+    const putParams = {
+      TableName: process.env.GOLD_STANDARD_TABLE_NAME!,
+      Item: goldStandardEntry,
+      ConditionExpression: 'attribute_not_exists(id)' // Prevent overwrites
+    };
+    
+    await docClient.send(new PutCommand(putParams));
+    console.log('Successfully added high-scoring essay to gold standard');
+    
+  } catch (error) {
+    console.error('Error adding to gold standard:', error);
+    // Don't throw - this is a nice-to-have feature
   }
 }
