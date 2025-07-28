@@ -8,6 +8,7 @@ import { getCurrentUser } from 'aws-amplify/auth';
 import { toast } from 'sonner';
 import { createTracedClient } from '@/lib/xray-client';
 import { useNetworkStatus, retryWithBackoff, isNetworkError } from '@/lib/network-utils';
+import { EssayTracker, trackEvent } from '@/lib/analytics';
 
 // This is how you build a dashboard that actually works
 export default function DashboardPage() {
@@ -26,6 +27,9 @@ export default function DashboardPage() {
   
   // User state - secondary
   const [user, setUser] = useState<any>(null);
+  
+  // Analytics tracker
+  const essayTrackerRef = useRef<EssayTracker | null>(null);
   
   // Load essay topic IMMEDIATELY - no blocking
   useEffect(() => {
@@ -85,6 +89,20 @@ export default function DashboardPage() {
     setEssayContent(content);
     setWordCount(content.trim().split(/\s+/).filter(Boolean).length);
     
+    // Initialize tracker on first keystroke
+    if (!essayTrackerRef.current && content.length > 0) {
+      essayTrackerRef.current = new EssayTracker();
+      trackEvent('ESSAY_STARTED', {
+        topic: essayTopic?.title,
+        topicId: essayTopic?.id
+      });
+    }
+    
+    // Track content changes
+    if (essayTrackerRef.current) {
+      essayTrackerRef.current.onContentChange(content);
+    }
+    
     // Start timer on first keystroke
     if (!isTimerActive && content.length > 0) {
       setIsTimerActive(true);
@@ -110,7 +128,15 @@ export default function DashboardPage() {
       // Get current user for submission
       const currentUser = await getCurrentUser();
       
-      // Create essay record
+      // Get analytics metrics
+      const metrics = essayTrackerRef.current?.getMetrics() || {
+        timeTaken: 0,
+        editCount: 0,
+        deviceType: 'unknown',
+        browserInfo: 'unknown'
+      };
+      
+      // Create essay record with analytics
       // The owner field will be automatically set by Amplify based on the authenticated user
       const essayResult = await retryWithBackoff(
         () => client.models.Essay.create({
@@ -119,6 +145,11 @@ export default function DashboardPage() {
           content: essayContent,
           wordCount: wordCount,
           status: 'PENDING',
+          // Analytics fields
+          timeTaken: metrics.timeTaken,
+          editCount: metrics.editCount,
+          deviceType: metrics.deviceType,
+          browserInfo: metrics.browserInfo,
           // Explicitly set timestamps to ensure they're saved
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
@@ -142,6 +173,15 @@ export default function DashboardPage() {
         console.error('Queue submission error:', error);
         // Don't fail - processing can happen async
       });
+      
+      // Track submission event
+      await trackEvent('ESSAY_SUBMITTED', {
+        essayId: essayId,
+        topic: essayTopic.title,
+        wordCount: wordCount,
+        timeTaken: metrics.timeTaken,
+        editCount: metrics.editCount
+      }, essayId);
       
       toast.success('Essay submitted successfully!', { id: toastId });
       

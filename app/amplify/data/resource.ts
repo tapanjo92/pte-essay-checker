@@ -11,6 +11,8 @@ const schema = a.schema({
     subscriptionId: a.string(),
     subscription: a.belongsTo('UserSubscription', 'subscriptionId'),
     essays: a.hasMany('Essay', 'userId'),
+    progress: a.hasMany('UserProgress', 'userId'),
+    events: a.hasMany('AnalyticsEvent', 'userId'),
     createdAt: a.datetime(),
     updatedAt: a.datetime(),
   }).authorization(allow => [allow.owner()]),
@@ -34,9 +36,14 @@ const schema = a.schema({
     topic: a.string().required(),
     content: a.string().required(),
     wordCount: a.integer().required(),
-    status: a.enum(['PENDING', 'PROCESSING', 'COMPLETED', 'FAILED']),
+    status: a.enum(['PENDING', 'QUEUED', 'PROCESSING', 'COMPLETED', 'FAILED']),
     resultId: a.string(),
     result: a.hasOne('Result', 'essayId'),
+    // Analytics fields
+    timeTaken: a.integer(), // seconds spent writing
+    editCount: a.integer().default(0), // number of changes
+    deviceType: a.string(), // mobile/desktop/tablet
+    browserInfo: a.string(), // user agent string
     createdAt: a.datetime(),
     updatedAt: a.datetime(),
   }).authorization(allow => [allow.owner()]),
@@ -55,6 +62,15 @@ const schema = a.schema({
     highlightedErrors: a.json(),
     processingTime: a.integer(),
     aiModel: a.string(),
+    // New PTE scores
+    pteScores: a.json(),
+    topicRelevance: a.json(),
+    // Performance metrics
+    processingDuration: a.integer(), // milliseconds
+    queueWaitTime: a.integer(), // milliseconds
+    vectorSearchUsed: a.boolean().default(false),
+    similarEssaysFound: a.integer().default(0),
+    confidenceScore: a.float(), // 0-1 AI confidence
     createdAt: a.datetime(),
     updatedAt: a.datetime(),
   }).authorization(allow => [allow.owner()]),
@@ -101,6 +117,60 @@ const schema = a.schema({
   ]).secondaryIndexes(index => [
     index('topic'),
     index('scoreRange')
+  ]),
+
+  // User Progress Tracking
+  UserProgress: a.model({
+    id: a.id(),
+    userId: a.string().required(),
+    user: a.belongsTo('User', 'userId'),
+    topicCategory: a.enum(['AGREE_DISAGREE', 'DISCUSS_BOTH_VIEWS', 'ADVANTAGES_DISADVANTAGES', 'PROBLEM_SOLUTION', 'POSITIVE_NEGATIVE', 'CAUSES_EFFECTS']),
+    averageScore: a.float().default(0),
+    attemptCount: a.integer().default(0),
+    lastImprovement: a.float().default(0), // percentage change
+    weakAreas: a.json(), // ["grammar", "coherence", etc]
+    strongAreas: a.json(), // ["vocabulary", "task_response", etc]
+    lastAttemptDate: a.datetime(),
+    bestScore: a.float().default(0),
+    trend: a.enum(['IMPROVING', 'STABLE', 'DECLINING']),
+    createdAt: a.datetime(),
+    updatedAt: a.datetime(),
+  }).authorization(allow => [allow.owner()])
+    .secondaryIndexes(index => [
+      index('userId').queryField('progressByUser'),
+      index('topicCategory')
+    ]),
+
+  // Analytics Events for User Journey
+  AnalyticsEvent: a.model({
+    id: a.id(),
+    userId: a.string().required(),
+    user: a.belongsTo('User', 'userId'),
+    event: a.enum([
+      'ESSAY_STARTED',
+      'ESSAY_SUBMITTED', 
+      'ESSAY_CANCELLED',
+      'RESULT_VIEWED',
+      'FEEDBACK_RATED',
+      'SUBSCRIPTION_UPGRADED',
+      'FEATURE_USED',
+      'ERROR_OCCURRED'
+    ]),
+    metadata: a.json(), // Flexible JSON for event-specific data
+    essayId: a.string(), // Optional reference to essay
+    sessionId: a.string(), // Track user sessions
+    timestamp: a.datetime().required(),
+    deviceType: a.string(),
+    browserInfo: a.string(),
+    ipAddress: a.string(),
+    createdAt: a.datetime(),
+  }).authorization(allow => [
+    allow.owner().to(['read']),
+    allow.groups(['Admin']).to(['read', 'delete'])
+  ]).secondaryIndexes(index => [
+    index('userId').sortKeys(['timestamp']).queryField('eventsByUser'),
+    index('event').sortKeys(['timestamp']).queryField('eventsByType'),
+    index('sessionId').queryField('eventsBySession')
   ]),
 
   submitEssayToQueue: a.mutation()

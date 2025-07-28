@@ -127,6 +127,24 @@ function structuredLog(level: string, message: string, metadata?: any) {
   console.log(JSON.stringify(log));
 }
 
+// Calculate confidence score based on various factors
+function calculateConfidence(similarEssaysFound: number, topicRelevance: number, wordCountCompliance: boolean): number {
+  let confidence = 0.5; // base confidence
+  
+  // More similar essays = higher confidence
+  confidence += Math.min(similarEssaysFound * 0.05, 0.25);
+  
+  // Topic relevance affects confidence
+  confidence += (topicRelevance / 100) * 0.15;
+  
+  // Word count compliance
+  if (wordCountCompliance) {
+    confidence += 0.1;
+  }
+  
+  return Math.min(confidence, 1.0);
+}
+
 export const handler: SQSHandler = async (event: SQSEvent) => {
   const segment = AWSXRay.getSegment();
   structuredLog('INFO', 'SQS Event received', { 
@@ -137,7 +155,16 @@ export const handler: SQSHandler = async (event: SQSEvent) => {
   // Process each message (should be 1 based on our config)
   for (const record of event.Records) {
     const subsegment = segment?.addNewSubsegment('ProcessEssay');
+    const processingStartTime = Date.now();
+    let queueWaitTime = 0;
+    
     try {
+      // Calculate queue wait time
+      const messageTimestamp = record.attributes.SentTimestamp;
+      if (messageTimestamp) {
+        queueWaitTime = processingStartTime - parseInt(messageTimestamp);
+      }
+      
       // Parse the message body
       const args = JSON.parse(record.body) as EssayProcessingEvent;
       
@@ -162,7 +189,7 @@ export const handler: SQSHandler = async (event: SQSEvent) => {
       console.log('Essay status updated');
       
       // 2. Prepare the prompt for AI analysis with RAG enhancement
-      const prompt = await createRAGEnhancedPrompt(args.topic, args.content, args.wordCount);
+      const { prompt, similarEssaysCount, vectorSearchUsed } = await createRAGEnhancedPrompt(args.topic, args.content, args.wordCount);
       
       // 3. Call Bedrock AI for analysis
       console.log('Calling Bedrock AI...');
@@ -174,9 +201,21 @@ export const handler: SQSHandler = async (event: SQSEvent) => {
       const scoringResult = parseAIResponse(aiResponse, args.wordCount);
       console.log('Scoring result:', scoringResult.overallScore);
       
-      // 5. Save results to DynamoDB
+      // 5. Save results to DynamoDB with performance metrics
       console.log('Saving results to DynamoDB...');
-      const resultId = await saveResults(args.essayId, args.userId || 'anonymous', scoringResult);
+      const processingDuration = Date.now() - processingStartTime;
+      const resultId = await saveResults(
+        args.essayId, 
+        args.userId || 'anonymous', 
+        scoringResult,
+        {
+          processingDuration,
+          queueWaitTime,
+          vectorSearchUsed,
+          similarEssaysFound: similarEssaysCount,
+          confidenceScore: calculateConfidence(similarEssaysCount, aiResponse.topicRelevance?.relevanceScore || 100, args.wordCount >= 200 && args.wordCount <= 300)
+        }
+      );
       console.log('Results saved with ID:', resultId);
       
       // 5a. If essay scored highly, consider adding to gold standard
@@ -214,7 +253,7 @@ export const handler: SQSHandler = async (event: SQSEvent) => {
 };
 
 // RAG: Find similar essays from gold standard using vector search
-async function findSimilarEssays(topic: string, content: string, wordCount: number): Promise<any[]> {
+async function findSimilarEssays(topic: string, content: string, wordCount: number): Promise<{ essays: any[], count: number, vectorSearchUsed: boolean }> {
   const segment = AWSXRay.getSegment();
   const subsegment = segment?.addNewSubsegment('RAG.FindSimilarEssays');
   
@@ -253,10 +292,14 @@ async function findSimilarEssays(topic: string, content: string, wordCount: numb
           subsegment?.addAnnotation('vectorResultsFound', vectorResults.length);
           
           // Return essays sorted by similarity
-          return vectorResults.map(r => ({
-            ...r.item,
-            similarity: r.similarity
-          }));
+          return {
+            essays: vectorResults.map(r => ({
+              ...r.item,
+              similarity: r.similarity
+            })),
+            count: vectorResults.length,
+            vectorSearchUsed: true
+          };
         }
       }
     } catch (vectorError) {
@@ -286,31 +329,41 @@ async function findSimilarEssays(topic: string, content: string, wordCount: numb
         subsegment?.addAnnotation('topicMatchFound', response.Items.length);
         
         // Sort by closest word count
-        return response.Items.sort((a, b) => 
+        const essays = response.Items.sort((a, b) => 
           Math.abs(a.wordCount - wordCount) - Math.abs(b.wordCount - wordCount)
         ).slice(0, 3);
+        
+        return {
+          essays,
+          count: essays.length,
+          vectorSearchUsed: false
+        };
       }
     } catch (queryError) {
       structuredLog('WARN', 'Gold standard query failed', { error: queryError });
     }
     
-    return [];
+    return { essays: [], count: 0, vectorSearchUsed: false };
   } catch (error) {
     subsegment?.addError(error as Error);
     structuredLog('ERROR', 'RAG enhancement failed', { error });
-    return [];
+    return { essays: [], count: 0, vectorSearchUsed: false };
   } finally {
     subsegment?.close();
   }
 }
 
 // Create RAG-enhanced prompt
-async function createRAGEnhancedPrompt(topic: string, content: string, wordCount: number): Promise<string> {
-  const similarEssays = await findSimilarEssays(topic, content, wordCount);
+async function createRAGEnhancedPrompt(topic: string, content: string, wordCount: number): Promise<{ prompt: string, similarEssaysCount: number, vectorSearchUsed: boolean }> {
+  const { essays: similarEssays, count, vectorSearchUsed } = await findSimilarEssays(topic, content, wordCount);
   
   if (similarEssays.length === 0) {
     structuredLog('INFO', 'No similar essays found, using standard prompt');
-    return createAnalysisPrompt(topic, content);
+    return {
+      prompt: createAnalysisPrompt(topic, content),
+      similarEssaysCount: 0,
+      vectorSearchUsed
+    };
   }
   
   // Build RAG context with similarity scores
@@ -354,7 +407,7 @@ Essay Excerpt: ${essay.essayText.substring(0, 200)}...
   }).join('\n---\n');
 
   // Create enhanced prompt
-  return `You are an expert PTE Academic essay evaluator. You have access to similar essays with official PTE scores for reference.
+  const enhancedPrompt = `You are an expert PTE Academic essay evaluator. You have access to similar essays with official PTE scores for reference.
 
 REFERENCE ESSAYS WITH OFFICIAL SCORES:
 ${ragContext}
@@ -440,6 +493,12 @@ Provide your response as a valid JSON object (no markdown, no code blocks, just 
   ],
   "comparisonNote": "<brief note comparing this essay to the reference essays>"
 }`;
+  
+  return {
+    prompt: enhancedPrompt,
+    similarEssaysCount: count,
+    vectorSearchUsed
+  };
 }
 
 function createAnalysisPrompt(topic: string, content: string): string {
@@ -896,7 +955,18 @@ async function updateEssayStatus(essayId: string, status: string, resultId?: str
   }
 }
 
-async function saveResults(essayId: string, userId: string, scoringResult: ScoringResult): Promise<string> {
+async function saveResults(
+  essayId: string, 
+  userId: string, 
+  scoringResult: ScoringResult,
+  performanceMetrics?: {
+    processingDuration: number;
+    queueWaitTime: number;
+    vectorSearchUsed: boolean;
+    similarEssaysFound: number;
+    confidenceScore: number;
+  }
+): Promise<string> {
   const segment = AWSXRay.getSegment();
   const subsegment = segment?.addNewSubsegment('DynamoDB.SaveResults');
   
@@ -918,6 +988,14 @@ async function saveResults(essayId: string, userId: string, scoringResult: Scori
         ...scoringResult,
         aiModel: process.env.BEDROCK_MODEL_ID || 'meta.llama3-8b-instruct-v1:0',
         processingTime: Date.now(),
+        // Add performance metrics if provided
+        ...(performanceMetrics && {
+          processingDuration: performanceMetrics.processingDuration,
+          queueWaitTime: performanceMetrics.queueWaitTime,
+          vectorSearchUsed: performanceMetrics.vectorSearchUsed,
+          similarEssaysFound: performanceMetrics.similarEssaysFound,
+          confidenceScore: performanceMetrics.confidenceScore
+        }),
         createdAt: timestamp,
         updatedAt: timestamp
       }

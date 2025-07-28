@@ -820,6 +820,146 @@ In conclusion government must stop wasting money on space and help earth first. 
       linguisticRange: 0
     },
     scoreRange: '50-65'
+  },
+  
+  // TOPIC 8: Globalization (VERY HIGH SCORE - 90-95)
+  {
+    id: 'seed-globalization-veryhigh',
+    topic: 'International trade barriers are being reduced worldwide. Do the advantages of globalization outweigh the disadvantages?',
+    category: 'ADVANTAGES_DISADVANTAGES',
+    essayText: `The dismantling of international trade barriers has catalyzed unprecedented global economic integration, generating both transformative benefits and substantial challenges. While acknowledging globalization's complexities, I firmly believe its advantages significantly outweigh the disadvantages when properly managed.
+
+Globalization's advantages manifest across multiple dimensions. Economically, comparative advantage optimization enables countries to specialize in their most efficient sectors, dramatically reducing consumer prices while improving quality. Developing nations have leveraged export opportunities to lift hundreds of millions from poverty, with China and India exemplifying this transformation. Technologically, cross-border knowledge transfer accelerates innovation, evidenced by collaborative vaccine development during COVID-19. Culturally, increased intercultural exchange fosters mutual understanding, potentially reducing conflict likelihood.
+
+Admittedly, globalization presents legitimate concerns. Structural unemployment affects communities when industries relocate to lower-cost regions, creating localized economic devastation. Cultural homogenization threatens indigenous traditions as Western consumer culture proliferates globally. Environmental degradation accelerates as production shifts to nations with laxer regulations, exemplified by carbon leakage. Income inequality has widened both within and between nations, concentrating wealth among multinational corporations and skilled workers while marginalizing others.
+
+However, these challenges stem largely from inadequate governance rather than globalization itself. Properly implemented policies—including worker retraining programs, environmental standards harmonization, and progressive taxation—can mitigate negative impacts while preserving benefits. The alternative of economic isolation would impoverish nations and eliminate poverty reduction opportunities for billions.
+
+In conclusion, while globalization requires careful management to address its shortcomings, its capacity to enhance prosperity, foster innovation, and promote international cooperation makes its advantages decisively outweigh its disadvantages.`,
+    wordCount: 248,
+    officialScore: 92,
+    scoreBreakdown: {
+      content: 3,
+      form: 2,
+      grammar: 2,
+      vocabulary: 2,
+      spelling: 1,
+      developmentCoherence: 2,
+      linguisticRange: 2
+    },
+    scoreRange: '90-95'
+  },
+  
+  // TOPIC 8: Globalization (HIGH SCORE - 85-90)
+  {
+    id: 'seed-globalization-high',
+    topic: 'International trade barriers are being reduced worldwide. Do the advantages of globalization outweigh the disadvantages?',
+    category: 'ADVANTAGES_DISADVANTAGES',
+    essayText: `The progressive elimination of trade barriers has created an interconnected global economy with far-reaching implications. After careful consideration of both perspectives, I believe globalization's advantages substantially outweigh its disadvantages, though mitigation strategies are essential.
+
+Globalization delivers compelling economic and social benefits. International trade enables countries to exploit their comparative advantages, resulting in lower prices and greater product variety for consumers worldwide. Developing economies have experienced remarkable growth through export-oriented strategies, with countries like Vietnam and Bangladesh transforming their economic landscapes. Knowledge sharing across borders accelerates technological advancement, from renewable energy solutions to medical breakthroughs. Furthermore, economic interdependence arguably reduces international conflicts, as countries become invested in each other's prosperity.
+
+Nevertheless, globalization generates significant challenges requiring attention. Manufacturing job losses in developed countries create rust-belt communities struggling with unemployment and social decay. Small businesses often cannot compete with multinational corporations, leading to market concentration. Environmental concerns arise as companies relocate to countries with weaker regulations, contributing to global pollution. Cultural diversity faces threats from dominant Western brands and media, potentially eroding local traditions and languages.
+
+The key lies in managing globalization effectively rather than rejecting it entirely. Governments can implement transition assistance for displaced workers, enforce environmental standards through international agreements, and protect cultural heritage while embracing economic integration. The benefits of reduced poverty, technological progress, and international cooperation outweigh the costs when proper safeguards exist.
+
+In conclusion, globalization's advantages in promoting prosperity, innovation, and global cooperation decisively outweigh its disadvantages, provided governments implement appropriate policies to address legitimate concerns.`,
+    wordCount: 250,
+    officialScore: 88,
+    scoreBreakdown: {
+      content: 3,
+      form: 2,
+      grammar: 2,
+      vocabulary: 2,
+      spelling: 1,
+      developmentCoherence: 2,
+      linguisticRange: 2
+    },
+    scoreRange: '85-90'
+  },
+  
+  // TOPIC 8: Globalization (MEDIUM-HIGH SCORE - 80-85)
+  {
+    id: 'seed-globalization-mediumhigh',
+    topic: 'International trade barriers are being reduced worldwide. Do the advantages of globalization outweigh the disadvantages?',
+    category: 'ADVANTAGES_DISADVANTAGES',
+    essayText: `As trade barriers continue falling worldwide, globalization reshapes our economic and social landscapes. While this process creates both winners and losers, I believe the overall advantages outweigh the disadvantages for most people globally.
+
+The benefits of globalization are substantial and wide-reaching. Consumers enjoy access to affordable products from around the world, from Japanese electronics to Italian fashion. This competition drives innovation and quality improvements. Developing countries gain opportunities to participate in global supply chains, creating millions of jobs. For instance, Southeast Asian nations have built thriving manufacturing sectors serving international markets. Additionally, globalization facilitates cultural exchange through travel, media, and cuisine, enriching our daily experiences. International cooperation on issues like climate change and health crises becomes more feasible when nations are economically connected.
+
+However, globalization also creates serious problems that cannot be ignored. Workers in developed countries face job losses as companies move operations overseas seeking cheaper labor. This has devastated many industrial communities. Small local businesses struggle to compete with global chains, leading to downtown areas filled with identical multinational brands. Income inequality has increased as skilled workers and capital owners benefit more than others. Environmental damage accelerates as production moves to countries with weaker protections.
+
+Despite these challenges, the net benefits remain positive. Hundreds of millions have escaped poverty through globalization. Technology transfer helps developing nations advance rapidly. The solution involves better policies to support displaced workers and environmental protection, not reversing globalization itself.
+
+In conclusion, while globalization presents real challenges, its advantages in reducing poverty and fostering development outweigh the disadvantages when accompanied by appropriate support measures.`,
+    wordCount: 260,
+    officialScore: 84,
+    scoreBreakdown: {
+      content: 3,
+      form: 1,  // Penalty for exceeding word limit
+      grammar: 2,
+      vocabulary: 2,
+      spelling: 1,
+      developmentCoherence: 2,
+      linguisticRange: 2
+    },
+    scoreRange: '80-85'
+  },
+  
+  // TOPIC 8: Globalization (LOW SCORE - 65-74)
+  {
+    id: 'seed-globalization-low',
+    topic: 'International trade barriers are being reduced worldwide. Do the advantages of globalization outweigh the disadvantages?',
+    category: 'ADVANTAGES_DISADVANTAGES',
+    essayText: `Globalization is when countries trade with each other more easy. This have good and bad effects. I think advantages is more than disadvantages but both are important to discuss.
+
+Good things about globalization is many. First, products become cheap because made in country where labor cheap. We can buy many things from different country like phone from China or car from Japan. This good for consumer who save money. Also globalization create job in poor country. Many factory open in Bangladesh or Vietnam and give work to people there. This help them escape poverty. Another advantage is we learn about other culture through food, movie and music from different country.
+
+But globalization also have problem. Many people in rich country lose job because factory move to poor country. This make them angry and poor. Also small shop cannot compete with big international company like McDonald or Starbucks. Local culture disappear when everyone wear same clothes and eat same food. Environment also suffer because factory in poor country not follow rules and create pollution.
+
+Even with these problem, I still think advantage bigger. More people have job and can buy things they need. Countries work together instead of fighting. Poor country can develop faster by trading. If government help people who lose job and protect environment, globalization can be good for everyone.
+
+In conclusion, globalization have both positive and negative effect but positive is stronger. World become better when country cooperate and trade together.`,
+    wordCount: 232,
+    officialScore: 70,
+    scoreBreakdown: {
+      content: 2,
+      form: 2,
+      grammar: 0,
+      vocabulary: 1,
+      spelling: 1,
+      developmentCoherence: 1,
+      linguisticRange: 0
+    },
+    scoreRange: '65-74'
+  },
+  
+  // TOPIC 8: Globalization (VERY LOW SCORE - 50-65)
+  {
+    id: 'seed-globalization-verylow',
+    topic: 'International trade barriers are being reduced worldwide. Do the advantages of globalization outweigh the disadvantages?',
+    category: 'ADVANTAGES_DISADVANTAGES',
+    essayText: `Globalization mean country do business together with no barrier. Some people say good some people say bad. I think have both but more good than bad.
+
+Advantage of globalization alot. Can buy cheap thing from other country. Like clothes from China very cheap compare to local made. Poor country get job when rich country company come and build factory. People can travel easy to other country for work or tourist. Also can try food from everywhere like pizza sushi burger all available now. Internet make everything connect together.
+
+Disadvantage also there. Local people no job because company go to cheap country. Small shop close because cannot fight with big company from outside. Young people forget own culture and only like western thing. Pollution increase because poor country factory not care environment just want make money. Rich become richer poor become poorer.
+
+But I still think globalization good overall. Help poor country develop. Make life easy for everyone. If government smart can solve the problem. Maybe give training to worker who lose job. Maybe make rule for environment protection.
+
+Globalization cannot stop anyway. World already connect together. Better to accept and try make it work good for everyone. In conclusion advantage more than disadvantage if handle properly.`,
+    wordCount: 195,
+    officialScore: 60,
+    scoreBreakdown: {
+      content: 1,
+      form: 0,  // Under word count
+      grammar: 0,
+      vocabulary: 0,
+      spelling: 1,
+      developmentCoherence: 1,
+      linguisticRange: 0
+    },
+    scoreRange: '50-65'
   }
 ];
 

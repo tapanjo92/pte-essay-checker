@@ -113,6 +113,38 @@
                 ]
               }
             },
+            "progress": {
+              "name": "progress",
+              "isArray": true,
+              "type": {
+                "model": "UserProgress"
+              },
+              "isRequired": false,
+              "attributes": [],
+              "isArrayNullable": true,
+              "association": {
+                "connectionType": "HAS_MANY",
+                "associatedWith": [
+                  "userId"
+                ]
+              }
+            },
+            "events": {
+              "name": "events",
+              "isArray": true,
+              "type": {
+                "model": "AnalyticsEvent"
+              },
+              "isRequired": false,
+              "attributes": [],
+              "isArrayNullable": true,
+              "association": {
+                "connectionType": "HAS_MANY",
+                "associatedWith": [
+                  "userId"
+                ]
+              }
+            },
             "createdAt": {
               "name": "createdAt",
               "isArray": false,
@@ -375,6 +407,34 @@
                 "targetNames": []
               }
             },
+            "timeTaken": {
+              "name": "timeTaken",
+              "isArray": false,
+              "type": "Int",
+              "isRequired": false,
+              "attributes": []
+            },
+            "editCount": {
+              "name": "editCount",
+              "isArray": false,
+              "type": "Int",
+              "isRequired": false,
+              "attributes": []
+            },
+            "deviceType": {
+              "name": "deviceType",
+              "isArray": false,
+              "type": "String",
+              "isRequired": false,
+              "attributes": []
+            },
+            "browserInfo": {
+              "name": "browserInfo",
+              "isArray": false,
+              "type": "String",
+              "isRequired": false,
+              "attributes": []
+            },
             "createdAt": {
               "name": "createdAt",
               "isArray": false,
@@ -530,6 +590,55 @@
               "name": "aiModel",
               "isArray": false,
               "type": "String",
+              "isRequired": false,
+              "attributes": []
+            },
+            "pteScores": {
+              "name": "pteScores",
+              "isArray": false,
+              "type": "AWSJSON",
+              "isRequired": false,
+              "attributes": []
+            },
+            "topicRelevance": {
+              "name": "topicRelevance",
+              "isArray": false,
+              "type": "AWSJSON",
+              "isRequired": false,
+              "attributes": []
+            },
+            "processingDuration": {
+              "name": "processingDuration",
+              "isArray": false,
+              "type": "Int",
+              "isRequired": false,
+              "attributes": []
+            },
+            "queueWaitTime": {
+              "name": "queueWaitTime",
+              "isArray": false,
+              "type": "Int",
+              "isRequired": false,
+              "attributes": []
+            },
+            "vectorSearchUsed": {
+              "name": "vectorSearchUsed",
+              "isArray": false,
+              "type": "Boolean",
+              "isRequired": false,
+              "attributes": []
+            },
+            "similarEssaysFound": {
+              "name": "similarEssaysFound",
+              "isArray": false,
+              "type": "Int",
+              "isRequired": false,
+              "attributes": []
+            },
+            "confidenceScore": {
+              "name": "confidenceScore",
+              "isArray": false,
+              "type": "Float",
               "isRequired": false,
               "attributes": []
             },
@@ -914,6 +1023,369 @@
             "primaryKeyFieldName": "id",
             "sortKeyFieldNames": []
           }
+        },
+        "UserProgress": {
+          "name": "UserProgress",
+          "fields": {
+            "id": {
+              "name": "id",
+              "isArray": false,
+              "type": "ID",
+              "isRequired": true,
+              "attributes": []
+            },
+            "userId": {
+              "name": "userId",
+              "isArray": false,
+              "type": "String",
+              "isRequired": true,
+              "attributes": []
+            },
+            "user": {
+              "name": "user",
+              "isArray": false,
+              "type": {
+                "model": "User"
+              },
+              "isRequired": false,
+              "attributes": [],
+              "association": {
+                "connectionType": "BELONGS_TO",
+                "targetNames": [
+                  "userId"
+                ]
+              }
+            },
+            "topicCategory": {
+              "name": "topicCategory",
+              "isArray": false,
+              "type": {
+                "enum": "UserProgressTopicCategory"
+              },
+              "isRequired": false,
+              "attributes": []
+            },
+            "averageScore": {
+              "name": "averageScore",
+              "isArray": false,
+              "type": "Float",
+              "isRequired": false,
+              "attributes": []
+            },
+            "attemptCount": {
+              "name": "attemptCount",
+              "isArray": false,
+              "type": "Int",
+              "isRequired": false,
+              "attributes": []
+            },
+            "lastImprovement": {
+              "name": "lastImprovement",
+              "isArray": false,
+              "type": "Float",
+              "isRequired": false,
+              "attributes": []
+            },
+            "weakAreas": {
+              "name": "weakAreas",
+              "isArray": false,
+              "type": "AWSJSON",
+              "isRequired": false,
+              "attributes": []
+            },
+            "strongAreas": {
+              "name": "strongAreas",
+              "isArray": false,
+              "type": "AWSJSON",
+              "isRequired": false,
+              "attributes": []
+            },
+            "lastAttemptDate": {
+              "name": "lastAttemptDate",
+              "isArray": false,
+              "type": "AWSDateTime",
+              "isRequired": false,
+              "attributes": []
+            },
+            "bestScore": {
+              "name": "bestScore",
+              "isArray": false,
+              "type": "Float",
+              "isRequired": false,
+              "attributes": []
+            },
+            "trend": {
+              "name": "trend",
+              "isArray": false,
+              "type": {
+                "enum": "UserProgressTrend"
+              },
+              "isRequired": false,
+              "attributes": []
+            },
+            "createdAt": {
+              "name": "createdAt",
+              "isArray": false,
+              "type": "AWSDateTime",
+              "isRequired": false,
+              "attributes": []
+            },
+            "updatedAt": {
+              "name": "updatedAt",
+              "isArray": false,
+              "type": "AWSDateTime",
+              "isRequired": false,
+              "attributes": []
+            }
+          },
+          "syncable": true,
+          "pluralName": "UserProgresses",
+          "attributes": [
+            {
+              "type": "model",
+              "properties": {}
+            },
+            {
+              "type": "key",
+              "properties": {
+                "fields": [
+                  "id"
+                ]
+              }
+            },
+            {
+              "type": "key",
+              "properties": {
+                "name": "userProgressesByUserId",
+                "queryField": "progressByUser",
+                "fields": [
+                  "userId"
+                ]
+              }
+            },
+            {
+              "type": "key",
+              "properties": {
+                "name": "userProgressesByTopicCategory",
+                "queryField": "listUserProgressByTopicCategory",
+                "fields": [
+                  "topicCategory"
+                ]
+              }
+            },
+            {
+              "type": "auth",
+              "properties": {
+                "rules": [
+                  {
+                    "provider": "userPools",
+                    "ownerField": "owner",
+                    "allow": "owner",
+                    "identityClaim": "cognito:username",
+                    "operations": [
+                      "create",
+                      "update",
+                      "delete",
+                      "read"
+                    ]
+                  }
+                ]
+              }
+            }
+          ],
+          "primaryKeyInfo": {
+            "isCustomPrimaryKey": false,
+            "primaryKeyFieldName": "id",
+            "sortKeyFieldNames": []
+          }
+        },
+        "AnalyticsEvent": {
+          "name": "AnalyticsEvent",
+          "fields": {
+            "id": {
+              "name": "id",
+              "isArray": false,
+              "type": "ID",
+              "isRequired": true,
+              "attributes": []
+            },
+            "userId": {
+              "name": "userId",
+              "isArray": false,
+              "type": "String",
+              "isRequired": true,
+              "attributes": []
+            },
+            "user": {
+              "name": "user",
+              "isArray": false,
+              "type": {
+                "model": "User"
+              },
+              "isRequired": false,
+              "attributes": [],
+              "association": {
+                "connectionType": "BELONGS_TO",
+                "targetNames": [
+                  "userId"
+                ]
+              }
+            },
+            "event": {
+              "name": "event",
+              "isArray": false,
+              "type": {
+                "enum": "AnalyticsEventEvent"
+              },
+              "isRequired": false,
+              "attributes": []
+            },
+            "metadata": {
+              "name": "metadata",
+              "isArray": false,
+              "type": "AWSJSON",
+              "isRequired": false,
+              "attributes": []
+            },
+            "essayId": {
+              "name": "essayId",
+              "isArray": false,
+              "type": "String",
+              "isRequired": false,
+              "attributes": []
+            },
+            "sessionId": {
+              "name": "sessionId",
+              "isArray": false,
+              "type": "String",
+              "isRequired": false,
+              "attributes": []
+            },
+            "timestamp": {
+              "name": "timestamp",
+              "isArray": false,
+              "type": "AWSDateTime",
+              "isRequired": true,
+              "attributes": []
+            },
+            "deviceType": {
+              "name": "deviceType",
+              "isArray": false,
+              "type": "String",
+              "isRequired": false,
+              "attributes": []
+            },
+            "browserInfo": {
+              "name": "browserInfo",
+              "isArray": false,
+              "type": "String",
+              "isRequired": false,
+              "attributes": []
+            },
+            "ipAddress": {
+              "name": "ipAddress",
+              "isArray": false,
+              "type": "String",
+              "isRequired": false,
+              "attributes": []
+            },
+            "createdAt": {
+              "name": "createdAt",
+              "isArray": false,
+              "type": "AWSDateTime",
+              "isRequired": false,
+              "attributes": []
+            },
+            "updatedAt": {
+              "name": "updatedAt",
+              "isArray": false,
+              "type": "AWSDateTime",
+              "isRequired": false,
+              "attributes": [],
+              "isReadOnly": true
+            }
+          },
+          "syncable": true,
+          "pluralName": "AnalyticsEvents",
+          "attributes": [
+            {
+              "type": "model",
+              "properties": {}
+            },
+            {
+              "type": "key",
+              "properties": {
+                "fields": [
+                  "id"
+                ]
+              }
+            },
+            {
+              "type": "key",
+              "properties": {
+                "name": "analyticsEventsByUserIdAndTimestamp",
+                "queryField": "eventsByUser",
+                "fields": [
+                  "userId",
+                  "timestamp"
+                ]
+              }
+            },
+            {
+              "type": "key",
+              "properties": {
+                "name": "analyticsEventsByEventAndTimestamp",
+                "queryField": "eventsByType",
+                "fields": [
+                  "event",
+                  "timestamp"
+                ]
+              }
+            },
+            {
+              "type": "key",
+              "properties": {
+                "name": "analyticsEventsBySessionId",
+                "queryField": "eventsBySession",
+                "fields": [
+                  "sessionId"
+                ]
+              }
+            },
+            {
+              "type": "auth",
+              "properties": {
+                "rules": [
+                  {
+                    "provider": "userPools",
+                    "ownerField": "owner",
+                    "allow": "owner",
+                    "operations": [
+                      "read"
+                    ],
+                    "identityClaim": "cognito:username"
+                  },
+                  {
+                    "groupClaim": "cognito:groups",
+                    "provider": "userPools",
+                    "allow": "groups",
+                    "operations": [
+                      "read",
+                      "delete"
+                    ],
+                    "groups": [
+                      "Admin"
+                    ]
+                  }
+                ]
+              }
+            }
+          ],
+          "primaryKeyInfo": {
+            "isCustomPrimaryKey": false,
+            "primaryKeyFieldName": "id",
+            "sortKeyFieldNames": []
+          }
         }
       },
       "enums": {
@@ -938,6 +1410,7 @@
           "name": "EssayStatus",
           "values": [
             "PENDING",
+            "QUEUED",
             "PROCESSING",
             "COMPLETED",
             "FAILED"
@@ -971,6 +1444,38 @@
             "PROBLEM_SOLUTION",
             "POSITIVE_NEGATIVE",
             "CAUSES_EFFECTS"
+          ]
+        },
+        "UserProgressTopicCategory": {
+          "name": "UserProgressTopicCategory",
+          "values": [
+            "AGREE_DISAGREE",
+            "DISCUSS_BOTH_VIEWS",
+            "ADVANTAGES_DISADVANTAGES",
+            "PROBLEM_SOLUTION",
+            "POSITIVE_NEGATIVE",
+            "CAUSES_EFFECTS"
+          ]
+        },
+        "UserProgressTrend": {
+          "name": "UserProgressTrend",
+          "values": [
+            "IMPROVING",
+            "STABLE",
+            "DECLINING"
+          ]
+        },
+        "AnalyticsEventEvent": {
+          "name": "AnalyticsEventEvent",
+          "values": [
+            "ESSAY_STARTED",
+            "ESSAY_SUBMITTED",
+            "ESSAY_CANCELLED",
+            "RESULT_VIEWED",
+            "FEEDBACK_RATED",
+            "SUBSCRIPTION_UPGRADED",
+            "FEATURE_USED",
+            "ERROR_OCCURRED"
           ]
         }
       },
@@ -1013,7 +1518,52 @@
   },
   "storage": {
     "aws_region": "ap-south-1",
-    "bucket_name": "amplify-app-root-sandbox--pteessaystoragebucketc06-xqiyslyrfhsu"
+    "bucket_name": "amplify-app-root-sandbox--pteessaystoragebucketc06-xqiyslyrfhsu",
+    "buckets": [
+      {
+        "name": "pteEssayStorage",
+        "bucket_name": "amplify-app-root-sandbox--pteessaystoragebucketc06-xqiyslyrfhsu",
+        "aws_region": "ap-south-1",
+        "paths": {
+          "essays/*": {
+            "authenticated": [
+              "get",
+              "list",
+              "write",
+              "delete"
+            ],
+            "guest": [
+              "get",
+              "list"
+            ]
+          },
+          "results/*": {
+            "authenticated": [
+              "get",
+              "list"
+            ]
+          },
+          "exports/*": {
+            "authenticated": [
+              "get",
+              "list",
+              "write",
+              "delete"
+            ]
+          }
+        }
+      }
+    ]
   },
-  "version": "1.2"
+  "version": "1.4",
+  "custom": {
+    "DLQUrl": "https://sqs.ap-south-1.amazonaws.com/493093635246/pte-essay-dlq-sblocal",
+    "DLQName": "pte-essay-dlq-sblocal",
+    "MainQueueUrl": "https://sqs.ap-south-1.amazonaws.com/493093635246/pte-essay-queue-sblocal",
+    "EssayTableName": "Essay-m2naunrofnagdapazpyg44vavq-NONE",
+    "ResultTableName": "Result-m2naunrofnagdapazpyg44vavq-NONE",
+    "UserTableName": "User-m2naunrofnagdapazpyg44vavq-NONE",
+    "GoldStandardTableName": "GoldStandardEssay-m2naunrofnagdapazpyg44vavq-NONE",
+    "EssayQueueUrl": "https://sqs.ap-south-1.amazonaws.com/493093635246/pte-essay-queue-sblocal"
+  }
 }
