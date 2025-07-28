@@ -100,6 +100,12 @@ backend.data.resources.tables["GoldStandardEssay"].grantReadData(
   backend.processEssay.resources.lambda
 );
 
+// Add table names as environment variables to processEssay Lambda
+backend.processEssay.resources.lambda.addEnvironment('ESSAY_TABLE_NAME', backend.data.resources.tables["Essay"].tableName);
+backend.processEssay.resources.lambda.addEnvironment('RESULT_TABLE_NAME', backend.data.resources.tables["Result"].tableName);
+backend.processEssay.resources.lambda.addEnvironment('USER_TABLE_NAME', backend.data.resources.tables["User"].tableName);
+backend.processEssay.resources.lambda.addEnvironment('GOLD_STANDARD_TABLE_NAME', backend.data.resources.tables["GoldStandardEssay"].tableName);
+
 // Grant read/write access to GoldStandardEssay table for generateEmbeddings
 backend.data.resources.tables["GoldStandardEssay"].grantReadWriteData(
   backend.generateEmbeddings.resources.lambda
@@ -217,6 +223,9 @@ essayQueue.grantConsumeMessages(backend.processEssay.resources.lambda);
 essayQueue.grantSendMessages(backend.submitEssayToQueue.resources.lambda);
 dlq.grantConsumeMessages(backend.processEssay.resources.lambda); // Allow Lambda to read from DLQ
 
+// Add the queue URL as an environment variable to submitEssayToQueue Lambda
+backend.submitEssayToQueue.resources.lambda.addEnvironment('ESSAY_QUEUE_URL', essayQueue.queueUrl);
+
 // Create SNS topic for DLQ alerts
 const dlqAlertTopic = new Topic(dataStack, 'DLQAlertTopic', {
   topicName: `pte-dlq-alerts-${uniqueSuffix}`,
@@ -262,10 +271,16 @@ backend.data.resources.tables["Essay"].grantReadWriteData(
   backend.submitEssayToQueue.resources.lambda
 );
 
+// Add the table name as an environment variable to submitEssayToQueue Lambda
+backend.submitEssayToQueue.resources.lambda.addEnvironment('ESSAY_TABLE_NAME', backend.data.resources.tables["Essay"].tableName);
+
 // Grant generateEmbeddings function access to GoldStandardEssay table
 backend.data.resources.tables["GoldStandardEssay"].grantReadWriteData(
   backend.generateEmbeddings.resources.lambda
 );
+
+// Add table name as environment variable to generateEmbeddings Lambda
+backend.generateEmbeddings.resources.lambda.addEnvironment('GOLD_STANDARD_TABLE_NAME', backend.data.resources.tables["GoldStandardEssay"].tableName);
 
 // Grant generateEmbeddings permission to use Bedrock
 backend.generateEmbeddings.resources.lambda.addToRolePolicy(

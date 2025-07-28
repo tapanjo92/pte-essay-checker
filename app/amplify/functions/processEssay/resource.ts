@@ -9,11 +9,11 @@ export const processEssay = defineFunction({
   environment: {
     BEDROCK_MODEL_ID: 'anthropic.claude-3-haiku-20240307-v1:0',
     BEDROCK_REGION: 'ap-south-1',
-    // Table names for your deployment
-    ESSAY_TABLE_NAME: 'Essay-toe5fxy46rae3ir5mqpzcwndt4-NONE',
-    RESULT_TABLE_NAME: 'Result-toe5fxy46rae3ir5mqpzcwndt4-NONE',
-    USER_TABLE_NAME: 'User-toe5fxy46rae3ir5mqpzcwndt4-NONE',
-    GOLD_STANDARD_TABLE_NAME: 'GoldStandardEssay-toe5fxy46rae3ir5mqpzcwndt4-NONE',
+    // Table names will be set dynamically in backend.ts
+    // ESSAY_TABLE_NAME will be set dynamically in backend.ts
+    // RESULT_TABLE_NAME will be set dynamically in backend.ts
+    // USER_TABLE_NAME will be set dynamically in backend.ts
+    // GOLD_STANDARD_TABLE_NAME will be set dynamically in backend.ts
     APP_URL: 'https://main.d1hed7gjlm8m1f.amplifyapp.com',
     // X-Ray configuration
     AWS_XRAY_CONTEXT_MISSING: 'LOG_ERROR',
