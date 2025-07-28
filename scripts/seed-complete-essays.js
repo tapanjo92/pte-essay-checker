@@ -227,6 +227,425 @@ In conclusion, while prevention offers superior long-term benefits, responsible 
       linguisticRange: 2
     },
     scoreRange: '85-90'
+  },
+  // TOPIC 6: Online Education (HIGH SCORE)
+  {
+    id: 'seed-online-edu-high',
+    topic: 'Online education is more effective than traditional classroom learning. To what extent do you agree or disagree?',
+    category: 'AGREE_DISAGREE',
+    essayText: `While online education has revolutionized learning accessibility, claiming it surpasses traditional classroom effectiveness oversimplifies educational complexity. I partially disagree with this statement, as effectiveness depends significantly on subject matter, student characteristics, and implementation quality.
+
+Online education offers undeniable advantages that enhance learning effectiveness for certain contexts. Digital platforms provide unprecedented flexibility, allowing students to access world-class instruction regardless of geographical constraints. Self-paced learning accommodates diverse learning speeds, while recorded lectures enable review and reinforcement. Additionally, online education often costs less, making quality education more accessible. During the pandemic, online learning proved invaluable in maintaining educational continuity.
+
+However, traditional classrooms excel in areas where online education struggles. Face-to-face interaction facilitates immediate feedback, spontaneous discussions, and non-verbal communication crucial for comprehensive understanding. Laboratory sciences, performing arts, and hands-on vocational training require physical presence and equipment. Moreover, classroom environments provide structured learning, peer collaboration, and social development opportunities that isolated online learning cannot fully replicate.
+
+The effectiveness ultimately depends on individual learning styles and circumstances. Visual learners may thrive with multimedia online content, while kinesthetic learners benefit from classroom activities. Motivated, self-directed students often excel online, whereas those requiring external structure and accountability perform better in traditional settings.
+
+In conclusion, neither mode is universally superior. The most effective approach combines both methodologies, leveraging online flexibility for theoretical content while utilizing classrooms for interactive, practical, and social learning experiences. Educational institutions should focus on hybrid models that maximize both formats' strengths.`,
+    wordCount: 245,
+    officialScore: 90,
+    scoreBreakdown: {
+      content: 3,
+      form: 2,
+      grammar: 2,
+      vocabulary: 2,
+      spelling: 1,
+      developmentCoherence: 2,
+      linguisticRange: 2
+    },
+    scoreRange: '85-90'
+  },
+  // TOPIC 6: Online Education (MEDIUM SCORE)
+  {
+    id: 'seed-online-edu-medium',
+    topic: 'Online education is more effective than traditional classroom learning. To what extent do you agree or disagree?',
+    category: 'AGREE_DISAGREE',
+    essayText: `I disagree that online education is more effective than traditional classroom learning. While online learning has some benefits, face-to-face education provides better results for most students.
+
+Traditional classrooms offer direct interaction between teachers and students. When students don't understand something, they can immediately ask questions and get answers. Teachers can see students' facial expressions and body language to know if they understand the lesson. This immediate feedback is very important for effective learning. In online classes, communication delays and technical problems often interrupt the learning process.
+
+Furthermore, classroom learning provides better focus and discipline. At school, students must pay attention without distractions from home. Many students struggle to concentrate during online classes because of family members, pets, or the temptation to browse other websites. Schools also provide important social interactions where students learn teamwork and communication skills.
+
+However, online education does have advantages. Students can learn at their own pace and review recorded lessons multiple times. It's also more convenient for people who live far from schools or have busy schedules. Online courses often cost less than traditional education.
+
+Despite these benefits, traditional classrooms remain more effective overall. The combination of direct teacher guidance, peer interaction, and structured environment creates better learning outcomes. While online education can supplement classroom learning, it cannot fully replace the benefits of face-to-face instruction.
+
+In conclusion, traditional classroom learning is still more effective than online education for most students, though online learning can be a useful additional tool.`,
+    wordCount: 243,
+    officialScore: 79,
+    scoreBreakdown: {
+      content: 2,
+      form: 2,
+      grammar: 2,
+      vocabulary: 1,
+      spelling: 1,
+      developmentCoherence: 2,
+      linguisticRange: 1
+    },
+    scoreRange: '75-84'
+  },
+  // TOPIC 7: Single-use Plastics (HIGH SCORE)
+  {
+    id: 'seed-plastics-high',
+    topic: 'Governments should ban all single-use plastics immediately, regardless of economic impact. To what extent do you agree or disagree?',
+    category: 'AGREE_DISAGREE',
+    essayText: `While the environmental crisis demands urgent action against plastic pollution, an immediate blanket ban on single-use plastics, disregarding economic consequences, would prove counterproductive. I largely disagree with this absolutist approach, advocating instead for strategic, phased implementation.
+
+The environmental imperative for reducing plastic consumption is undeniable. Microplastics contaminate food chains globally, while plastic waste devastates marine ecosystems. The Great Pacific Garbage Patch exemplifies humanity's plastic crisis, with devastating consequences for biodiversity. Single-use plastics contribute disproportionately to this pollution, often used for mere minutes before persisting for centuries.
+
+However, immediate implementation ignoring economic impact would create severe disruptions. Many industries, particularly healthcare and food safety, rely on single-use plastics for hygiene and contamination prevention. Developing nations often lack infrastructure for alternatives, making abrupt transitions impossible. Small businesses would face bankruptcy from sudden compliance costs, potentially triggering unemployment spikes and economic recession.
+
+Furthermore, hasty bans without adequate alternatives might generate worse environmental outcomes. Paper alternatives often require more energy and water to produce, while reusable options need proper sanitization infrastructure. Without systematic planning, consumers might shift to equally harmful alternatives.
+
+The optimal approach involves graduated implementation with economic support mechanisms. Governments should phase bans over 3-5 years, starting with non-essential items like straws and bags. Simultaneously, they must invest in alternative development, provide transition subsidies for affected businesses, and build recycling infrastructure.
+
+In conclusion, while eliminating single-use plastics remains crucial, immediate bans disregarding economic factors would undermine long-term sustainability goals through social disruption and inadequate alternatives.`,
+    wordCount: 248,
+    officialScore: 91,
+    scoreBreakdown: {
+      content: 3,
+      form: 2,
+      grammar: 2,
+      vocabulary: 2,
+      spelling: 1,
+      developmentCoherence: 2,
+      linguisticRange: 2
+    },
+    scoreRange: '85-90'
+  },
+  // TOPIC 8: Globalization (MEDIUM SCORE)
+  {
+    id: 'seed-globalization-medium',
+    topic: 'International trade barriers are being reduced worldwide. Do the advantages of globalization outweigh the disadvantages?',
+    category: 'ADVANTAGES_DISADVANTAGES',
+    essayText: `Globalization through reduced trade barriers has transformed the world economy. While this brings both benefits and problems, I believe the advantages outweigh the disadvantages overall.
+
+The advantages of globalization are significant. First, free trade makes products cheaper for consumers. When countries can import goods from wherever they are produced most efficiently, prices decrease. For example, electronics from Asia and agricultural products from developing nations are now affordable worldwide. Second, globalization creates jobs and economic growth. Companies can expand into new markets, creating employment opportunities. Many developing countries have improved their economies through exports.
+
+Additionally, globalization promotes cultural exchange and innovation. People can access products, ideas, and technologies from around the world. This sharing of knowledge accelerates progress in science, medicine, and technology. International cooperation also helps address global challenges like climate change and pandemics.
+
+However, globalization has serious disadvantages. Local industries often cannot compete with cheap imports, causing job losses. Traditional cultures may be overwhelmed by global brands and Western influence. Income inequality has increased as wealthy corporations profit while workers face job insecurity. Environmental damage also increases as production moves to countries with weaker regulations.
+
+Despite these problems, the benefits are greater. Millions have escaped poverty through global trade opportunities. Consumers enjoy better products at lower prices. International cooperation prevents conflicts and solves shared problems. The disadvantages can be managed through proper regulations and support for affected workers.
+
+In conclusion, while globalization creates challenges, its advantages in reducing poverty, improving living standards, and promoting cooperation outweigh the disadvantages.`,
+    wordCount: 249,
+    officialScore: 81,
+    scoreBreakdown: {
+      content: 2,
+      form: 2,
+      grammar: 2,
+      vocabulary: 2,
+      spelling: 1,
+      developmentCoherence: 2,
+      linguisticRange: 1
+    },
+    scoreRange: '75-84'
+  },
+  // TOPIC 9: Youth Unemployment (HIGH SCORE)
+  {
+    id: 'seed-youth-unemployment-high',
+    topic: 'Youth unemployment rates are increasing globally. What are the main causes of this problem and what solutions can you suggest?',
+    category: 'PROBLEM_SOLUTION',
+    essayText: `Rising youth unemployment represents a critical global challenge threatening economic stability and social cohesion. This multifaceted problem stems from structural economic shifts and educational mismatches, requiring comprehensive policy interventions.
+
+The primary causes are interconnected and systemic. Technological automation has eliminated many entry-level positions traditionally filled by young workers, while remaining jobs demand specialized skills. Educational systems often fail to adapt curricula to market needs, producing graduates with outdated qualifications. Additionally, economic recessions disproportionately impact youth employment, as companies prioritize experienced workers during downturns. The gig economy's growth offers flexibility but lacks stability and benefits crucial for career development.
+
+Geographic disparities compound these challenges. Rural youth face limited local opportunities, while urban areas' high living costs barrier entry despite job availability. Furthermore, employer preferences for experienced candidates create a paradoxical situation where youth cannot gain experience without employment.
+
+Solutions must address both supply and demand factors. Governments should incentivize businesses through tax credits for hiring and training young workers. Educational reform is crucial, integrating vocational training, apprenticeships, and industry partnerships into curricula. Digital literacy programs can prepare youth for emerging sectors.
+
+Additionally, entrepreneurship support through microfinance and mentorship programs can create self-employment opportunities. Public works programs focused on infrastructure and environmental projects can provide immediate employment while building valuable skills. International cooperation sharing best practices can accelerate solution implementation.
+
+In conclusion, combating youth unemployment requires coordinated efforts combining educational reform, economic incentives, and innovative employment programs. Early intervention is essential to prevent long-term scarring effects on career prospects.`,
+    wordCount: 247,
+    officialScore: 92,
+    scoreBreakdown: {
+      content: 3,
+      form: 2,
+      grammar: 2,
+      vocabulary: 2,
+      spelling: 1,
+      developmentCoherence: 2,
+      linguisticRange: 2
+    },
+    scoreRange: '85-90'
+  },
+  // TOPIC 10: Food Waste (LOW SCORE)
+  {
+    id: 'seed-food-waste-low',
+    topic: 'Food waste is a major problem in developed countries while others face starvation. What are the causes of this issue and what measures can be taken to address it?',
+    category: 'PROBLEM_SOLUTION',
+    essayText: `Food waste is big problem today. Rich country throw away food but poor country people hungry. This very unfair situation need to fix.
+
+Causes of food waste many. First, supermarket throw food when expire date come even food still good. They afraid customer complaint if sell old food. Also people buy too much food because cheap. They forget in fridge and food become bad. Restaurant also waste alot because make too much food everyday.
+
+Another cause is people not know how serious problem. They think no problem throw away little bit food. But when everyone throw away little bit, become very big amount. Rich country people never experience hungry so they not understand.
+
+For solve this problem need many solution. Government should make law about food waste. Maybe give penalty to supermarket that throw away good food. Should donate to poor people instead. Also need education program teach people about food waste. Show them how many people starving in world.
+
+Technology also can help. Make app to share extra food with neighbor. Restaurant can sell cheap food end of day instead throw away. Also need better system send extra food from rich country to poor country.
+
+In conclusion food waste very serious problem but can solve if everyone work together. Need change attitude about food and make better system for sharing.`,
+    wordCount: 211,
+    officialScore: 64,
+    scoreBreakdown: {
+      content: 1,
+      form: 1,
+      grammar: 0,
+      vocabulary: 1,
+      spelling: 1,
+      developmentCoherence: 1,
+      linguisticRange: 0
+    },
+    scoreRange: '50-65'
+  },
+  // TOPIC 11: Four-day Work Week (HIGH SCORE)
+  {
+    id: 'seed-fourday-high',
+    topic: 'A four-day work week should become the standard in all developed countries. To what extent do you agree or disagree?',
+    category: 'AGREE_DISAGREE',
+    essayText: `The proposition of standardizing four-day work weeks across developed nations represents a paradigm shift in employment philosophy. While this model offers compelling benefits for work-life balance and productivity, I partially disagree with universal implementation due to sector-specific constraints and economic complexities.
+
+Evidence supporting reduced work weeks is increasingly persuasive. Microsoft Japan's experiment yielded 40% productivity improvements, while Iceland's trials demonstrated maintained output with enhanced employee wellbeing. The traditional five-day model, established during industrial revolution conditions, appears outdated for knowledge-based economies. Reduced commuting decreases carbon emissions, while improved mental health could alleviate healthcare system burdens. Furthermore, additional leisure time stimulates consumer spending and cultural engagement.
+
+However, universal application overlooks critical sectoral differences. Healthcare, emergency services, and education require continuous coverage that four-day schedules cannot accommodate without substantial workforce expansion. Manufacturing and retail operations with fixed costs might face profitability challenges. Small businesses particularly struggle with reduced operational days while maintaining competitive service levels. International business coordination becomes complex when countries operate different schedules.
+
+The optimal approach involves selective implementation based on industry characteristics. Knowledge-based sectors, technology companies, and administrative roles suit compressed schedules. Essential services require innovative shift patterns maintaining coverage. Governments should incentivize pilot programs, allowing organizations to develop context-specific models rather than mandating blanket changes.
+
+In conclusion, while four-day work weeks offer significant advantages, declaring them universal standards ignores economic realities and sectoral diversity. Flexible adoption allowing industry-specific adaptations represents a more pragmatic path toward improved work-life balance.`,
+    wordCount: 244,
+    officialScore: 89,
+    scoreBreakdown: {
+      content: 3,
+      form: 2,
+      grammar: 2,
+      vocabulary: 2,
+      spelling: 1,
+      developmentCoherence: 2,
+      linguisticRange: 2
+    },
+    scoreRange: '85-90'
+  },
+  // TOPIC 12: Urban vs Rural Living (MEDIUM SCORE)
+  {
+    id: 'seed-urban-rural-medium',
+    topic: 'More people are choosing to live in large cities rather than rural areas. Do the advantages outweigh the disadvantages?',
+    category: 'ADVANTAGES_DISADVANTAGES',
+    essayText: `The global trend of urbanization continues as millions migrate from rural areas to cities annually. While urban living offers numerous opportunities, I believe the advantages slightly outweigh the disadvantages for most people.
+
+Cities provide significant advantages for residents. Employment opportunities are more diverse and numerous in urban areas, with higher salaries typically available. Educational institutions, from schools to universities, offer better resources and variety in cities. Healthcare facilities in urban areas usually have advanced equipment and specialist doctors. Additionally, cities offer superior infrastructure including public transportation, entertainment venues, and cultural activities. The concentration of people also creates networking opportunities for career and business development.
+
+However, urban living presents considerable challenges. The cost of living, particularly housing, is substantially higher in cities. Many urban residents spend large portions of income on small apartments. Pollution levels in cities harm health, while traffic congestion wastes hours daily. The fast-paced lifestyle often creates stress and mental health issues. Crime rates are typically higher in densely populated areas. Furthermore, urban residents lose connection with nature and community bonds are often weaker than in rural areas.
+
+Despite these drawbacks, advantages generally prevail. Economic opportunities in cities enable people to improve living standards and escape poverty. Access to quality education and healthcare significantly impacts life outcomes. While rural areas offer peace and community, they often lack basic services and opportunities for advancement.
+
+In conclusion, although city living involves compromises regarding cost and lifestyle, the opportunities for personal and professional development make urban advantages outweigh disadvantages for most people seeking better lives.`,
+    wordCount: 250,
+    officialScore: 82,
+    scoreBreakdown: {
+      content: 2,
+      form: 2,
+      grammar: 2,
+      vocabulary: 2,
+      spelling: 1,
+      developmentCoherence: 2,
+      linguisticRange: 1
+    },
+    scoreRange: '75-84'
+  },
+  // TOPIC 13: Cashless Society (LOW SCORE)
+  {
+    id: 'seed-cashless-low',
+    topic: 'Cashless societies are becoming increasingly common. Do the advantages of digital payments outweigh the disadvantages?',
+    category: 'ADVANTAGES_DISADVANTAGES',
+    essayText: `Nowadays many country becoming cashless society. People use card and phone to pay everything. This have good and bad points but I think disadvantage more than advantage.
+
+Advantage of digital payment is convenient. No need carry heavy coin and paper money. Just bring phone or card can buy anything. Also safer because thief cannot steal digital money easy like cash. Online shopping also very easy with digital payment. Can buy from anywhere in world. Transaction also fast no need wait for change.
+
+But many problem with cashless society. First, old people dont know how use technology. My grandmother cannot use smartphone so how she buy things? Also poor people maybe no have bank account or smartphone. This unfair for them. 
+
+Another big problem is when system down cannot buy anything. Last month bank system crash and many people cannot pay for food. Very dangerous rely only on technology. Also government and company can track every purchase. No privacy anymore they know everything we buy.
+
+Hacker also big threat. They can steal money from account and very difficult get back. With cash this not happen. Also many small shop must pay fee for card machine. This expensive for them.
+
+In conclusion cashless society have some benefit but too many risk. We should keep both cash and digital payment not only one. This safer for everyone.`,
+    wordCount: 213,
+    officialScore: 67,
+    scoreBreakdown: {
+      content: 1,
+      form: 2,
+      grammar: 0,
+      vocabulary: 1,
+      spelling: 1,
+      developmentCoherence: 1,
+      linguisticRange: 0
+    },
+    scoreRange: '65-74'
+  },
+  // TOPIC 14: Free Healthcare (HIGH SCORE)
+  {
+    id: 'seed-healthcare-high',
+    topic: 'Some believe healthcare should be completely free for all citizens, while others think people should pay for medical services. Discuss both views and give your opinion.',
+    category: 'DISCUSS_BOTH_VIEWS',
+    essayText: `Healthcare accessibility remains a contentious global debate, with fundamental disagreements about whether medical services constitute a basic right or market commodity. While both perspectives offer valid arguments, I believe a hybrid model combining universal basic coverage with optional private services best serves societal needs.
+
+Proponents of free healthcare emphasize moral and practical imperatives. Healthcare as a fundamental human right ensures no citizen suffers or dies due to financial constraints. Countries like Canada and the UK demonstrate that universal systems can deliver quality care while maintaining lower per-capita costs than privatized alternatives. Free healthcare promotes preventive medicine, reducing long-term costs through early intervention. Moreover, it eliminates medical bankruptcies, a leading cause of financial ruin in countries without universal coverage. Public health benefits extend beyond individuals, as comprehensive coverage prevents epidemic spread and maintains productive workforces.
+
+Conversely, those favoring paid services raise legitimate concerns about sustainability and quality. Free healthcare systems often struggle with funding, leading to long waiting times and restricted treatment options. Market-based systems arguably incentivize innovation and efficiency through competition. Additionally, personal payment responsibility might encourage healthier lifestyles and reduce frivolous medical consultations. Some argue that taxpayer-funded healthcare unfairly burdens healthy individuals and those who invest in preventive care.
+
+The optimal solution integrates both approaches. Governments should guarantee universal basic healthcare covering essential services, emergencies, and preventive care, funded through progressive taxation. Simultaneously, private options could offer expedited service, elective procedures, and premium amenities. This ensures healthcare accessibility while maintaining innovation incentives and personal choice.
+
+In conclusion, pure extremes of completely free or entirely privatized healthcare both present significant drawbacks. A thoughtfully designed hybrid system can harness both models' strengths while mitigating their weaknesses.`,
+    wordCount: 282,
+    officialScore: 93,
+    scoreBreakdown: {
+      content: 3,
+      form: 1,  // Penalized for exceeding word limit
+      grammar: 2,
+      vocabulary: 2,
+      spelling: 1,
+      developmentCoherence: 2,
+      linguisticRange: 2
+    },
+    scoreRange: '85-90'
+  },
+  // TOPIC 15: Private Vehicles Ban (MEDIUM SCORE)
+  {
+    id: 'seed-vehicles-medium',
+    topic: 'Some argue that private vehicles should be banned from city centers, while others believe personal transportation freedom is essential. Discuss both views and give your opinion.',
+    category: 'DISCUSS_BOTH_VIEWS',
+    essayText: `The debate over banning private vehicles from city centers reflects tensions between environmental concerns and individual freedom. Both sides present compelling arguments that deserve careful consideration.
+
+Those supporting vehicle bans highlight environmental and quality of life improvements. City centers suffer from severe air pollution, with vehicles producing harmful emissions affecting residents' health. Studies show that car-free zones reduce respiratory diseases and create quieter, more pleasant environments. Traffic congestion wastes productivity and fuel, problems eliminated by vehicle restrictions. Pedestrian-only areas encourage walking and cycling, promoting public health. European cities like Amsterdam demonstrate that car-free centers can thrive economically while enhancing livability.
+
+However, opponents emphasize practical concerns and personal liberty. Many people depend on private vehicles for mobility, especially elderly or disabled individuals who cannot easily use public transport. Parents with young children find cars essential for daily activities. Delivery services and emergency vehicles require road access. Furthermore, inadequate public transportation in many cities makes private vehicles necessary. Business owners worry that restricted access might reduce customer visits, harming local economies.
+
+In my opinion, complete bans are too extreme, but cities should implement partial restrictions. A balanced approach could include congestion charging, limiting access during peak hours, and creating car-free zones in historic districts. Cities must first improve public transportation, provide park-and-ride facilities, and ensure accessibility for all citizens before restricting private vehicles.
+
+In conclusion, while environmental benefits of vehicle bans are significant, cities must balance these with citizens' practical needs. Gradual implementation with infrastructure improvements offers the best path forward.`,
+    wordCount: 249,
+    officialScore: 83,
+    scoreBreakdown: {
+      content: 2,
+      form: 2,
+      grammar: 2,
+      vocabulary: 2,
+      spelling: 1,
+      developmentCoherence: 2,
+      linguisticRange: 1
+    },
+    scoreRange: '75-84'
+  },
+  // TOPIC 16: Unpaid Internships (HIGH SCORE)
+  {
+    id: 'seed-internships-high',
+    topic: 'Some people believe that unpaid internships exploit young workers, while others see them as valuable learning opportunities. Discuss both views and give your opinion.',
+    category: 'DISCUSS_BOTH_VIEWS',
+    essayText: `The prevalence of unpaid internships in competitive industries has sparked intense debate about their ethical implications and educational value. While both perspectives merit consideration, I believe unpaid internships often constitute exploitation, though certain contexts may justify their existence.
+
+Critics rightfully highlight the exploitative nature of unpaid internships. These positions frequently involve substantial work contributions that would otherwise require paid employees, essentially providing free labor under the guise of education. This practice disproportionately advantages wealthy students who can afford to work without compensation, perpetuating socioeconomic inequality. Many unpaid interns perform menial tasks offering minimal learning value, contradicting the educational justification. Furthermore, the normalization of unpaid work devalues professional contributions and potentially violates labor laws designed to protect workers from exploitation.
+
+Conversely, proponents emphasize legitimate educational benefits. Quality internships provide invaluable industry exposure, mentorship opportunities, and practical skill development unavailable in academic settings. For highly competitive fields like media or fashion, internships offer crucial networking opportunities and portfolio development. Some organizations, particularly non-profits with limited budgets, genuinely cannot afford paid positions but offer meaningful experience. Additionally, many unpaid internships lead to full-time employment, serving as extended job interviews benefiting both parties.
+
+The critical distinction lies in the internship's structure and intent. Legitimate educational internships should prioritize learning over productivity, include structured mentorship, and limit duration. However, positions primarily benefiting employers through free labor clearly constitute exploitation.
+
+In conclusion, while some unpaid internships provide genuine educational value, the majority exploit young workers' desperation for experience. Stricter regulations ensuring educational content and limiting unpaid work duration would better balance learning opportunities with fair labor practices.`,
+    wordCount: 263,
+    officialScore: 88,
+    scoreBreakdown: {
+      content: 3,
+      form: 1,  // Penalty for exceeding word limit
+      grammar: 2,
+      vocabulary: 2,
+      spelling: 1,
+      developmentCoherence: 2,
+      linguisticRange: 2
+    },
+    scoreRange: '85-90'
+  },
+  // TOPIC 16: Unpaid Internships (MEDIUM SCORE)
+  {
+    id: 'seed-internships-medium',
+    topic: 'Some people believe that unpaid internships exploit young workers, while others see them as valuable learning opportunities. Discuss both views and give your opinion.',
+    category: 'DISCUSS_BOTH_VIEWS',
+    essayText: `Unpaid internships are common in many industries today, but people disagree about whether they are fair. Some think they exploit young people, while others believe they provide important experience. Both views have valid points.
+
+Those who oppose unpaid internships argue they are unfair to workers. Young people do real work that helps companies but receive no payment. This means only students from wealthy families can afford these opportunities, because they need financial support while working for free. Poor students must take paid jobs instead, missing chances to gain experience in their chosen field. Additionally, some companies use unpaid interns to replace paid employees, which is wrong.
+
+However, supporters say unpaid internships offer valuable benefits. Students gain practical experience that universities cannot provide. They learn how their industry really works and develop professional skills. Internships also help students build networks and meet potential employers. Many companies hire their best interns after graduation, so these positions can lead to good jobs. For students, the experience and connections may be worth more than temporary wages.
+
+In my opinion, unpaid internships can be acceptable if they truly focus on education. Companies should provide real training, mentorship, and meaningful projects. However, if interns do regular employee work, they deserve payment. The government should create clear rules about what unpaid internships can include.
+
+In conclusion, while unpaid internships can provide learning opportunities, many exploit young workers. Better regulations would ensure internships benefit students rather than providing free labor for companies.`,
+    wordCount: 241,
+    officialScore: 80,
+    scoreBreakdown: {
+      content: 2,
+      form: 2,
+      grammar: 2,
+      vocabulary: 1,
+      spelling: 1,
+      developmentCoherence: 2,
+      linguisticRange: 1
+    },
+    scoreRange: '75-84'
+  },
+  // TOPIC 17: Social Media Influencers (HIGH SCORE)
+  {
+    id: 'seed-influencers-high',
+    topic: 'Social media influencers have more impact on young people than traditional role models like teachers and parents. To what extent do you agree or disagree?',
+    category: 'AGREE_DISAGREE',
+    essayText: `The digital revolution has fundamentally altered influence dynamics among youth, with social media personalities commanding unprecedented attention. While influencers undeniably wield substantial impact, claiming they surpass traditional role models oversimplifies the complex nature of youth development and influence.
+
+Social media influencers possess unique advantages in capturing youth attention. Their content accessibility, relatability, and entertainment value create parasocial relationships that feel authentic to young followers. Influencers shape consumer behavior, lifestyle choices, and even career aspirations through carefully curated content. The algorithmic nature of social platforms ensures constant exposure, reinforcing their messages. Additionally, influencers often address topics traditional authorities avoid, providing guidance on contemporary issues like mental health, sexuality, and social justice that resonate with youth experiences.
+
+However, traditional role models maintain irreplaceable influence through direct, sustained relationships. Parents shape fundamental values, emotional security, and behavioral patterns through years of daily interaction. Teachers provide structured knowledge, critical thinking skills, and personalized guidance that influencers cannot replicate. These relationships involve accountability, genuine care, and understanding of individual needs that parasocial relationships inherently lack. Moreover, traditional role models witness and respond to youth's complete personalities, not just their online personas.
+
+The influence hierarchy depends significantly on individual circumstances and life stages. While influencers may dominate superficial choices like fashion or entertainment preferences, traditional role models typically guide crucial life decisions regarding education, relationships, and core values.
+
+In conclusion, although social media influencers command considerable attention and shape certain youth behaviors, traditional role models retain deeper, more fundamental influence through authentic relationships and sustained guidance. The key lies in helping young people critically evaluate all influences rather than positioning them competitively.`,
+    wordCount: 266,
+    officialScore: 90,
+    scoreBreakdown: {
+      content: 3,
+      form: 1,  // Penalty for exceeding word limit
+      grammar: 2,
+      vocabulary: 2,
+      spelling: 1,
+      developmentCoherence: 2,
+      linguisticRange: 2
+    },
+    scoreRange: '85-90'
+  },
+  // TOPIC 17: Social Media Influencers (LOW SCORE)
+  {
+    id: 'seed-influencers-low',
+    topic: 'Social media influencers have more impact on young people than traditional role models like teachers and parents. To what extent do you agree or disagree?',
+    category: 'AGREE_DISAGREE',
+    essayText: `I agree social media influencer have more impact on young people today than parent and teacher. This is big problem for society.
+
+Young people spend many hour everyday on social media looking at influencer. They watch YouTube, Instagram, TikTok all the time. Influencer show perfect life with expensive thing and young people want copy them. My cousin always talking about her favorite influencer and want buy same clothes and makeup. She dont listen to parent anymore only care what influencer say.
+
+Teacher and parent cannot compete with influencer because not interesting like social media. When teacher talk about study, student thinking about TikTok video. Parent try give good advice but children say influencer know better about modern life. Also influencer more fun and entertaining so young people prefer watching them.
+
+But this very dangerous because influencer only want make money. They dont care about young people future just want them buy product. Many influencer promote unhealthy thing like extreme diet or dangerous challenge. Parent and teacher actually care about children but young people dont realize.
+
+However some good influencer exist who teach useful thing. But most influencer bad influence on youth. They make young people materialistic and unrealistic about life.
+
+In conclusion I strongly agree that influencer have too much impact on young people. Parent and teacher influence becoming weaker. This will cause many problem for future generation.`,
+    wordCount: 214,
+    officialScore: 66,
+    scoreBreakdown: {
+      content: 1,
+      form: 2,
+      grammar: 0,
+      vocabulary: 1,
+      spelling: 1,
+      developmentCoherence: 1,
+      linguisticRange: 0
+    },
+    scoreRange: '65-74'
   }
 ];
 

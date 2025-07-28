@@ -7,6 +7,8 @@ import { GlassCard, GlassCardContent, GlassCardDescription, GlassCardHeader, Gla
 import { Button } from '@/components/ui/button';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
+import { Badge } from '@/components/ui/badge';
+import { Filter, Shuffle } from 'lucide-react';
 
 const PTE_ESSAY_TOPICS = [
   {
@@ -48,6 +50,86 @@ const PTE_ESSAY_TOPICS = [
     category: 'Causes/Effects',
     frequency: '20%',
     difficulty: 'MEDIUM'
+  },
+  {
+    id: 'pte_2025_006',
+    title: 'Online education is more effective than traditional classroom learning.',
+    description: 'To what extent do you agree or disagree? Support your opinion with examples and evidence.',
+    category: 'Agree/Disagree',
+    frequency: '32%',
+    difficulty: 'MEDIUM'
+  },
+  {
+    id: 'pte_2025_007',
+    title: 'Governments should ban all single-use plastics immediately, regardless of economic impact.',
+    description: 'To what extent do you agree or disagree? Give reasons for your answer.',
+    category: 'Agree/Disagree',
+    frequency: '24%',
+    difficulty: 'HARD'
+  },
+  {
+    id: 'pte_2025_008',
+    title: 'International trade barriers are being reduced worldwide.',
+    description: 'Do the advantages of globalization outweigh the disadvantages? Discuss with examples.',
+    category: 'Advantages/Disadvantages',
+    frequency: '27%',
+    difficulty: 'MEDIUM'
+  },
+  {
+    id: 'pte_2025_009',
+    title: 'Youth unemployment rates are increasing globally.',
+    description: 'What are the main causes of this problem and what solutions can you suggest?',
+    category: 'Problem/Solution',
+    frequency: '29%',
+    difficulty: 'MEDIUM'
+  },
+  {
+    id: 'pte_2025_010',
+    title: 'Food waste is a major problem in developed countries while others face starvation.',
+    description: 'What are the causes of this issue and what measures can be taken to address it?',
+    category: 'Problem/Solution',
+    frequency: '21%',
+    difficulty: 'EASY'
+  },
+  {
+    id: 'pte_2025_011',
+    title: 'A four-day work week should become the standard in all developed countries.',
+    description: 'To what extent do you agree or disagree? Provide reasons and examples.',
+    category: 'Agree/Disagree',
+    frequency: '18%',
+    difficulty: 'MEDIUM'
+  },
+  {
+    id: 'pte_2025_012',
+    title: 'More people are choosing to live in large cities rather than rural areas.',
+    description: 'Do the advantages outweigh the disadvantages? Support your answer with examples.',
+    category: 'Advantages/Disadvantages',
+    frequency: '26%',
+    difficulty: 'EASY'
+  },
+  {
+    id: 'pte_2025_013',
+    title: 'Cashless societies are becoming increasingly common.',
+    description: 'Do the advantages of digital payments outweigh the disadvantages? Discuss both sides.',
+    category: 'Advantages/Disadvantages',
+    frequency: '23%',
+    difficulty: 'MEDIUM'
+  },
+  {
+    id: 'pte_2025_014',
+    title: 'Some believe healthcare should be completely free for all citizens, while others think people should pay for medical services.',
+    description: 'Discuss both views and give your opinion. Include relevant examples.',
+    category: 'Discussion',
+    frequency: '31%',
+    difficulty: 'HARD'
+  },
+  {
+    id: 'pte_2025_015',
+    title: 'Some argue that private vehicles should be banned from city centers, while others believe personal transportation freedom is essential.',
+    description: 'Discuss both views and give your opinion. Support with examples.',
+    category: 'Discussion',
+    frequency: '19%',
+    difficulty: 'MEDIUM'
   }
 ];
 
@@ -55,6 +137,27 @@ export default function EssayQuestionsPage() {
   const router = useRouter();
   const [selectedTopic, setSelectedTopic] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState('All');
+  const [selectedDifficulty, setSelectedDifficulty] = useState('All');
+
+  // Get unique categories
+  const categories = ['All', ...new Set(PTE_ESSAY_TOPICS.map(t => t.category))];
+  const difficulties = ['All', 'EASY', 'MEDIUM', 'HARD'];
+
+  // Filter topics based on selections
+  const filteredTopics = PTE_ESSAY_TOPICS.filter(topic => {
+    const categoryMatch = selectedCategory === 'All' || topic.category === selectedCategory;
+    const difficultyMatch = selectedDifficulty === 'All' || topic.difficulty === selectedDifficulty;
+    return categoryMatch && difficultyMatch;
+  });
+
+  // Get random topic
+  const selectRandomTopic = () => {
+    if (filteredTopics.length > 0) {
+      const randomIndex = Math.floor(Math.random() * filteredTopics.length);
+      setSelectedTopic(filteredTopics[randomIndex].id);
+    }
+  };
 
   const handleStartEssay = () => {
     console.log('handleStartEssay called');
@@ -118,18 +221,80 @@ export default function EssayQuestionsPage() {
           </p>
         </div>
 
+        {/* Filters */}
+        <GlassCard variant="default">
+          <GlassCardHeader>
+            <div className="flex items-center gap-2">
+              <Filter className="w-5 h-5" />
+              <GlassCardTitle className="text-lg">Filter Topics</GlassCardTitle>
+            </div>
+          </GlassCardHeader>
+          <GlassCardContent>
+            <div className="flex flex-wrap gap-4">
+              <div className="space-y-2">
+                <Label className="text-sm text-gray-400">Category</Label>
+                <div className="flex flex-wrap gap-2">
+                  {categories.map(category => (
+                    <Badge
+                      key={category}
+                      variant={selectedCategory === category ? "default" : "outline"}
+                      className="cursor-pointer hover:bg-accent/50 transition-colors"
+                      onClick={() => setSelectedCategory(category)}
+                    >
+                      {category}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label className="text-sm text-gray-400">Difficulty</Label>
+                <div className="flex gap-2">
+                  {difficulties.map(difficulty => (
+                    <Badge
+                      key={difficulty}
+                      variant={selectedDifficulty === difficulty ? "default" : "outline"}
+                      className={`cursor-pointer hover:bg-accent/50 transition-colors ${
+                        difficulty === 'EASY' ? 'text-blue-400' :
+                        difficulty === 'MEDIUM' ? 'text-yellow-400' :
+                        difficulty === 'HARD' ? 'text-red-400' : ''
+                      }`}
+                      onClick={() => setSelectedDifficulty(difficulty)}
+                    >
+                      {difficulty}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+              <div className="ml-auto">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={selectRandomTopic}
+                  className="flex items-center gap-2"
+                >
+                  <Shuffle className="w-4 h-4" />
+                  Random Topic
+                </Button>
+              </div>
+            </div>
+            <div className="mt-3 text-sm text-gray-400">
+              Showing {filteredTopics.length} of {PTE_ESSAY_TOPICS.length} topics
+            </div>
+          </GlassCardContent>
+        </GlassCard>
+
         {/* Topics */}
         <GlassCard variant="gradient">
           <GlassCardHeader>
             <GlassCardTitle className="text-xl">Available Essay Topics</GlassCardTitle>
             <GlassCardDescription className="text-gray-300">
-              Select a topic that you feel most comfortable writing about
+              {filteredTopics.length === 0 ? 'No topics match your filters. Try adjusting them.' : 'Select a topic that you feel most comfortable writing about'}
             </GlassCardDescription>
           </GlassCardHeader>
           <GlassCardContent>
             <RadioGroup value={selectedTopic} onValueChange={setSelectedTopic}>
               <div className="space-y-4">
-                {PTE_ESSAY_TOPICS.map((topic) => (
+                {filteredTopics.map((topic) => (
                   <div key={topic.id} className="relative">
                     <div className="flex items-start space-x-3 p-4 rounded-lg border border-border hover:bg-accent/50 cursor-pointer transition-all duration-200 backdrop-blur-sm">
                       <RadioGroupItem value={topic.id} id={topic.id} className="mt-1" />
