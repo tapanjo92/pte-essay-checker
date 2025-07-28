@@ -1,12 +1,37 @@
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import { DynamoDBDocumentClient, ScanCommand, UpdateCommand } from '@aws-sdk/lib-dynamodb';
-import { generateEssayEmbedding } from '../processEssay/vectorUtils';
+import { BedrockRuntimeClient, InvokeModelCommand } from '@aws-sdk/client-bedrock-runtime';
 
 const dynamoClient = new DynamoDBClient({});
 const docClient = DynamoDBDocumentClient.from(dynamoClient);
+const bedrockClient = new BedrockRuntimeClient({ 
+  region: process.env.BEDROCK_REGION || 'ap-south-1' 
+});
 
 interface Event {
   action?: 'seed' | 'update-existing';
+}
+
+// Inline embedding generation function
+async function generateEssayEmbedding(essay: string, topic: string): Promise<number[]> {
+  const text = `Topic: ${topic}\n\nEssay: ${essay}`;
+  
+  const input = {
+    modelId: 'amazon.titan-embed-text-v2:0',
+    contentType: 'application/json',
+    accept: 'application/json',
+    body: JSON.stringify({
+      inputText: text,
+      dimensions: 256,
+      normalize: true
+    })
+  };
+
+  const command = new InvokeModelCommand(input);
+  const response = await bedrockClient.send(command);
+  
+  const responseBody = JSON.parse(new TextDecoder().decode(response.body));
+  return responseBody.embedding;
 }
 
 export const handler = async (event: Event) => {
