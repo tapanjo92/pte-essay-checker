@@ -100,8 +100,8 @@ backend.data.resources.tables["GoldStandardEssay"].grantReadData(
   backend.processEssay.resources.lambda
 );
 
-// Table names are configured in the resource.ts files
-// They will be set dynamically during deployment
+// Environment variables are defined in the function's resource.ts file
+// The actual table names will be provided through Amplify environment configuration
 
 // // Grant read/write access to GoldStandardEssay table for generateEmbeddings
 // backend.data.resources.tables["GoldStandardEssay"].grantReadWriteData(
@@ -220,8 +220,8 @@ essayQueue.grantConsumeMessages(backend.processEssay.resources.lambda);
 essayQueue.grantSendMessages(backend.submitEssayToQueue.resources.lambda);
 dlq.grantConsumeMessages(backend.processEssay.resources.lambda); // Allow Lambda to read from DLQ
 
-// Queue URL is configured in the resource.ts file
-// It will be set dynamically during deployment
+// Environment variables are defined in the function's resource.ts file
+// The queue URL will be provided through Amplify environment configuration
 
 // Create SNS topic for DLQ alerts
 const dlqAlertTopic = new Topic(dataStack, 'DLQAlertTopic', {
@@ -300,6 +300,12 @@ backend.addOutput({
     DLQUrl: dlq.queueUrl,
     DLQName: dlq.queueName,
     MainQueueUrl: essayQueue.queueUrl,
+    // Export table names and queue URL for Lambda environment configuration
+    EssayTableName: backend.data.resources.tables["Essay"].tableName,
+    ResultTableName: backend.data.resources.tables["Result"].tableName,
+    UserTableName: backend.data.resources.tables["User"].tableName,
+    GoldStandardTableName: backend.data.resources.tables["GoldStandardEssay"].tableName,
+    EssayQueueUrl: essayQueue.queueUrl,
   },
 });
 
