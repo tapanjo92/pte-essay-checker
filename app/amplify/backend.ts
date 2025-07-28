@@ -4,7 +4,7 @@ import { data } from './data/resource';
 import { storage } from './storage/resource';
 import { processEssay } from './functions/processEssay/resource';
 import { submitEssayToQueue } from './functions/submitEssayToQueue/resource';
-import { generateEmbeddings } from './functions/generateEmbeddings/resource';
+// import { generateEmbeddings } from './functions/generateEmbeddings/resource';
 import { PolicyStatement } from 'aws-cdk-lib/aws-iam';
 import { Queue } from 'aws-cdk-lib/aws-sqs';
 import { SqsEventSource } from 'aws-cdk-lib/aws-lambda-event-sources';
@@ -25,7 +25,7 @@ const backend = defineBackend({
   storage,
   processEssay,
   submitEssayToQueue,
-  generateEmbeddings,
+  // generateEmbeddings,
 });
 
 // Get the stack for adding resources
@@ -69,13 +69,13 @@ backend.processEssay.resources.lambda.addToRolePolicy(
   })
 );
 
-// Grant the generateEmbeddings function access to Bedrock
-backend.generateEmbeddings.resources.lambda.addToRolePolicy(
-  new PolicyStatement({
-    actions: ['bedrock:InvokeModel'],
-    resources: ['*'],
-  })
-);
+// // Grant the generateEmbeddings function access to Bedrock
+// backend.generateEmbeddings.resources.lambda.addToRolePolicy(
+//   new PolicyStatement({
+//     actions: ['bedrock:InvokeModel'],
+//     resources: ['*'],
+//   })
+// );
 
 // Grant the processEssay function access to SES for sending emails
 backend.processEssay.resources.lambda.addToRolePolicy(
@@ -103,10 +103,10 @@ backend.data.resources.tables["GoldStandardEssay"].grantReadData(
 // Table names are configured in the resource.ts files
 // They will be set dynamically during deployment
 
-// Grant read/write access to GoldStandardEssay table for generateEmbeddings
-backend.data.resources.tables["GoldStandardEssay"].grantReadWriteData(
-  backend.generateEmbeddings.resources.lambda
-);
+// // Grant read/write access to GoldStandardEssay table for generateEmbeddings
+// backend.data.resources.tables["GoldStandardEssay"].grantReadWriteData(
+//   backend.generateEmbeddings.resources.lambda
+// );
 
 // Environment variable for generateEmbeddings is set in the resource.ts file
 
@@ -271,26 +271,26 @@ backend.data.resources.tables["Essay"].grantReadWriteData(
 // Table name is configured in the resource.ts file
 // It will be set dynamically during deployment
 
-// Grant generateEmbeddings function access to GoldStandardEssay table
-backend.data.resources.tables["GoldStandardEssay"].grantReadWriteData(
-  backend.generateEmbeddings.resources.lambda
-);
+// // Grant generateEmbeddings function access to GoldStandardEssay table
+// backend.data.resources.tables["GoldStandardEssay"].grantReadWriteData(
+//   backend.generateEmbeddings.resources.lambda
+// );
 
 // Table name is configured in the resource.ts file
 // It will be set dynamically during deployment
 
-// Grant generateEmbeddings permission to use Bedrock
-backend.generateEmbeddings.resources.lambda.addToRolePolicy(
-  new PolicyStatement({
-    actions: [
-      'bedrock:InvokeModel',
-      'bedrock:InvokeModelWithResponseStream'
-    ],
-    resources: [
-      `arn:aws:bedrock:ap-south-1::foundation-model/amazon.titan-embed-text-v2:0`
-    ],
-  })
-);
+// // Grant generateEmbeddings permission to use Bedrock
+// backend.generateEmbeddings.resources.lambda.addToRolePolicy(
+//   new PolicyStatement({
+//     actions: [
+//       'bedrock:InvokeModel',
+//       'bedrock:InvokeModelWithResponseStream'
+//     ],
+//     resources: [
+//       `arn:aws:bedrock:ap-south-1::foundation-model/amazon.titan-embed-text-v2:0`
+//     ],
+//   })
+// );
 
 // Environment variable for generateEmbeddings is set in the resource.ts file
 
