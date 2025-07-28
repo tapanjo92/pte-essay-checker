@@ -1,0 +1,36 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": [
+        "ssm:GetParameter",
+        "ssm:GetParameters",
+        "ssm:GetParameterHistory",
+        "ssm:GetParametersByPath"
+      ],
+      "Resource": [
+        "arn:aws:ssm:*:*:parameter/cdk-bootstrap/*",
+        "arn:aws:ssm:*:*:parameter/amplify/*"
+      ]
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "cloudformation:*",
+        "iam:*",
+        "lambda:*",
+        "dynamodb:*",
+        "sqs:*",
+        "sns:*",
+        "logs:*",
+        "s3:*",
+        "appsync:*",
+        "cognito-idp:*",
+        "amplify:*",
+        "sts:AssumeRole"
+      ],
+      "Resource": "*"
+    }
+  ]
+}
