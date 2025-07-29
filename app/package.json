@@ -6,7 +6,9 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "seed-essays": "node ../scripts/seed-complete-essays.js",
+    "seed-essays-v2": "node ../scripts/seed-essays-v2.js"
   },
   "dependencies": {
     "@aws-amplify/adapter-nextjs": "^1.6.7",

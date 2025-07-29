@@ -16,12 +16,22 @@
  ✓ Ready in 1585ms
  ○ Compiling /dashboard ...
  ✓ Compiled /dashboard in 8.4s (2412 modules)
-Amplify has not been configured. Please call Amplify.configure() before using this service.
-Amplify has not been configured. Please call Amplify.configure() before using this service.
- GET /dashboard 200 in 10177ms
- ✓ Compiled in 1135ms (1094 modules)
- GET /dashboard 200 in 135ms
- ⚠ Cross origin request detected from 3.109.164.76 to /_next/* resource. In a future major version of Next.js, you will need to explicitly configure "allowedDevOrigins" in next.config to allow this.
+Ampli ○ Compiling / ...
+ ✓ Compiled / in 7.7s (1859 modules)
+ ✓ Compiled in 270ms (841 modules)
+ GET / 200 in 40ms
+ ✓ Compiled /favicon.ico in 388ms (1004 modules)
+ GET /favicon.ico 200 in 513ms
+ GET / 200 in 239ms
+ GET / 200 in 37ms
+ GET /favicon.ico 200 in 14ms
+ ○ Compiling /_not-found ...
+ ✓ Compiled /_not-found in 521ms (1836 modules)
+ GET /login 404 in 851ms
+ GET / 200 in 75ms
+ GET / 200 in 30ms
+ ✓ Compiled in 479ms (827 modules)
+ in next.config to allow this.
 Read more: https://nextjs.org/docs/app/api-reference/config/next-config-js/allowedDevOrigins
  ○ Compiling /dashboard/results/[id] ...
  ✓ Compiled /dashboard/results/[id] in 980ms (2428 modules)
@@ -80,3 +90,43 @@ Amplify has not been configured. Please call Amplify.configure() before using th
  ✓ Compiled in 433ms (1170 modules)
  GET /essay-questions 200 in 486ms
  GET /dashboard 200 in 24ms
+ GET /dashboard/results/14991bf7-8423-47fd-bee5-fd95f030a274 200 in 58ms
+ GET /dashboard 200 in 11ms
+ GET /essay-questions 200 in 11ms
+ GET /essay-questions 200 in 12ms
+ GET /dashboard 200 in 13ms
+ GET /dashboard/results/ecea22de-84a4-47d8-8453-0b6cd666b592 200 in 33ms
+ GET /dashboard/history 200 in 25ms
+ GET /dashboard/history 200 in 12ms
+ ○ Compiling / ...
+ ✓ Compiled / in 611ms (1386 modules)
+ GET / 200 in 854ms
+ ○ Compiling /favicon.ico ...
+ ✓ Compiled /favicon.ico in 778ms (1403 modules)
+ GET /favicon.ico 200 in 920ms
+ GET /favicon.ico 200 in 7ms
+ ○ Compiling /_not-found ...
+ ✓ Compiled /_not-found in 942ms (2578 modules)
+ GET /.well-known/security.txt 404 in 1167ms
+ GET / 200 in 66ms
+ GET / 200 in 37ms
+ GET / 200 in 48ms
+ GET / 200 in 30ms
+ GET / 200 in 122ms
+ GET /favicon.ico 200 in 26ms
+ GET / 200 in 49ms
+ GET / 200 in 30ms
+ GET /dashboard/history 404 in 52ms
+ GET / 200 in 33ms
+ GET /dashboard 404 in 13ms
+ GET /dashboard 404 in 30ms
+ GET /dashboard 404 in 33ms
+ GET / 200 in 31ms
+ GET /dashboard 404 in 16ms
+ GET /dashboard 404 in 48ms
+ GET /dashboard 404 in 34ms
+ HEAD / 200 in 23ms
+ HEAD /dashboard 404 in 27ms
+ GET /dashboard 404 in 33ms
+ GET /dashboard 404 in 35ms
+[?25h

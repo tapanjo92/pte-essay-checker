@@ -960,6 +960,174 @@ Globalization cannot stop anyway. World already connect together. Better to acce
       linguisticRange: 0
     },
     scoreRange: '50-65'
+  },
+  
+  // TOPIC: Remote Work (VERY HIGH SCORE - 90-95)
+  {
+    id: 'seed-remote-veryhigh',
+    topic: 'The rise of remote work has fundamentally changed the traditional office culture. What are the advantages and disadvantages of this trend?',
+    category: 'ADVANTAGES_DISADVANTAGES',
+    essayText: `The paradigm shift toward remote work represents perhaps the most profound transformation in professional life since industrialization. This evolution brings both revolutionary benefits and significant challenges that fundamentally reshape organizational dynamics and individual experiences.
+
+Remote work's advantages extend far beyond convenience. Elimination of commuting reclaims hours daily, reducing stress while enhancing productivity and environmental sustainability. Geographic flexibility democratizes opportunity, enabling talent acquisition regardless of location and allowing professionals to optimize living costs without sacrificing career prospects. Organizations report substantial overhead reductions and access to global talent pools. Moreover, asynchronous work models accommodate diverse schedules and time zones, fostering inclusivity for caregivers and individuals with disabilities. Many employees report enhanced focus and efficiency in personalized environments.
+
+However, remote work's disadvantages merit serious consideration. Professional isolation undermines the spontaneous interactions that catalyze innovation and build organizational culture. Junior employees particularly suffer from reduced mentorship opportunities and observational learning. The erosion of work-life boundaries often leads to digital presenteeism and burnout. Communication complexities increase exponentially in distributed teams, with nuanced messages lost in digital translation. Career advancement may stagnate for remote workers due to reduced visibility and networking opportunities.
+
+The optimal approach involves intentional hybrid models that maximize benefits while mitigating drawbacks. Organizations must invest in digital infrastructure, virtual team-building, and clear communication protocols. Regular in-person gatherings can maintain cultural cohesion while preserving flexibility advantages.
+
+In conclusion, remote work's transformation of office culture necessitates thoughtful adaptation rather than wholesale adoption or rejection, recognizing that the future workplace must balance efficiency with human connection.`,
+    wordCount: 250,
+    officialScore: 94,
+    scoreBreakdown: {
+      content: 3,
+      form: 2,
+      grammar: 2,
+      vocabulary: 2,
+      spelling: 1,
+      developmentCoherence: 2,
+      linguisticRange: 2
+    },
+    scoreRange: '90-95'
+  },
+  
+  // TOPIC: Remote Work (HIGH SCORE - 85-90)
+  {
+    id: 'seed-remote-high',
+    topic: 'The rise of remote work has fundamentally changed the traditional office culture. What are the advantages and disadvantages of this trend?',
+    category: 'ADVANTAGES_DISADVANTAGES',
+    essayText: `The widespread adoption of remote work has revolutionized traditional employment structures, creating both opportunities and challenges for workers and organizations alike. This transformation demands careful evaluation of its multifaceted impacts.
+
+The advantages of remote work are compelling and diverse. Employees gain precious time previously lost to commuting, often several hours daily, which can be redirected toward family, health, or personal development. Financial savings from reduced transportation, professional wardrobe, and meal costs significantly improve household budgets. Companies benefit from decreased real estate expenses and access to talent unrestricted by geography. Environmental impacts decrease substantially as millions fewer vehicles contribute to traffic congestion and emissions. Productivity often increases as employees work during their peak performance hours in comfortable environments free from office distractions.
+
+Nevertheless, remote work presents considerable disadvantages that cannot be overlooked. Social isolation emerges as a primary concern, with employees missing informal interactions that build relationships and spark creativity. The absence of clear boundaries between professional and personal spaces leads many to overwork, experiencing burnout despite flexibility. Communication challenges multiply when body language and spontaneous conversations disappear. Career development may suffer as remote employees become "out of sight, out of mind" for promotions. Additionally, not all homes provide suitable work environments, creating inequality among workers.
+
+Successfully navigating this transformation requires deliberate strategies. Organizations should implement regular video meetings, virtual social events, and periodic in-person gatherings. Clear expectations about availability and response times prevent overwork while maintaining productivity.
+
+In conclusion, while remote work offers substantial benefits, its challenges demand proactive management to create sustainable and equitable work arrangements that serve both individual and organizational needs.`,
+    wordCount: 262,
+    officialScore: 88,
+    scoreBreakdown: {
+      content: 3,
+      form: 1,  // Penalty for exceeding word limit
+      grammar: 2,
+      vocabulary: 2,
+      spelling: 1,
+      developmentCoherence: 2,
+      linguisticRange: 2
+    },
+    scoreRange: '85-90'
+  },
+  
+  // TOPIC: Remote Work (MEDIUM SCORE - 75-84)
+  {
+    id: 'seed-remote-medium',
+    topic: 'The rise of remote work has fundamentally changed the traditional office culture. What are the advantages and disadvantages of this trend?',
+    category: 'ADVANTAGES_DISADVANTAGES',
+    essayText: `Remote work has become very popular in recent years, especially after the pandemic. This change in how we work has both positive and negative effects on employees and companies.
+
+The advantages of working from home are significant. First, people save time and money because they don't need to travel to the office every day. This means more time for family and hobbies. Second, employees can work from anywhere, which allows them to live in cheaper areas or travel while working. Companies also save money on office rent and utilities. Many workers say they are more productive at home because there are fewer interruptions from colleagues. Remote work is also better for the environment because fewer cars on the road means less pollution.
+
+However, there are also important disadvantages to consider. The biggest problem is loneliness and lack of social interaction. Working alone at home can make people feel isolated and disconnected from their team. It's also harder to separate work from personal life when your home is your office. Some people end up working longer hours because they can't "leave" work. Communication can be more difficult through emails and video calls compared to talking face-to-face. Young employees may miss out on learning opportunities that come from being around experienced colleagues.
+
+To make remote work successful, companies need to find the right balance. Maybe employees could work from home some days and come to the office on others. This would give people flexibility while still maintaining team connections.
+
+In conclusion, remote work has changed office culture with both benefits and drawbacks that need careful management.`,
+    wordCount: 260,
+    officialScore: 80,
+    scoreBreakdown: {
+      content: 2,
+      form: 1,  // Penalty for exceeding word limit
+      grammar: 2,
+      vocabulary: 1,
+      spelling: 1,
+      developmentCoherence: 2,
+      linguisticRange: 1
+    },
+    scoreRange: '75-84'
+  },
+  
+  // TOPIC: Remote Work (LOW SCORE - 65-74)
+  {
+    id: 'seed-remote-low',
+    topic: 'The rise of remote work has fundamentally changed the traditional office culture. What are the advantages and disadvantages of this trend?',
+    category: 'ADVANTAGES_DISADVANTAGES',
+    essayText: `Remote work is when people work from home instead of going to office. This become very popular after covid pandemic. It have good and bad points that change how we work.
+
+Good things about remote work is many. First, no need wake up early and sit in traffic jam for hours. Can wake up later and start work immediately. Save money on petrol and parking also. Second advantage is can work in pajamas and comfortable clothes. No need buy expensive office clothes. Also can eat home food which is cheaper and healthier than outside food. Some people say they work better at home because no colleague disturb them. Can take break whenever want.
+
+But remote work also got problems. Main problem is feeling lonely because no friends at work to talk. Only see people on computer screen which not same as real life. Also difficult to stop working because computer always there. Some people work until very late because boss keep sending email. House become very messy because work papers everywhere. Children and family also disturb when trying to work. Internet connection sometimes bad and video call keep freezing.
+
+Another issue is promotion become difficult. Boss cannot see you working hard so maybe forget about you when promotion time. New employee also difficult to learn job when nobody around to teach properly.
+
+In conclusion, work from home have advantages and disadvantages. Need to find balance between home and office work. Maybe work home three days and office two days is better solution.`,
+    wordCount: 241,
+    officialScore: 69,
+    scoreBreakdown: {
+      content: 2,
+      form: 2,
+      grammar: 0,
+      vocabulary: 1,
+      spelling: 1,
+      developmentCoherence: 1,
+      linguisticRange: 0
+    },
+    scoreRange: '65-74'
+  },
+  
+  // TOPIC: Remote Work (VERY LOW SCORE - 50-65)
+  {
+    id: 'seed-remote-verylow',
+    topic: 'The rise of remote work has fundamentally changed the traditional office culture. What are the advantages and disadvantages of this trend?',
+    category: 'ADVANTAGES_DISADVANTAGES',
+    essayText: `Now many people work from house not go office. This big change for everyone. Have good thing and bad thing about this.
+
+Good thing about work at home is save time. No need go office everyday waste time in traffic. Can sleep more. Also save money no need buy petrol or train ticket. Can wear anything want nobody see. Eat food from kitchen anytime hungry. If tired can lie down on bed for while then continue work.
+
+Bad thing is very boring at home alone whole day. No friend to talk or joke. Only computer to look at. Sometime internet not working then cannot do anything. Boss think you lazy at home maybe not working. Very hard to concentrate when family making noise or TV on. 
+
+Also bad for health because sit all day no walking. In office at least walk to meeting room or canteen. At home just sit on chair whole day get fat. Eye also pain from looking screen too long.
+
+Some people like work from home some people dont like. Depend on person. Young people maybe like because they good with computer. Old people maybe dont like because they not use to technology.
+
+Work from home change everything about job. Some good some bad but cannot go back to old way already. Everyone must accept this new way of working.`,
+    wordCount: 214,
+    officialScore: 57,
+    scoreBreakdown: {
+      content: 1,
+      form: 2,
+      grammar: 0,
+      vocabulary: 0,
+      spelling: 1,
+      developmentCoherence: 1,
+      linguisticRange: 0
+    },
+    scoreRange: '50-65'
+  },
+  
+  // TOPIC: Remote Work (MEDIUM-HIGH SCORE - 80-85) 
+  {
+    id: 'seed-remote-mediumhigh',
+    topic: 'The rise of remote work has fundamentally changed the traditional office culture. What are the advantages and disadvantages of this trend?',
+    category: 'ADVANTAGES_DISADVANTAGES',
+    essayText: `The shift to remote work has transformed how millions of people approach their professional lives. This change brings significant benefits alongside notable challenges that organizations and individuals must navigate carefully.
+
+Remote work offers numerous advantages that explain its growing popularity. The elimination of daily commutes saves employees substantial time and money while reducing stress levels. Workers report improved work-life balance, as they can manage household responsibilities and personal appointments more easily. From an employer perspective, remote work enables access to a broader talent pool unconstrained by geographic limitations. Office overhead costs decrease dramatically when fewer employees require physical workspace. Studies show many remote workers experience increased productivity due to fewer workplace distractions and the ability to work during their most productive hours. Environmental benefits also result from reduced vehicle emissions and lower energy consumption in office buildings.
+
+However, remote work creates significant challenges that affect both employees and organizations. Social isolation ranks as the primary concern, with workers missing casual conversations and team bonding that naturally occur in offices. This isolation can impact mental health and job satisfaction. The blurring of work-life boundaries often leads to longer working hours and difficulty disconnecting from professional responsibilities. Communication becomes more challenging when teams rely solely on digital tools, potentially causing misunderstandings and delays. Career advancement may suffer as remote workers have less visibility and fewer networking opportunities. Training new employees and maintaining company culture prove particularly difficult in distributed teams.
+
+In conclusion, while remote work offers flexibility and efficiency benefits, it requires intentional strategies to address social and professional development challenges, suggesting hybrid models may provide the optimal solution.`,
+    wordCount: 263,
+    officialScore: 83,
+    scoreBreakdown: {
+      content: 3,
+      form: 1,  // Penalty for exceeding word limit
+      grammar: 2,
+      vocabulary: 2,
+      spelling: 1,
+      developmentCoherence: 2,
+      linguisticRange: 2
+    },
+    scoreRange: '80-85'
   }
 ];
 
