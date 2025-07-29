@@ -31,8 +31,9 @@ Ampli ○ Compiling / ...
  GET / 200 in 75ms
  GET / 200 in 30ms
  ✓ Compiled in 479ms (827 modules)
- in next.config to allow this.
-Read more: https://nextjs.org/docs/app/api-reference/config/next-config-js/allowedDevOrigins
+ ✓ Compiled in 681ms (841 modules)
+ ✓ Compiled in 568ms (841 modules)
+reference/config/next-config-js/allowedDevOrigins
  ○ Compiling /dashboard/results/[id] ...
  ✓ Compiled /dashboard/results/[id] in 980ms (2428 modules)
  GET /dashboard/results/c2c8b2c2-b087-4a28-b20e-8ced18edb526 200 in 1714ms

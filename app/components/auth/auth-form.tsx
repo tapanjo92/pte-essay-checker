@@ -18,7 +18,6 @@ import {
   CheckCircle,
   AlertCircle,
   Loader2,
-  Github,
   Chrome,
   Key,
   ChevronRight,
@@ -287,10 +286,6 @@ export function AuthForm() {
                   <button className="w-full flex items-center justify-center gap-3 px-4 py-3 bg-white text-black rounded-lg font-medium hover:bg-gray-100 transition-colors">
                     <Chrome className="w-5 h-5" />
                     Continue with Google
-                  </button>
-                  <button className="w-full flex items-center justify-center gap-3 px-4 py-3 bg-gradient-to-r from-purple-600/20 to-pink-600/20 text-white rounded-lg font-medium hover:from-purple-600/30 hover:to-pink-600/30 transition-all border border-purple-500/50 backdrop-blur-sm">
-                    <Github className="w-5 h-5" />
-                    Continue with GitHub
                   </button>
                   
                   <div className="relative my-6">
