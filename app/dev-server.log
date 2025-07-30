@@ -13,131 +13,57 @@
      · serverActions
 
  ✓ Starting...
- ✓ Ready in 1585ms
- ○ Compiling /dashboard ...
- ✓ Compiled /dashboard in 8.4s (2412 modules)
-Ampli ○ Compiling / ...
- ✓ Compiled / in 7.7s (1859 modules)
- ✓ Compiled in 270ms (841 modules)
- GET / 200 in 40ms
- ✓ Compiled /favicon.ico in 388ms (1004 modules)
- GET /favicon.ico 200 in 513ms
- GET / 200 in 239ms
- GET / 200 in 37ms
- GET /favicon.ico 200 in 14ms
- ○ Compiling /_not-found ...
- ✓ Compiled /_not-found in 521ms (1836 modules)
- GET /login 404 in 851ms
- GET / 200 in 75ms
- GET / 200 in 30ms
- ✓ Compiled in 479ms (827 modules)
- ✓ Compiled in 681ms (841 modules)
- ✓ Compiled in 568ms (841 modules)
- ✓ Compiled in 682ms (841 modules)
- ✓ Compiled in 592ms (841 modules)
- ✓ Compiled in 16ms
- ✓ Compiled in 450ms (827 modules)
- ✓ Compiled / in 226ms (987 modules)
- GET / 200 in 544ms
- ✓ Compiled /favicon.ico in 192ms (1004 modules)
- ⨯ TypeError: __webpack_modules__[moduleId] is not a function
-    at __webpack_exec__ (.next/server/app/favicon.ico/route.js:112:39)
-    at <unknown> (.next/server/app/favicon.ico/route.js:113:114)
-    at <unknown> (.next/server/app/favicon.ico/route.js:113:47)
-    at Object.<anonymous> (.next/server/app/favicon.ico/route.js:116:3) {
-  page: '/favicon.ico'
-}
- GET /favicon.ico 500 in 327ms
- ⨯ TypeError: __webpack_modules__[moduleId] is not a function
-    at __webpack_exec__ (.next/server/app/favicon.ico/route.js:112:39)
-    at <unknown> (.next/server/app/favicon.ico/route.js:113:114)
-    at <unknown> (.next/server/app/favicon.ico/route.js:113:47)
-    at Object.<anonymous> (.next/server/app/favicon.ico/route.js:116:3) {
-  page: '/favicon.ico'
-}
- GET /favicon.ico 500 in 42ms
- ✓ Compiled /_not-found in 366ms (1818 modules)
- GET /login 404 in 756ms
- ✓ Compiled / in 185ms (987 modules)
- GET / 200 in 591ms
- GET / 200 in 41ms
- ✓ Compiled in 25ms
- ✓ Compiled in 451ms (827 modules)
- ✓ Compiled in 656ms (842 modules)
- ✓ Compiled in 626ms (842 modules)
- ✓ Compiled in 589ms (842 modules)
- ✓ Compiled in 638ms (842 modules)
- ✓ Compiled in 567ms (842 modules)
- ✓ Compiled in 547ms (842 modules)
- ✓ Compiled in 588ms (842 modules)
- ✓ Compiled in 545ms (842 modules)
- ✓ Compiled in 560ms (842 modules)
- ✓ Compiled in 534ms (842 modules)
- ✓ Compiled in 594ms (842 modules)
- ✓ Compiled in 609ms (842 modules)
- ✓ Compiled in 573ms (842 modules)
- ✓ Compiled in 531ms (842 modules)
- ✓ Compiled in 524ms (842 modules)
- ✓ Compiled in 514ms (842 modules)
- ✓ Compiled in 595ms (842 modules)
- ✓ Compiled in 528ms (842 modules)
-s (1375 modules)
- ✓ Compiled in 616ms (1181 modules)
- GET /dashboard/results/4e382bd6-ee63-496e-b61c-84833a36a557 200 in 90ms
- ✓ Compiled in 585ms (2556 modules)
- GET /dashboard/results/4e382bd6-ee63-496e-b61c-84833a36a557 200 in 89ms
- ✓ Compiled in 572ms (2556 modules)
- GET /dashboard/results/4e382bd6-ee63-496e-b61c-84833a36a557 200 in 91ms
-Amplify has not been configured. Please call Amplify.configure() before using this service.
-Amplify has not been configured. Please call Amplify.configure() before using this service.
- GET /dashboard/results/4e382bd6-ee63-496e-b61c-84833a36a557 200 in 442ms
- ○ Compiling /dashboard/history ...
- ✓ Compiled /dashboard/history in 2.2s (2551 modules)
- GET /dashboard/history 200 in 2337ms
- GET /dashboard 200 in 22ms
- GET /essay-questions 200 in 24ms
- GET /essay-questions 200 in 11ms
- ✓ Compiled in 277ms (1381 modules)
- ✓ Compiled in 433ms (1170 modules)
- GET /essay-questions 200 in 486ms
- GET /dashboard 200 in 24ms
- GET /dashboard/results/14991bf7-8423-47fd-bee5-fd95f030a274 200 in 58ms
- GET /dashboard 200 in 11ms
- GET /essay-questions 200 in 11ms
- GET /essay-questions 200 in 12ms
- GET /dashboard 200 in 13ms
- GET /dashboard/results/ecea22de-84a4-47d8-8453-0b6cd666b592 200 in 33ms
- GET /dashboard/history 200 in 25ms
- GET /dashboard/history 200 in 12ms
+ ✓ Ready in 1630ms
  ○ Compiling / ...
- ✓ Compiled / in 611ms (1386 modules)
- GET / 200 in 854ms
+ ✓ Compiled / in 7.2s (1861 modules)
+ HEAD / 200 in 7678ms
+ ✓ Compiled in 869ms (842 modules)
+ GET / 200 in 41ms
  ○ Compiling /favicon.ico ...
- ✓ Compiled /favicon.ico in 778ms (1403 modules)
- GET /favicon.ico 200 in 920ms
- GET /favicon.ico 200 in 7ms
- ○ Compiling /_not-found ...
- ✓ Compiled /_not-found in 942ms (2578 modules)
- GET /.well-known/security.txt 404 in 1167ms
- GET / 200 in 66ms
- GET / 200 in 37ms
- GET / 200 in 48ms
- GET / 200 in 30ms
- GET / 200 in 122ms
- GET /favicon.ico 200 in 26ms
- GET / 200 in 49ms
- GET / 200 in 30ms
- GET /dashboard/history 404 in 52ms
- GET / 200 in 33ms
- GET /dashboard 404 in 13ms
- GET /dashboard 404 in 30ms
- GET /dashboard 404 in 33ms
- GET / 200 in 31ms
- GET /dashboard 404 in 16ms
- GET /dashboard 404 in 48ms
- GET /dashboard 404 in 34ms
- HEAD / 200 in 23ms
- HEAD /dashboard 404 in 27ms
- GET /dashboard 404 in 33ms
- GET /dashboard 404 in 35ms
-[?25h
+ ✓ Compiled /favicon.ico in 2.1s (1865 modules)
+ GET /favicon.ico 200 in 2219ms
+ GET /auth 200 in 2410ms
+ GET /favicon.ico 200 in 8ms
+ ○ Compiling /dashboard ...
+ ✓ Compiled /dashboard in 2.7s (2461 modules)
+ GET /dashboard 200 in 2905ms
+ GET /favicon.ico 200 in 24ms
+ ○ Compiling /essay-questions ...
+ ✓ Compiled /essay-questions in 707ms (2523 modules)
+ GET /essay-questions 200 in 815ms
+ GET /essay-questions 200 in 15ms
+ GET /favicon.ico 200 in 17ms
+ GET /dashboard 200 in 24ms
+ GET /favicon.ico 200 in 5ms
+ ○ Compiling /dashboard/results/[id] ...
+ ✓ Compiled /dashboard/results/[id] in 1171ms (2568 modules)
+ GET /dashboard/results/52d8c107-8c2d-4208-9f81-70099a229a8a 200 in 1801ms
+ GET /favicon.ico 200 in 14ms
+ GET /essay-questions 200 in 41ms
+ GET /favicon.ico 200 in 14ms
+ GET /essay-questions 200 in 10ms
+ GET /favicon.ico 200 in 6ms
+ GET /dashboard 200 in 24ms
+ GET /favicon.ico 200 in 5ms
+ GET /dashboard/results/67d58b6a-251a-45b1-9391-ddd916c13695 200 in 41ms
+ GET /favicon.ico 200 in 6ms
+Amplify has not been configured. Please call Amplify.configure() before using this service.
+ GET /dashboard/results/67d58b6a-251a-45b1-9391-ddd916c13695 200 in 336ms
+ GET /favicon.ico 200 in 8ms
+ GET /favicon.ico 200 in 9ms
+ GET /dashboard 200 in 19ms
+ GET /essay-questions 200 in 12ms
+ GET /essay-questions 200 in 12ms
+ GET /favicon.ico 200 in 5ms
+ GET /dashboard 200 in 14ms
+ GET /favicon.ico 200 in 4ms
+ GET /dashboard/results/1155f032-c2ec-438f-8fb5-4cb32469f4cb 200 in 37ms
+ GET /favicon.ico 200 in 6ms
+ GET /essay-questions 200 in 14ms
+ GET /favicon.ico 200 in 6ms
+ GET /essay-questions 200 in 12ms
+ GET /favicon.ico 200 in 5ms
+ GET /dashboard 200 in 12ms
+ GET /favicon.ico 200 in 5ms
+ GET /dashboard/results/2e6adb92-eec9-4772-877c-7acc561bb73c 200 in 39ms
+ GET /favicon.ico 200 in 5ms

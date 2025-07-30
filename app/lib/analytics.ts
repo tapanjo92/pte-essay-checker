@@ -57,6 +57,7 @@ export async function trackEvent(
       event: event as any,
       metadata: JSON.stringify(metadata || {}),
       essayId,
+      userId: 'anonymous', // TODO: Get actual user ID when available
       sessionId: getSessionId(),
       timestamp: new Date().toISOString(),
       deviceType: getDeviceType(),
@@ -119,7 +120,7 @@ export async function updateUserProgress(
     
     const current = existingProgress?.[0];
     
-    if (current) {
+    if (current && current.attemptCount !== null && current.averageScore !== null) {
       // Calculate new average
       const newAttemptCount = current.attemptCount + 1;
       const newAverage = ((current.averageScore * current.attemptCount) + newScore) / newAttemptCount;

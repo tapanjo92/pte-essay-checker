@@ -43,3 +43,285 @@ Amplify has not been configured. Please call Amplify.configure() before using th
  GET /favicon.ico 200 in 13ms
  GET /essay-questions 200 in 25ms
  GET /favicon.ico 200 in 5ms
+ ✓ Compiled in 393ms (1095 modules)
+ ✓ Compiled in 1317ms (1170 modules)
+ ✓ Compiled in 577ms (1170 modules)
+ ✓ Compiled / in 350ms (1101 modules)
+ GET / 200 in 679ms
+ GET / 200 in 30ms
+ GET / 200 in 27ms
+ ✓ Compiled /favicon.ico in 409ms (1118 modules)
+ GET /favicon.ico 200 in 689ms
+ GET /auth 200 in 802ms
+ GET /favicon.ico 200 in 6ms
+ ✓ Compiled in 380ms (1095 modules)
+ ✓ Compiled in 902ms (1156 modules)
+ ✓ Compiled / in 345ms (1101 modules)
+ GET / 200 in 763ms
+ ○ Compiling /_not-found ...
+ ✓ Compiled /_not-found in 1345ms (2262 modules)
+ GET /favicon.ico%22%20type=%22image/x-icon%22%20sizes=%2216x16 404 in 1566ms
+ GET /robots.txt 404 in 31ms
+ GET / 200 in 54ms
+ ✓ Compiled /favicon.ico in 442ms (1118 modules)
+ GET /favicon.ico 200 in 878ms
+ GET /auth 200 in 944ms
+ GET /favicon.ico 200 in 6ms
+ ○ Compiling /dashboard ...
+ ✓ Compiled /dashboard in 1442ms (1356 modules)
+ GET /dashboard 200 in 1709ms
+ ✓ Compiled /favicon.ico in 230ms (1373 modules)
+ GET /favicon.ico 200 in 393ms
+ GET /essay-questions 200 in 73ms
+ GET /essay-questions 200 in 12ms
+ GET /favicon.ico 200 in 6ms
+ GET /dashboard 200 in 27ms
+ GET /favicon.ico 200 in 6ms
+ ○ Compiling /dashboard/results/[id] ...
+ ✓ Compiled /dashboard/results/[id] in 2.1s (2554 modules)
+ GET /dashboard/results/fd976528-fb88-4b66-b4ae-fd2a958b25bc 200 in 2779ms
+ ✓ Compiled /favicon.ico in 266ms (1397 modules)
+ GET /favicon.ico 200 in 376ms
+Amplify has not been configured. Please call Amplify.configure() before using this service.
+ GET /dashboard/results/fd976528-fb88-4b66-b4ae-fd2a958b25bc 200 in 385ms
+ GET /favicon.ico 200 in 5ms
+ ✓ Compiled in 1002ms (2571 modules)
+Amplify has not been configured. Please call Amplify.configure() before using this service.
+ GET /dashboard/results/fd976528-fb88-4b66-b4ae-fd2a958b25bc 200 in 352ms
+ GET /favicon.ico 200 in 17ms
+ GET /dashboard/results/fd976528-fb88-4b66-b4ae-fd2a958b25bc 200 in 185ms
+ GET /favicon.ico 200 in 8ms
+ GET /favicon.ico 200 in 7ms
+ GET /dashboard 200 in 24ms
+ GET /essay-questions 200 in 22ms
+ GET /essay-questions 200 in 12ms
+ GET /favicon.ico 200 in 6ms
+ GET /dashboard 200 in 14ms
+ GET /favicon.ico 200 in 5ms
+ GET /dashboard/results/2b11a026-a04e-4311-a42b-9c8a00fb52be 200 in 36ms
+ GET /favicon.ico 200 in 6ms
+ ○ Compiling /dashboard/history ...
+ ✓ Compiled /dashboard/history in 904ms (1386 modules)
+ GET /dashboard/history 200 in 1090ms
+ ✓ Compiled /favicon.ico in 255ms (1403 modules)
+ GET /favicon.ico 200 in 373ms
+Amplify has not been configured. Please call Amplify.configure() before using this service.
+ GET /dashboard/history 200 in 326ms
+ GET /favicon.ico 200 in 6ms
+ ✓ Compiled in 936ms (2560 modules)
+ GET /dashboard/results/2b11a026-a04e-4311-a42b-9c8a00fb52be 200 in 182ms
+ ✓ Compiled /favicon.ico in 280ms (1403 modules)
+ GET /favicon.ico 200 in 395ms
+ GET /essay-questions 200 in 72ms
+ GET /favicon.ico 200 in 5ms
+ GET /dashboard 200 in 28ms
+ GET /favicon.ico 200 in 5ms
+ GET /dashboard/results/8dc00a4d-8651-4a7a-bd64-06bec3d6eaa3 200 in 55ms
+ GET /favicon.ico 200 in 5ms
+ GET /essay-questions 200 in 15ms
+ GET /favicon.ico 200 in 6ms
+ GET /essay-questions 200 in 11ms
+ GET /favicon.ico 200 in 5ms
+ GET /dashboard 200 in 13ms
+ GET /favicon.ico 200 in 5ms
+ GET /dashboard/results/07715f2a-e3d6-4772-adb5-cd02eda2075e 200 in 37ms
+ GET /favicon.ico 200 in 5ms
+ ✓ Compiled in 636ms (1174 modules)
+ ✓ Compiled in 484ms (1386 modules)
+ ✓ Compiled in 659ms (1174 modules)
+ ⨯ [Error: ENOENT: no such file or directory, open '/root/pte-essay-checker/app/.next/routes-manifest.json'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/root/pte-essay-checker/app/.next/routes-manifest.json',
+  page: '/auth'
+}
+ ○ Compiling /_error ...
+ ✓ Compiled /_error in 2.5s (2888 modules)
+ ⨯ [Error: ENOENT: no such file or directory, open '/root/pte-essay-checker/app/.next/routes-manifest.json'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/root/pte-essay-checker/app/.next/routes-manifest.json'
+}
+ GET /auth 500 in 6265ms
+ ⨯ [Error: ENOENT: no such file or directory, open '/root/pte-essay-checker/app/.next/routes-manifest.json'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/root/pte-essay-checker/app/.next/routes-manifest.json',
+  page: '/auth'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/root/pte-essay-checker/app/.next/routes-manifest.json'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/root/pte-essay-checker/app/.next/routes-manifest.json'
+}
+ GET /auth 500 in 660ms
+ ⨯ [Error: ENOENT: no such file or directory, open '/root/pte-essay-checker/app/.next/routes-manifest.json'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/root/pte-essay-checker/app/.next/routes-manifest.json',
+  page: '/auth'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open '/root/pte-essay-checker/app/.next/routes-manifest.json'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/root/pte-essay-checker/app/.next/routes-manifest.json'
+}
+ GET /auth 500 in 844ms
+ ○ Compiling / ...
+ ✓ Compiled / in 577ms (1487 modules)
+ ⨯ [Error: ENOENT: no such file or directory, open '/root/pte-essay-checker/app/.next/routes-manifest.json'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/root/pte-essay-checker/app/.next/routes-manifest.json',
+  page: '/'
+}
+ ○ Compiling /_error ...
+ ✓ Compiled /_error in 636ms (2894 modules)
+ ⨯ [Error: ENOENT: no such file or directory, open '/root/pte-essay-checker/app/.next/routes-manifest.json'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/root/pte-essay-checker/app/.next/routes-manifest.json'
+}
+ GET / 500 in 2253ms
+ ✓ Compiled /favicon.ico in 411ms (1590 modules)
+ ⨯ [Error: ENOENT: no such file or directory, open '/root/pte-essay-checker/app/.next/routes-manifest.json'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/root/pte-essay-checker/app/.next/routes-manifest.json',
+  page: '/favicon.ico'
+}
+ GET /favicon.ico 500 in 620ms
+ ✓ Compiled in 316ms (1590 modules)
+ ✓ Compiled in 644ms (1321 modules)
+ ○ Compiling /_not-found ...
+ ✓ Compiled /_not-found in 670ms (2916 modules)
+ ⨯ SyntaxError: Unexpected non-whitespace character after JSON at position 77
+    at JSON.parse (<anonymous>)
+ GET /_next/static/webpack/e34b204aac207757.webpack.hot-update.json 500 in 721ms
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+ ⨯ SyntaxError: Unexpected non-whitespace character after JSON at position 77
+    at JSON.parse (<anonymous>) {
+  page: '/'
+}
+ ⨯ SyntaxError: Unexpected non-whitespace character after JSON at position 77
+    at JSON.parse (<anonymous>)
+ GET / 500 in 59ms
+ ⨯ SyntaxError: Unexpected non-whitespace character after JSON at position 77
+    at JSON.parse (<anonymous>)
+ ⨯ SyntaxError: Unexpected non-whitespace character after JSON at position 77
+    at JSON.parse (<anonymous>)
+ GET /_next/static/chunks/fallback/webpack.js 500 in 64ms
+ GET /_next/static/chunks/fallback/main.js 500 in 64ms
+ ⨯ SyntaxError: Unexpected non-whitespace character after JSON at position 77
+    at JSON.parse (<anonymous>)
+ GET /_next/static/chunks/fallback/react-refresh.js 500 in 33ms
+ ⨯ SyntaxError: Unexpected non-whitespace character after JSON at position 77
+    at JSON.parse (<anonymous>)
+ GET /_next/static/chunks/fallback/pages/_app.js 500 in 28ms
+ ⨯ SyntaxError: Unexpected non-whitespace character after JSON at position 77
+    at JSON.parse (<anonymous>)
+ GET /_next/static/chunks/fallback/pages/_error.js 500 in 32ms
+ ⨯ SyntaxError: Unexpected non-whitespace character after JSON at position 77
+    at JSON.parse (<anonymous>) {
+  page: '/favicon.ico'
+}
+ GET /favicon.ico 500 in 31ms
+<w> [webpack.cache.PackFileCacheStrategy] Caching failed for pack: Error: ENOENT: no such file or directory, rename '/root/pte-essay-checker/app/.next/cache/webpack/client-development-fallback/0.pack.gz_' -> '/root/pte-essay-checker/app/.next/cache/webpack/client-development-fallback/0.pack.gz'
+ ✓ Compiled in 1251ms (2888 modules)
+ ✓ Compiled in 293ms (1567 modules)
+ ✓ Compiled in 443ms (1321 modules)
+ ✓ Compiled / in 265ms (1573 modules)
+ ⨯ Error: ENOENT: no such file or directory, open '/root/pte-essay-checker/app/.next/server/vendor-chunks/next.js'
+    at <unknown> (.next/server/app/page.js:402:47)
+    at Object.<anonymous> (.next/server/app/page.js:405:3) {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/root/pte-essay-checker/app/.next/server/vendor-chunks/next.js',
+  page: '/'
+}
+ ⨯ Error: Cannot find module './548.js'
+Require stack:
+- /root/pte-essay-checker/app/.next/server/webpack-runtime.js
+- /root/pte-essay-checker/app/.next/server/app/page.js
+- /root/pte-essay-checker/app/node_modules/next/dist/server/require.js
+- /root/pte-essay-checker/app/node_modules/next/dist/server/load-components.js
+- /root/pte-essay-checker/app/node_modules/next/dist/build/utils.js
+- /root/pte-essay-checker/app/node_modules/next/dist/build/swc/options.js
+- /root/pte-essay-checker/app/node_modules/next/dist/build/swc/index.js
+- /root/pte-essay-checker/app/node_modules/next/dist/build/next-config-ts/transpile-config.js
+- /root/pte-essay-checker/app/node_modules/next/dist/server/config.js
+- /root/pte-essay-checker/app/node_modules/next/dist/server/next.js
+- /root/pte-essay-checker/app/node_modules/next/dist/server/lib/start-server.js
+    at <unknown> (.next/server/pages/_document.js:1:376)
+    at Object.<anonymous> (.next/server/pages/_document.js:1:422) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [Array]
+}
+ GET / 500 in 362ms
+ ○ Compiling /_not-found ...
+ ✓ Compiled /_not-found in 531ms (2899 modules)
+ ⨯ Error: ENOENT: no such file or directory, open '/root/pte-essay-checker/app/.next/server/vendor-chunks/next.js'
+    at <unknown> (.next/server/app/_not-found/page.js:348:47)
+    at Object.<anonymous> (.next/server/app/_not-found/page.js:351:3) {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/root/pte-essay-checker/app/.next/server/vendor-chunks/next.js'
+}
+ ⨯ Error: ENOENT: no such file or directory, open '/root/pte-essay-checker/app/.next/server/vendor-chunks/next.js'
+    at <unknown> (.next/server/app/_not-found/page.js:348:47)
+    at Object.<anonymous> (.next/server/app/_not-found/page.js:351:3) {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/root/pte-essay-checker/app/.next/server/vendor-chunks/next.js'
+}
+ ⨯ Error: ENOENT: no such file or directory, open '/root/pte-essay-checker/app/.next/server/vendor-chunks/next.js'
+    at <unknown> (.next/server/app/_not-found/page.js:348:47)
+    at Object.<anonymous> (.next/server/app/_not-found/page.js:351:3) {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/root/pte-essay-checker/app/.next/server/vendor-chunks/next.js'
+}
+ ⨯ Error: ENOENT: no such file or directory, open '/root/pte-essay-checker/app/.next/server/vendor-chunks/next.js'
+    at <unknown> (.next/server/app/_not-found/page.js:348:47)
+    at Object.<anonymous> (.next/server/app/_not-found/page.js:351:3) {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/root/pte-essay-checker/app/.next/server/vendor-chunks/next.js'
+}
+ ⨯ Error: ENOENT: no such file or directory, open '/root/pte-essay-checker/app/.next/server/vendor-chunks/next.js'
+    at <unknown> (.next/server/app/_not-found/page.js:348:47)
+    at Object.<anonymous> (.next/server/app/_not-found/page.js:351:3) {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/root/pte-essay-checker/app/.next/server/vendor-chunks/next.js'
+}
+ GET /_next/static/chunks/fallback/main.js 500 in 721ms
+ GET /_next/static/chunks/fallback/webpack.js 500 in 722ms
+ GET /_next/static/chunks/fallback/react-refresh.js 500 in 313ms
+ GET /_next/static/chunks/fallback/pages/_app.js 500 in 311ms
+ GET /_next/static/chunks/fallback/pages/_error.js 500 in 309ms
+ ✓ Compiled /favicon.ico in 322ms (1591 modules)
+ GET /favicon.ico 200 in 456ms
+ GET / 200 in 222ms
+ GET /_next/static/css/app/layout.css?v=1753873653714 404 in 154ms
+ GET /_next/static/chunks/main-app.js?v=1753873653714 404 in 41ms
+ GET /_next/static/chunks/app/page.js 404 in 90ms
+ GET /_next/static/chunks/app-pages-internals.js 404 in 55ms
+ GET /_next/static/chunks/app/layout.js 404 in 54ms
+ GET /favicon.ico 200 in 5ms
+[?25h

@@ -1,9 +1,9 @@
 {
   "auth": {
-    "user_pool_id": "ap-south-1_ycgkw7irZ",
+    "user_pool_id": "ap-south-1_Q7dOl5ySk",
     "aws_region": "ap-south-1",
-    "user_pool_client_id": "pl5jsh1rhkjcl9hifbultnl98",
-    "identity_pool_id": "ap-south-1:70d53cfe-498c-4240-9cc3-09334d30c8a1",
+    "user_pool_client_id": "5uhpjkc4pn0pvmnvpcvstkt85h",
+    "identity_pool_id": "ap-south-1:1f904e30-395f-4704-a869-a2155eb05d0a",
     "mfa_methods": [],
     "standard_required_attributes": [
       "email"
@@ -41,14 +41,14 @@
         "profile",
         "aws.cognito.signin.user.admin"
       ],
-      "domain": "3bed175c1015c4693311.auth.ap-south-1.amazoncognito.com"
+      "domain": "f445a2309efff349b055.auth.ap-south-1.amazoncognito.com"
     },
     "unauthenticated_identities_enabled": true
   },
   "data": {
-    "url": "https://lt3lrxpdmrec7hq7dkpytodkam.appsync-api.ap-south-1.amazonaws.com/graphql",
+    "url": "https://f5hjr6rzdrdrlobh4rtu5g22ta.appsync-api.ap-south-1.amazonaws.com/graphql",
     "aws_region": "ap-south-1",
-    "api_key": "da2-5gzsl3cs5jhkja7thkl2coyyya",
+    "api_key": "da2-3dr6blonhjbrdcn6e7td4dyosy",
     "default_authorization_type": "AMAZON_COGNITO_USER_POOLS",
     "authorization_types": [
       "API_KEY",
@@ -1538,11 +1538,11 @@
   },
   "storage": {
     "aws_region": "ap-south-1",
-    "bucket_name": "amplify-app-root-sandbox--pteessaystoragebucketc06-xqiyslyrfhsu",
+    "bucket_name": "amplify-app-v3-sandbox-4d-pteessaystoragebucketc06-u7aiunk3ftkh",
     "buckets": [
       {
         "name": "pteEssayStorage",
-        "bucket_name": "amplify-app-root-sandbox--pteessaystoragebucketc06-xqiyslyrfhsu",
+        "bucket_name": "amplify-app-v3-sandbox-4d-pteessaystoragebucketc06-u7aiunk3ftkh",
         "aws_region": "ap-south-1",
         "paths": {
           "essays/*": {
@@ -1577,13 +1577,13 @@
   },
   "version": "1.4",
   "custom": {
-    "DLQUrl": "https://sqs.ap-south-1.amazonaws.com/493093635246/pte-essay-dlq-sblocal",
-    "DLQName": "pte-essay-dlq-sblocal",
-    "MainQueueUrl": "https://sqs.ap-south-1.amazonaws.com/493093635246/pte-essay-queue-sblocal",
-    "EssayTableName": "Essay-m2naunrofnagdapazpyg44vavq-NONE",
-    "ResultTableName": "Result-m2naunrofnagdapazpyg44vavq-NONE",
-    "UserTableName": "User-m2naunrofnagdapazpyg44vavq-NONE",
-    "GoldStandardTableName": "GoldStandardEssay-m2naunrofnagdapazpyg44vavq-NONE",
-    "EssayQueueUrl": "https://sqs.ap-south-1.amazonaws.com/493093635246/pte-essay-queue-sblocal"
+    "DLQUrl": "https://sqs.ap-south-1.amazonaws.com/493093635246/dlq-local",
+    "DLQName": "dlq-local",
+    "MainQueueUrl": "https://sqs.ap-south-1.amazonaws.com/493093635246/essay-local",
+    "EssayTableName": "Essay-n7yssgqwc5gxve5vejyyny2dk4-NONE",
+    "ResultTableName": "Result-n7yssgqwc5gxve5vejyyny2dk4-NONE",
+    "UserTableName": "User-n7yssgqwc5gxve5vejyyny2dk4-NONE",
+    "GoldStandardTableName": "GoldStandardEssay-n7yssgqwc5gxve5vejyyny2dk4-NONE",
+    "EssayQueueUrl": "https://sqs.ap-south-1.amazonaws.com/493093635246/essay-local"
   }
 }

@@ -1,5 +1,7 @@
 import { generateClient } from 'aws-amplify/data';
+import { Amplify } from 'aws-amplify';
 import type { Schema } from '@/amplify/data/resource';
+import amplifyConfig from '@/amplify_outputs.json';
 
 // Generate trace ID in X-Ray format
 function generateTraceId(): string {
@@ -15,6 +17,11 @@ function generateSegmentId(): string {
 
 // Create a custom client with X-Ray tracing headers
 export function createTracedClient(config?: any) {
+  // Ensure Amplify is configured
+  if (!Amplify.getConfig().Auth) {
+    Amplify.configure(amplifyConfig);
+  }
+  
   const client = generateClient<Schema>(config);
   
   // For now, we'll use the standard client

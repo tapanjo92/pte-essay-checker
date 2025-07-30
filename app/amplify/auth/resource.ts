@@ -1,4 +1,6 @@
 import { defineAuth, secret } from '@aws-amplify/backend';
+import { postConfirmation } from './post-confirmation/resource';
+import { preAuthentication } from './pre-authentication/resource';
 
 /**
  * Define and configure your auth resource
@@ -22,10 +24,18 @@ export const auth = defineAuth({
     },
   },
   userAttributes: {
+    email: {
+      required: true,
+      mutable: false, // Prevent email changes to avoid account conflicts
+    },
     preferredUsername: {
       mutable: true,
       required: false,
     },
   },
   accountRecovery: 'EMAIL_ONLY',
+  triggers: {
+    postConfirmation,
+    preAuthentication,
+  },
 });

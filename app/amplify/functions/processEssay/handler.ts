@@ -442,7 +442,7 @@ Please evaluate the essay using the official PTE Academic scoring criteria (tota
 
 IMPORTANT: The reference essays above use the official PTE scoring. Compare this essay's quality to the reference essays and ensure your scores are consistent with the official scoring patterns shown.
 
-Provide your response as a valid JSON object (no markdown, no code blocks, just pure JSON) in the following format:
+CRITICAL: Provide your response as a valid JSON object. Do NOT use markdown formatting, code blocks, or any other formatting. Return ONLY the JSON object starting with { and ending with }. Here is the required format:
 {
   "topicRelevance": {
     "isOnTopic": <true/false>,
@@ -527,7 +527,7 @@ Please evaluate the essay using the official PTE Academic scoring criteria (tota
 6. Development & Coherence (2 points): Logical flow, cohesion, and paragraph development
 7. Linguistic Range (2 points): Variety in sentence patterns and linguistic structures
 
-Provide your response as a valid JSON object (no markdown, no code blocks, just pure JSON) in the following format:
+CRITICAL: Provide your response as a valid JSON object. Do NOT use markdown formatting, code blocks, or any other formatting. Return ONLY the JSON object starting with { and ending with }. Here is the required format:
 {
   "topicRelevance": {
     "isOnTopic": <true/false>,
@@ -583,7 +583,7 @@ async function callBedrockAI(prompt: string): Promise<any> {
   const subsegment = segment?.addNewSubsegment('BedrockAI');
   
   try {
-    const modelId = process.env.BEDROCK_MODEL_ID || 'meta.llama3-8b-instruct-v1:0';
+    const modelId = process.env.BEDROCK_MODEL_ID || 'anthropic.claude-3-sonnet-20240229-v1:0';
     subsegment?.addAnnotation('modelId', modelId);
     
     let requestBody;
@@ -600,7 +600,8 @@ async function callBedrockAI(prompt: string): Promise<any> {
           role: "user",
           content: prompt
         }
-      ]
+      ],
+      system: "You are an expert PTE Academic essay evaluator. Always respond with valid JSON only, no additional text or formatting."
     };
   } else if (modelId.includes('llama')) {
     // Llama format
@@ -673,6 +674,7 @@ async function callBedrockAI(prompt: string): Promise<any> {
   }
   
   const responseBody = JSON.parse(new TextDecoder().decode(response.body));
+  console.log('Bedrock response structure:', JSON.stringify(Object.keys(responseBody)));
   
   // Different output formats for different models
   let responseText = '';
@@ -680,11 +682,19 @@ async function callBedrockAI(prompt: string): Promise<any> {
     // Claude format
     responseText = responseBody.content?.[0]?.text || '';
   } else if (modelId.includes('llama')) {
-    // Llama format
-    responseText = responseBody.generation || '';
+    // Llama format - check multiple possible fields
+    responseText = responseBody.generation || responseBody.completion || responseBody.content || '';
+    if (!responseText && responseBody.generations) {
+      responseText = responseBody.generations[0]?.text || '';
+    }
   } else {
     // Titan format
     responseText = responseBody.results?.[0]?.outputText || responseBody.outputText || '';
+  }
+  
+  if (!responseText) {
+    console.error('Empty response from Bedrock. Full response:', JSON.stringify(responseBody).substring(0, 500));
+    throw new Error('Bedrock returned empty response');
   }
   
   console.log('Raw AI response length:', responseText.length);
@@ -722,6 +732,41 @@ async function callBedrockAI(prompt: string): Promise<any> {
   } catch (parseError) {
     console.error('Failed to parse JSON:', cleanJson.substring(0, 500));
     console.error('Parse error:', parseError);
+    
+    // If the response looks like a markdown table, it might be an error response
+    if (cleanJson.includes('|') && cleanJson.includes('---')) {
+      console.error('AI returned a markdown table instead of JSON. This often indicates an error or confusion in the prompt.');
+      subsegment?.addError(new Error('AI returned markdown instead of JSON'));
+      subsegment?.close();
+      
+      // Return a fallback response
+      return {
+        topicRelevance: { isOnTopic: true, relevanceScore: 80 },
+        pteScores: {
+          content: 2,
+          form: 1,
+          grammar: 1,
+          vocabulary: 1,
+          spelling: 1,
+          developmentCoherence: 1,
+          linguisticRange: 1
+        },
+        feedback: {
+          summary: "Unable to process essay due to AI response format issue. Please try again.",
+          strengths: ["Essay submitted successfully"],
+          improvements: ["Technical issue prevented full analysis"],
+          detailedFeedback: {
+            taskResponse: "Unable to analyze due to technical issue",
+            coherence: "Unable to analyze due to technical issue", 
+            vocabulary: "Unable to analyze due to technical issue",
+            grammar: "Unable to analyze due to technical issue"
+          }
+        },
+        suggestions: ["Please resubmit your essay for a complete analysis"],
+        highlightedErrors: []
+      };
+    }
+    
     subsegment?.addError(parseError as Error);
     subsegment?.close();
     throw new Error(`Failed to parse AI response as JSON: ${parseError instanceof Error ? parseError.message : String(parseError)}`);
@@ -986,7 +1031,7 @@ async function saveResults(
         essayId: essayId,
         owner: userId,
         ...scoringResult,
-        aiModel: process.env.BEDROCK_MODEL_ID || 'meta.llama3-8b-instruct-v1:0',
+        aiModel: process.env.BEDROCK_MODEL_ID || 'anthropic.claude-3-sonnet-20240229-v1:0',
         processingTime: Date.now(),
         // Add performance metrics if provided
         ...(performanceMetrics && {

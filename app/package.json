@@ -16,6 +16,7 @@
     "@aws-amplify/backend-cli": "^1.8.0",
     "@aws-amplify/data-schema-types": "^1.2.0",
     "@aws-amplify/ui-react": "^6.11.2",
+    "@aws-sdk/client-cognito-identity-provider": "^3.856.0",
     "@aws-sdk/client-ses": "^3.848.0",
     "@radix-ui/react-dialog": "^1.1.14",
     "@radix-ui/react-dropdown-menu": "^2.1.15",
@@ -39,6 +40,7 @@
     "tailwindcss-animate": "^1.0.7"
   },
   "devDependencies": {
+    "@types/aws-lambda": "^8.10.152",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",

@@ -17,9 +17,9 @@ export interface VectorSearchResult {
 }
 
 /**
- * Generate embedding vector for given text using Amazon Titan
+ * Generate embedding vector for given text using Cohere Embed English v3
  * @param text - Text to convert to embedding vector
- * @returns Array of numbers representing the embedding
+ * @returns Array of numbers representing the embedding (1024 dimensions)
  */
 export async function generateEmbedding(text: string): Promise<number[]> {
   const segment = AWSXRay.getSegment();
@@ -38,15 +38,18 @@ export async function generateEmbedding(text: string): Promise<number[]> {
     subsegment?.addAnnotation('cache', 'miss');
     subsegment?.addMetadata('textLength', text.length);
     
-    // Titan has an 8K character limit
-    const truncatedText = text.substring(0, 8000);
+    // Cohere recommends < 512 tokens for optimal performance
+    // Approximately 2048 characters (assuming ~4 chars per token)
+    const truncatedText = text.substring(0, 2048);
     
     const input = {
-      modelId: 'amazon.titan-embed-text-v2:0',
+      modelId: 'cohere.embed-english-v3',
       contentType: 'application/json',
       accept: 'application/json',
       body: JSON.stringify({
-        inputText: truncatedText
+        texts: [truncatedText],
+        input_type: 'search_document',
+        truncate: 'END'
       })
     };
     
@@ -62,11 +65,11 @@ export async function generateEmbedding(text: string): Promise<number[]> {
         const response = await bedrockClient.send(command);
         const responseBody = JSON.parse(new TextDecoder().decode(response.body));
         
-        if (!responseBody.embedding || !Array.isArray(responseBody.embedding)) {
-          throw new Error('Invalid embedding response from Titan');
+        if (!responseBody.embeddings || !Array.isArray(responseBody.embeddings) || responseBody.embeddings.length === 0) {
+          throw new Error('Invalid embedding response from Cohere');
         }
         
-        const embedding = responseBody.embedding;
+        const embedding = responseBody.embeddings[0];
         
         // Cache the result
         embeddingCache.set(cacheKey, { embedding, timestamp: Date.now() });

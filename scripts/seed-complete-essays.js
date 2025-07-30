@@ -7,8 +7,8 @@ const dynamoClient = new DynamoDBClient({ region: 'ap-south-1' });
 const docClient = DynamoDBDocumentClient.from(dynamoClient);
 const bedrockClient = new BedrockRuntimeClient({ region: 'ap-south-1' });
 
-// Table name for new root sandbox
-const TABLE_NAME = 'GoldStandardEssay-m2naunrofnagdapazpyg44vavq-NONE';
+// Table name for google-test-v3 sandbox
+const TABLE_NAME = 'GoldStandardEssay-vxsgsa5slzeabmnstxdkvqvx2e-NONE';
 
 // Complete seed essays array
 const seedEssays = [

@@ -31,6 +31,17 @@ const backend = defineBackend({
 // Get the stack for adding resources
 const stack = backend.createStack('AppStack');
 
+// Grant IAM permissions to auth triggers if they exist
+// TODO: Fix trigger resource access after build
+// if (backend.auth.resources.triggers?.preAuthentication) {
+//   backend.auth.resources.triggers.preAuthentication.addToRolePolicy(
+//     new PolicyStatement({
+//       actions: ['cognito-idp:AdminGetUser'],
+//       resources: [backend.auth.resources.userPool.userPoolArn],
+//     })
+//   );
+// }
+
 // Enable X-Ray tracing for Lambda functions
 backend.processEssay.resources.cfnResources.cfnFunction.tracingConfig = {
   mode: 'Active'
@@ -129,15 +140,19 @@ backend.data.resources.cfnResources.cfnGraphqlApi.xrayEnabled = true;
 const dataStack = Stack.of(backend.data);
 
 // Basic sampling rule - sample 10% of requests after the first one per second
-// Generate a simple unique suffix from the branch name
+// Generate a simple unique suffix from the branch name or sandbox identifier
 const branchName = process.env.AWS_BRANCH || 'main';
+const sandboxId = process.env.AWS_APP_ID || '';
 const isSandbox = !process.env.AWS_BRANCH;
+
+// For sandboxes, use last 6 chars of sandbox ID to ensure uniqueness
+// For branches, use first 8 chars of branch name
 const uniqueSuffix = isSandbox 
-  ? 'sblocal' // Fixed suffix for local sandboxes to avoid creating multiple queues
+  ? sandboxId.slice(-6) || 'local' // Last 6 chars of sandbox ID
   : branchName.replace(/[^a-zA-Z0-9]/g, '').slice(0, 8);
 new CfnSamplingRule(dataStack, 'BasicSamplingRule', {
   samplingRule: {
-    ruleName: `PTE-Basic-${uniqueSuffix}`,
+    ruleName: `Basic-${uniqueSuffix}`,
     priority: 9000,
     fixedRate: 0.1, // 10% sampling rate
     reservoirSize: 1, // 1 request per second guaranteed
@@ -154,7 +169,7 @@ new CfnSamplingRule(dataStack, 'BasicSamplingRule', {
 // High priority rule for essay processing - sample more aggressively for debugging
 new CfnSamplingRule(dataStack, 'EssayProcessingSamplingRule', {
   samplingRule: {
-    ruleName: `PTE-Essay-${uniqueSuffix}`,
+    ruleName: `Essay-${uniqueSuffix}`,
     priority: 8000,
     fixedRate: 0.25, // 25% sampling for essay processing
     reservoirSize: 2, // 2 requests per second guaranteed
@@ -171,7 +186,7 @@ new CfnSamplingRule(dataStack, 'EssayProcessingSamplingRule', {
 // Low sampling for health checks and routine operations
 new CfnSamplingRule(dataStack, 'HealthCheckSamplingRule', {
   samplingRule: {
-    ruleName: `PTE-Health-${uniqueSuffix}`,
+    ruleName: `Health-${uniqueSuffix}`,
     priority: 7000,
     fixedRate: 0.01, // 1% sampling for health checks
     reservoirSize: 0,
@@ -189,13 +204,13 @@ new CfnSamplingRule(dataStack, 'HealthCheckSamplingRule', {
 
 // Create Dead Letter Queue for failed messages
 const dlq = new Queue(dataStack, 'EssayProcessingDLQ', {
-  queueName: `pte-essay-dlq-${uniqueSuffix}`,
+  queueName: `dlq-${uniqueSuffix}`,
   retentionPeriod: Duration.days(14), // Keep failed messages for 2 weeks for investigation
 });
 
 // Create SQS Queue in a way that avoids circular dependencies
 const essayQueue = new Queue(dataStack, 'EssayProcessingQueue', {
-  queueName: `pte-essay-queue-${uniqueSuffix}`,
+  queueName: `essay-${uniqueSuffix}`,
   visibilityTimeout: Duration.seconds(900), // 15 minutes
   retentionPeriod: Duration.days(1),
   receiveMessageWaitTime: Duration.seconds(20), // Long polling
@@ -225,7 +240,7 @@ dlq.grantConsumeMessages(backend.processEssay.resources.lambda); // Allow Lambda
 
 // Create SNS topic for DLQ alerts
 const dlqAlertTopic = new Topic(dataStack, 'DLQAlertTopic', {
-  topicName: `pte-dlq-alerts-${uniqueSuffix}`,
+  topicName: `alerts-${uniqueSuffix}`,
   displayName: 'PTE Essay Processing DLQ Alerts',
 });
 

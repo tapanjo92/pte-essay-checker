@@ -98,9 +98,9 @@ export function AuthForm() {
       }
       
       if (errorMessage.includes('User does not exist')) {
-        setError('No account found with this email.');
+        setError('No account found with this email. Please sign up first.');
       } else if (errorMessage.includes('Incorrect username or password')) {
-        setError('Incorrect email or password.');
+        setError('Incorrect email or password. If you signed up with Google, please use "Continue with Google" instead.');
       } else if (errorMessage.includes('Network')) {
         setError('Network error. Please check your connection.');
       } else {
@@ -141,7 +141,7 @@ export function AuthForm() {
     } catch (err: any) {
       const errorMessage = err.message || 'An error occurred during sign up';
       if (errorMessage.includes('already exists')) {
-        setError('An account with this email already exists.');
+        setError('An account with this email already exists. Please sign in instead, or use "Continue with Google" if you previously signed up with Google.');
       } else if (errorMessage.includes('password')) {
         setError('Password must be at least 8 characters.');
       } else if (errorMessage.includes('Network')) {
@@ -308,7 +308,18 @@ export function AuthForm() {
               {mode === 'signin' && (
                 <div className="space-y-3 mb-6">
                   <button 
-                    onClick={() => signInWithRedirect({ provider: 'Google' })}
+                    onClick={async () => {
+                      try {
+                        await signInWithRedirect({ provider: 'Google' });
+                      } catch (err: any) {
+                        console.error('OAuth error:', err);
+                        if (err.message?.includes('ACCOUNT_EXISTS_WITH_DIFFERENT_METHOD')) {
+                          setError('An account with this email already exists. Please sign in using your email and password.');
+                        } else {
+                          setError('Unable to sign in with Google. Please try again.');
+                        }
+                      }
+                    }}
                     className="w-full flex items-center justify-center gap-3 px-4 py-3 bg-white text-black rounded-lg font-medium hover:bg-gray-100 transition-colors"
                   >
                     <Chrome className="w-5 h-5" />
