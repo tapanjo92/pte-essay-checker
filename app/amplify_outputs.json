@@ -23,6 +23,26 @@
       "require_symbols": true,
       "require_uppercase": true
     },
+    "oauth": {
+      "identity_providers": [
+        "GOOGLE"
+      ],
+      "redirect_sign_in_uri": [
+        "http://localhost:3000/"
+      ],
+      "redirect_sign_out_uri": [
+        "http://localhost:3000/"
+      ],
+      "response_type": "code",
+      "scopes": [
+        "phone",
+        "email",
+        "openid",
+        "profile",
+        "aws.cognito.signin.user.admin"
+      ],
+      "domain": "3bed175c1015c4693311.auth.ap-south-1.amazoncognito.com"
+    },
     "unauthenticated_identities_enabled": true
   },
   "data": {

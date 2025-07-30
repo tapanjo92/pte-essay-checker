@@ -13,253 +13,33 @@
      · serverActions
 
  ✓ Starting...
- ✓ Ready in 1585ms
- ○ Compiling / ...
- ✓ Compiled / in 6.9s (1859 modules)
- GET / 200 in 8212ms
- ✓ Compiled in 802ms (841 modules)
- GET / 200 in 75ms
- ⚠ Cross origin request detected from 3.109.164.76 to /_next/* resource. In a future major version of Next.js, you will need to explicitly configure "allowedDevOrigins" in next.config to allow this.
-Read more: https://nextjs.org/docs/app/api-reference/config/next-config-js/allowedDevOrigins
- ○ Compiling /auth ...
- ✓ Compiled /auth in 728ms (1848 modules)
- GET /auth 200 in 936ms
- ○ Compiling /dashboard ...
- ✓ Compiled /dashboard in 1973ms (2406 modules)
- GET /dashboard 200 in 2168ms
+ ✓ Ready in 1666ms
  ○ Compiling /essay-questions ...
- ✓ Compiled /essay-questions in 667ms (2468 modules)
- GET /essay-questions 200 in 769ms
- GET /essay-questions 200 in 12ms
- GET /dashboard 200 in 29ms
- ○ Compiling /dashboard/results/[id] ...
- ✓ Compiled /dashboard/results/[id] in 1229ms (2508 modules)
- GET /dashboard/results/a444e514-b53e-451d-aa2f-64fe7d13c8ce 200 in 1951ms
+ ✓ Compiled /essay-questions in 8.3s (2002 modules)
 Amplify has not been configured. Please call Amplify.configure() before using this service.
-Amplify has not been configured. Please call Amplify.configure() before using this service.
- GET /dashboard/results/a444e514-b53e-451d-aa2f-64fe7d13c8ce 200 in 363ms
- GET /dashboard/results/a444e514-b53e-451d-aa2f-64fe7d13c8ce 200 in 53ms
- GET /dashboard 200 in 23ms
- GET /essay-questions 200 in 20ms
- GET /essay-questions 200 in 10ms
- GET /dashboard 200 in 12ms
- GET /dashboard/results/c21370c7-29b6-4f06-b359-9c6a5ee34d0d 200 in 34ms
- GET /dashboard/results/c21370c7-29b6-4f06-b359-9c6a5ee34d0d 200 in 57ms
- GET /dashboard 200 in 15ms
- GET /essay-questions 200 in 12ms
- GET /essay-questions 200 in 11ms
- GET /dashboard 200 in 13ms
- GET /dashboard/results/30ee8d06-0fd3-4c27-81b0-e9be397b2af7 200 in 33ms
- GET /dashboard 200 in 15ms
- GET /essay-questions 200 in 11ms
- GET /essay-questions 200 in 12ms
- GET /dashboard 200 in 12ms
- GET /dashboard/results/480a0f71-102d-48bb-b817-c028f9417e03 200 in 37ms
- GET /dashboard 200 in 11ms
- GET /essay-questions 200 in 10ms
- GET /essay-questions 200 in 9ms
- GET /dashboard 200 in 11ms
- GET /dashboard/results/25fbc934-154f-4bc4-b3c6-b76c90ba67a7 200 in 38ms
- GET /dashboard/results/25fbc934-154f-4bc4-b3c6-b76c90ba67a7 200 in 58ms
- ○ Compiling /dashboard/history ...
- ✓ Compiled /dashboard/history in 949ms (2517 modules)
- GET /dashboard/history 200 in 1068ms
- GET /essay-questions 200 in 22ms
- GET /dashboard 200 in 23ms
- GET /dashboard/results/f375900a-aad1-4a16-9c8c-00eff2a4fc11 200 in 46ms
- GET /dashboard 200 in 14ms
- GET /essay-questions 200 in 9ms
- GET /essay-questions 200 in 10ms
- GET /dashboard 200 in 12ms
- GET /dashboard/results/4d52de3f-5eb9-4a30-bd87-8fca5be204c0 200 in 35ms
-Amplify has not been configured. Please call Amplify.configure() before using this service.
-Amplify has not been configured. Please call Amplify.configure() before using this service.
- GET /dashboard/results/4d52de3f-5eb9-4a30-bd87-8fca5be204c0 200 in 286ms
+ GET /essay-questions 200 in 8873ms
+ ✓ Compiled in 296ms (893 modules)
  ○ Compiling / ...
- ✓ Compiled / in 607ms (1369 modules)
- ⨯ Error: Cannot find module './985.js'
-Require stack:
-- /root/pte-essay-checker/app/.next/server/webpack-runtime.js
-- /root/pte-essay-checker/app/.next/server/app/page.js
-- /root/pte-essay-checker/app/node_modules/next/dist/server/require.js
-- /root/pte-essay-checker/app/node_modules/next/dist/server/load-components.js
-- /root/pte-essay-checker/app/node_modules/next/dist/build/utils.js
-- /root/pte-essay-checker/app/node_modules/next/dist/build/swc/options.js
-- /root/pte-essay-checker/app/node_modules/next/dist/build/swc/index.js
-- /root/pte-essay-checker/app/node_modules/next/dist/build/next-config-ts/transpile-config.js
-- /root/pte-essay-checker/app/node_modules/next/dist/server/config.js
-- /root/pte-essay-checker/app/node_modules/next/dist/server/next.js
-- /root/pte-essay-checker/app/node_modules/next/dist/server/lib/start-server.js
-    at <unknown> (.next/server/app/page.js:2:8004)
-    at Object.<anonymous> (.next/server/app/page.js:2:8058) {
-  code: 'MODULE_NOT_FOUND',
-  requireStack: [Array],
-  page: '/'
-}
- ○ Compiling /_error ...
- ✓ Compiled /_error in 2.1s (2850 modules)
- GET / 500 in 3510ms
- GET /dashboard/results/4d52de3f-5eb9-4a30-bd87-8fca5be204c0 200 in 1350ms
- GET /dashboard/results/4d52de3f-5eb9-4a30-bd87-8fca5be204c0 200 in 18ms
- ⨯ Failed to generate static paths for /dashboard/results/[id]:
-[Error: Cannot find module './vendor-chunks/@aws-amplify.js'
-Require stack:
-- /root/pte-essay-checker/app/.next/server/webpack-runtime.js
-- /root/pte-essay-checker/app/.next/server/app/(dashboard)/dashboard/results/[id]/page.js
-- /root/pte-essay-checker/app/node_modules/next/dist/server/require.js
-- /root/pte-essay-checker/app/node_modules/next/dist/server/load-components.js
-- /root/pte-essay-checker/app/node_modules/next/dist/build/utils.js
-- /root/pte-essay-checker/app/node_modules/next/dist/server/dev/static-paths-worker.js
-- /root/pte-essay-checker/app/node_modules/next/dist/compiled/jest-worker/processChild.js] {
-  type: 'Error',
-  code: 'MODULE_NOT_FOUND',
-  requireStack: [Array]
-}
- ⨯ Failed to generate static paths for /dashboard/results/[id]:
-[Error: Cannot find module './vendor-chunks/@aws-amplify.js'
-Require stack:
-- /root/pte-essay-checker/app/.next/server/webpack-runtime.js
-- /root/pte-essay-checker/app/.next/server/app/(dashboard)/dashboard/results/[id]/page.js
-- /root/pte-essay-checker/app/node_modules/next/dist/server/require.js
-- /root/pte-essay-checker/app/node_modules/next/dist/server/load-components.js
-- /root/pte-essay-checker/app/node_modules/next/dist/build/utils.js
-- /root/pte-essay-checker/app/node_modules/next/dist/server/dev/static-paths-worker.js
-- /root/pte-essay-checker/app/node_modules/next/dist/compiled/jest-worker/processChild.js] {
-  type: 'Error',
-  code: 'MODULE_NOT_FOUND',
-  requireStack: [Array]
-}
- ⨯ Failed to generate static paths for /dashboard/results/[id]:
-[Error: Cannot find module './vendor-chunks/@aws-amplify.js'
-Require stack:
-- /root/pte-essay-checker/app/.next/server/webpack-runtime.js
-- /root/pte-essay-checker/app/.next/server/app/(dashboard)/dashboard/results/[id]/page.js
-- /root/pte-essay-checker/app/node_modules/next/dist/server/require.js
-- /root/pte-essay-checker/app/node_modules/next/dist/server/load-components.js
-- /root/pte-essay-checker/app/node_modules/next/dist/build/utils.js
-- /root/pte-essay-checker/app/node_modules/next/dist/server/dev/static-paths-worker.js
-- /root/pte-essay-checker/app/node_modules/next/dist/compiled/jest-worker/processChild.js] {
-  type: 'Error',
-  code: 'MODULE_NOT_FOUND',
-  requireStack: [Array]
-}
- ⨯ Failed to generate static paths for /dashboard/results/[id]:
-[Error: Cannot find module './vendor-chunks/@aws-amplify.js'
-Require stack:
-- /root/pte-essay-checker/app/.next/server/webpack-runtime.js
-- /root/pte-essay-checker/app/.next/server/app/(dashboard)/dashboard/results/[id]/page.js
-- /root/pte-essay-checker/app/node_modules/next/dist/server/require.js
-- /root/pte-essay-checker/app/node_modules/next/dist/server/load-components.js
-- /root/pte-essay-checker/app/node_modules/next/dist/build/utils.js
-- /root/pte-essay-checker/app/node_modules/next/dist/server/dev/static-paths-worker.js
-- /root/pte-essay-checker/app/node_modules/next/dist/compiled/jest-worker/processChild.js] {
-  type: 'Error',
-  code: 'MODULE_NOT_FOUND',
-  requireStack: [Array]
-}
- ○ Compiling /_not-found ...
- ✓ Compiled /_not-found in 895ms (2855 modules)
- GET / 200 in 1232ms
- GET /_next/static/css/app/layout.css?v=1753715185087 404 in 1442ms
- GET /_next/static/chunks/app-pages-internals.js 404 in 111ms
- GET /_next/static/chunks/app/page.js 404 in 111ms
- GET /_next/static/chunks/app/layout.js 404 in 108ms
- GET /_next/static/chunks/main-app.js?v=1753715186389 404 in 92ms
- ✓ Compiled /favicon.ico in 395ms (1568 modules)
- GET /favicon.ico 200 in 553ms
- ✓ Compiled in 1696ms (2758 modules)
- ⨯ [Error: Cannot find module './vendor-chunks/@aws-amplify.js'
-Require stack:
-- /root/pte-essay-checker/app/.next/server/webpack-runtime.js
-- /root/pte-essay-checker/app/.next/server/app/(dashboard)/dashboard/results/[id]/page.js
-- /root/pte-essay-checker/app/node_modules/next/dist/server/require.js
-- /root/pte-essay-checker/app/node_modules/next/dist/server/load-components.js
-- /root/pte-essay-checker/app/node_modules/next/dist/build/utils.js
-- /root/pte-essay-checker/app/node_modules/next/dist/server/dev/static-paths-worker.js
-- /root/pte-essay-checker/app/node_modules/next/dist/compiled/jest-worker/processChild.js] {
-  type: 'Error',
-  code: 'MODULE_NOT_FOUND',
-  requireStack: [Array],
-  page: '/dashboard/results/4d52de3f-5eb9-4a30-bd87-8fca5be204c0'
-}
- ○ Compiling /_error ...
- ✓ Compiled /_error in 636ms (2845 modules)
- GET /dashboard/results/4d52de3f-5eb9-4a30-bd87-8fca5be204c0 500 in 1453ms
- ✓ Compiled / in 426ms (1550 modules)
- ⨯ [Error: ENOENT: no such file or directory, open '/root/pte-essay-checker/app/.next/routes-manifest.json'] {
-  errno: -2,
-  code: 'ENOENT',
-  syscall: 'open',
-  path: '/root/pte-essay-checker/app/.next/routes-manifest.json',
-  page: '/'
-}
- ⨯ Error: Cannot find module './548.js'
-Require stack:
-- /root/pte-essay-checker/app/.next/server/webpack-runtime.js
-- /root/pte-essay-checker/app/.next/server/app/page.js
-- /root/pte-essay-checker/app/node_modules/next/dist/server/require.js
-- /root/pte-essay-checker/app/node_modules/next/dist/server/load-components.js
-- /root/pte-essay-checker/app/node_modules/next/dist/build/utils.js
-- /root/pte-essay-checker/app/node_modules/next/dist/build/swc/options.js
-- /root/pte-essay-checker/app/node_modules/next/dist/build/swc/index.js
-- /root/pte-essay-checker/app/node_modules/next/dist/build/next-config-ts/transpile-config.js
-- /root/pte-essay-checker/app/node_modules/next/dist/server/config.js
-- /root/pte-essay-checker/app/node_modules/next/dist/server/next.js
-- /root/pte-essay-checker/app/node_modules/next/dist/server/lib/start-server.js
-    at <unknown> (.next/server/pages/_document.js:1:376)
-    at Object.<anonymous> (.next/server/pages/_document.js:1:422) {
-  code: 'MODULE_NOT_FOUND',
-  requireStack: [Array]
-}
- GET / 500 in 3994ms
- ○ Compiling /_not-found ...
- ✓ Compiled /_not-found in 964ms (2855 modules)
- GET / 404 in 1270ms
- GET /_next/static/webpack/518d107a40e195e8.webpack.hot-update.json 404 in 947ms
- ⚠ Fast Refresh had to perform a full reload due to a runtime error.
- GET /_next/static/media/569ce4b8f30dc480-s.p.woff2 404 in 39ms
- GET /_next/static/media/93f479601ee12b01-s.p.woff2 404 in 106ms
- GET /_next/static/css/app/layout.css?v=1753716294704 404 in 111ms
- GET /_next/static/chunks/main-app.js?v=1753716294704 404 in 117ms
- GET /_next/static/chunks/app/layout.js 404 in 118ms
- GET /_next/static/chunks/app-pages-internals.js 404 in 90ms
- ⨯ [Error: ENOENT: no such file or directory, open '/root/pte-essay-checker/app/.next/server/app/page.js'] {
-  errno: -2,
-  code: 'ENOENT',
-  syscall: 'open',
-  path: '/root/pte-essay-checker/app/.next/server/app/page.js',
-  page: '/'
-}
- ⨯ [Error: ENOENT: no such file or directory, open '/root/pte-essay-checker/app/.next/server/pages/_document.js'] {
-  errno: -2,
-  code: 'ENOENT',
-  syscall: 'open',
-  path: '/root/pte-essay-checker/app/.next/server/pages/_document.js'
-}
- GET / 500 in 74ms
- GET /_next/static/chunks/fallback/main.js 404 in 138ms
- GET /_next/static/chunks/fallback/pages/_app.js 404 in 140ms
- GET /_next/static/chunks/fallback/pages/_error.js 404 in 140ms
- GET /_next/static/chunks/fallback/webpack.js 404 in 142ms
- GET /_next/static/chunks/fallback/react-refresh.js 404 in 216ms
- GET /_next/static/media/93f479601ee12b01-s.p.woff2 404 in 53ms
- GET /_next/static/media/569ce4b8f30dc480-s.p.woff2 404 in 56ms
-[Error: ENOENT: no such file or directory, stat '/root/pte-essay-checker/app/.next/cache/webpack/server-development/6.pack.gz'] {
-  errno: -2,
-  code: 'ENOENT',
-  syscall: 'stat',
-  path: '/root/pte-essay-checker/app/.next/cache/webpack/server-development/6.pack.gz'
-}
- ⨯ unhandledRejection: [Error: ENOENT: no such file or directory, stat '/root/pte-essay-checker/app/.next/cache/webpack/server-development/6.pack.gz'] {
-  errno: -2,
-  code: 'ENOENT',
-  syscall: 'stat',
-  path: '/root/pte-essay-checker/app/.next/cache/webpack/server-development/6.pack.gz'
-}
- ⨯ unhandledRejection:  [Error: ENOENT: no such file or directory, stat '/root/pte-essay-checker/app/.next/cache/webpack/server-development/6.pack.gz'] {
-  errno: -2,
-  code: 'ENOENT',
-  syscall: 'stat',
-  path: '/root/pte-essay-checker/app/.next/cache/webpack/server-development/6.pack.gz'
-}
-<w> [webpack.cache.PackFileCacheStrategy] Caching failed for pack: Error: ENOENT: no such file or directory, stat '/root/pte-essay-checker/app/.next/cache/webpack/server-development/6.pack.gz'
+ ✓ Compiled / in 668ms (1966 modules)
+ GET / 200 in 907ms
+ ✓ Compiled /auth in 250ms (1101 modules)
+ ✓ Compiled in 440ms (895 modules)
+ GET /favicon.ico 200 in 1025ms
+ GET /auth 200 in 1103ms
+ GET /favicon.ico 200 in 6ms
+ ○ Compiling /dashboard ...
+ ✓ Compiled /dashboard in 1774ms (2500 modules)
+ GET /dashboard 200 in 1934ms
+ GET /favicon.ico 200 in 20ms
+ ○ Compiling /essay-questions ...
+ ✓ Compiled /essay-questions in 640ms (1379 modules)
+ GET /essay-questions 200 in 715ms
+ GET /essay-questions 200 in 13ms
+ GET /favicon.ico 200 in 13ms
+ ○ Compiling /dashboard/history ...
+ ✓ Compiled /dashboard/history in 1319ms (2544 modules)
+ GET /dashboard/history 200 in 1392ms
+ GET /dashboard/history 200 in 15ms
+ GET /favicon.ico 200 in 13ms
+ GET /essay-questions 200 in 25ms
+ GET /favicon.ico 200 in 5ms

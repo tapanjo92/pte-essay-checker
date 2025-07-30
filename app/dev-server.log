@@ -33,45 +33,55 @@ Ampli ○ Compiling / ...
  ✓ Compiled in 479ms (827 modules)
  ✓ Compiled in 681ms (841 modules)
  ✓ Compiled in 568ms (841 modules)
-reference/config/next-config-js/allowedDevOrigins
- ○ Compiling /dashboard/results/[id] ...
- ✓ Compiled /dashboard/results/[id] in 980ms (2428 modules)
- GET /dashboard/results/c2c8b2c2-b087-4a28-b20e-8ced18edb526 200 in 1714ms
- ✓ Compiled in 175ms (1319 modules)
- ✓ Compiled in 472ms (1109 modules)
-Amplify has not been configured. Please call Amplify.configure() before using this service.
-Amplify has not been configured. Please call Amplify.configure() before using this service.
- GET /dashboard/results/c2c8b2c2-b087-4a28-b20e-8ced18edb526 200 in 401ms
- ○ Compiling /auth ...
- ✓ Compiled /auth in 510ms (2448 modules)
- GET /auth 200 in 595ms
- ✓ Compiled in 379ms (1331 modules)
- ✓ Compiled in 595ms (1117 modules)
- ✓ Compiled in 242ms (1331 modules)
- ✓ Compiled in 407ms (1117 modules)
- GET /dashboard 200 in 122ms
- ○ Compiling /essay-questions ...
- ✓ Compiled /essay-questions in 1512ms (2506 modules)
- GET /essay-questions 200 in 1632ms
- GET /essay-questions 200 in 11ms
- GET /dashboard 200 in 24ms
- GET /dashboard/results/4e382bd6-ee63-496e-b61c-84833a36a557 200 in 53ms
-Amplify has not been configured. Please call Amplify.configure() before using this service.
-Amplify has not been configured. Please call Amplify.configure() before using this service.
- GET /dashboard/results/4e382bd6-ee63-496e-b61c-84833a36a557 200 in 290ms
- GET /dashboard/results/4e382bd6-ee63-496e-b61c-84833a36a557 200 in 62ms
- ○ Compiling /_not-found ...
- ✓ Compiled /_not-found in 2s (2511 modules)
- GET /api/health 404 in 2263ms
- ○ Compiling / ...
- ✓ Compiled / in 1846ms (2513 modules)
- GET / 200 in 2128ms
- ✓ Compiled in 1884ms (2522 modules)
- GET /dashboard/results/4e382bd6-ee63-496e-b61c-84833a36a557 200 in 158ms
- ✓ Compiled in 272ms (1358 modules)
- ✓ Compiled in 615ms (1164 modules)
- GET /dashboard/results/4e382bd6-ee63-496e-b61c-84833a36a557 200 in 130ms
- ✓ Compiled in 265ms (1375 modules)
+ ✓ Compiled in 682ms (841 modules)
+ ✓ Compiled in 592ms (841 modules)
+ ✓ Compiled in 16ms
+ ✓ Compiled in 450ms (827 modules)
+ ✓ Compiled / in 226ms (987 modules)
+ GET / 200 in 544ms
+ ✓ Compiled /favicon.ico in 192ms (1004 modules)
+ ⨯ TypeError: __webpack_modules__[moduleId] is not a function
+    at __webpack_exec__ (.next/server/app/favicon.ico/route.js:112:39)
+    at <unknown> (.next/server/app/favicon.ico/route.js:113:114)
+    at <unknown> (.next/server/app/favicon.ico/route.js:113:47)
+    at Object.<anonymous> (.next/server/app/favicon.ico/route.js:116:3) {
+  page: '/favicon.ico'
+}
+ GET /favicon.ico 500 in 327ms
+ ⨯ TypeError: __webpack_modules__[moduleId] is not a function
+    at __webpack_exec__ (.next/server/app/favicon.ico/route.js:112:39)
+    at <unknown> (.next/server/app/favicon.ico/route.js:113:114)
+    at <unknown> (.next/server/app/favicon.ico/route.js:113:47)
+    at Object.<anonymous> (.next/server/app/favicon.ico/route.js:116:3) {
+  page: '/favicon.ico'
+}
+ GET /favicon.ico 500 in 42ms
+ ✓ Compiled /_not-found in 366ms (1818 modules)
+ GET /login 404 in 756ms
+ ✓ Compiled / in 185ms (987 modules)
+ GET / 200 in 591ms
+ GET / 200 in 41ms
+ ✓ Compiled in 25ms
+ ✓ Compiled in 451ms (827 modules)
+ ✓ Compiled in 656ms (842 modules)
+ ✓ Compiled in 626ms (842 modules)
+ ✓ Compiled in 589ms (842 modules)
+ ✓ Compiled in 638ms (842 modules)
+ ✓ Compiled in 567ms (842 modules)
+ ✓ Compiled in 547ms (842 modules)
+ ✓ Compiled in 588ms (842 modules)
+ ✓ Compiled in 545ms (842 modules)
+ ✓ Compiled in 560ms (842 modules)
+ ✓ Compiled in 534ms (842 modules)
+ ✓ Compiled in 594ms (842 modules)
+ ✓ Compiled in 609ms (842 modules)
+ ✓ Compiled in 573ms (842 modules)
+ ✓ Compiled in 531ms (842 modules)
+ ✓ Compiled in 524ms (842 modules)
+ ✓ Compiled in 514ms (842 modules)
+ ✓ Compiled in 595ms (842 modules)
+ ✓ Compiled in 528ms (842 modules)
+s (1375 modules)
  ✓ Compiled in 616ms (1181 modules)
  GET /dashboard/results/4e382bd6-ee63-496e-b61c-84833a36a557 200 in 90ms
  ✓ Compiled in 585ms (2556 modules)

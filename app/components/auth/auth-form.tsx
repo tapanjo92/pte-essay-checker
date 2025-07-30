@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { signIn, signUp, confirmSignUp } from 'aws-amplify/auth';
+import { signIn, signUp, confirmSignUp, signInWithRedirect, getCurrentUser } from 'aws-amplify/auth';
 import { Button } from '@/components/ui/button';
 import { Amplify } from 'aws-amplify';
 import amplifyConfig from '@/amplify_outputs.json';
@@ -51,6 +51,20 @@ export function AuthForm() {
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const prefersReducedMotion = usePrefersReducedMotion();
   
+  // Check if user is already signed in
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        await getCurrentUser();
+        // User is already signed in, redirect to dashboard
+        router.push('/dashboard');
+      } catch (error) {
+        // User is not signed in, stay on auth page
+      }
+    };
+    checkAuth();
+  }, [router]);
+  
   useEffect(() => {
     if (prefersReducedMotion) return;
     
@@ -67,12 +81,22 @@ export function AuthForm() {
     setError('');
 
     try {
+      console.log('Attempting sign in with email:', email);
       const { isSignedIn } = await signIn({ username: email, password });
+      console.log('Sign in successful:', isSignedIn);
       if (isSignedIn) {
         router.push('/dashboard');
       }
     } catch (err: any) {
+      console.error('Sign in error:', err);
       const errorMessage = err.message || 'An error occurred during sign in';
+      
+      // Handle already signed in error
+      if (errorMessage.includes('UserAlreadyAuthenticatedException') || errorMessage.includes('already a signed in user')) {
+        router.push('/dashboard');
+        return;
+      }
+      
       if (errorMessage.includes('User does not exist')) {
         setError('No account found with this email.');
       } else if (errorMessage.includes('Incorrect username or password')) {
@@ -283,7 +307,10 @@ export function AuthForm() {
               {/* OAuth Buttons (Sign in only) */}
               {mode === 'signin' && (
                 <div className="space-y-3 mb-6">
-                  <button className="w-full flex items-center justify-center gap-3 px-4 py-3 bg-white text-black rounded-lg font-medium hover:bg-gray-100 transition-colors">
+                  <button 
+                    onClick={() => signInWithRedirect({ provider: 'Google' })}
+                    className="w-full flex items-center justify-center gap-3 px-4 py-3 bg-white text-black rounded-lg font-medium hover:bg-gray-100 transition-colors"
+                  >
                     <Chrome className="w-5 h-5" />
                     Continue with Google
                   </button>

@@ -1,16 +1,13 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { getCurrentUser, signOut } from 'aws-amplify/auth';
 import { Button } from '@/components/ui/button';
 import { Amplify } from 'aws-amplify';
 import amplifyConfig from '@/amplify_outputs.json';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import { FileText, PenTool, List, User, Menu, X, Sparkles, LogOut, ChevronDown } from 'lucide-react';
-import { initializeUserIfNeeded } from '@/lib/user-init';
-import { createTracedClient } from '@/lib/xray-client';
+import { FileText, PenTool, List, User, Menu, X, LogOut, ChevronDown } from 'lucide-react';
 import { GradientBackground } from '@/components/ui/gradient-background';
 
 // Configure Amplify
@@ -18,9 +15,7 @@ if (!Amplify.getConfig().Auth) {
   Amplify.configure(amplifyConfig);
 }
 
-const client = createTracedClient();
-
-export default function DashboardLayout({
+export default function DashboardGroupLayout({
   children,
 }: {
   children: React.ReactNode;
@@ -28,11 +23,8 @@ export default function DashboardLayout({
   const router = useRouter();
   const pathname = usePathname();
   const [user, setUser] = useState<any>(null);
-  const [userData, setUserData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const [initialized, setInitialized] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [userSubscription, setUserSubscription] = useState<any>(null);
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
 
   useEffect(() => {
@@ -57,74 +49,10 @@ export default function DashboardLayout({
   const checkAuth = async () => {
     try {
       const currentUser = await getCurrentUser();
-      console.log('Current user from Cognito:', currentUser);
-      
-      // If we got a user, they're authenticated
-      if (currentUser) {
-        setUser(currentUser);
-        
-        // Initialize user in database if needed (only once)
-        if (!initialized && currentUser.userId && currentUser.signInDetails?.loginId) {
-          setInitialized(true);
-          try {
-            // Get names from session storage (set during signup)
-            const firstName = sessionStorage.getItem('pendingUserFirstName');
-            const lastName = sessionStorage.getItem('pendingUserLastName');
-            
-            await initializeUserIfNeeded(
-              currentUser.userId, 
-              currentUser.signInDetails.loginId,
-              firstName || undefined,
-              lastName || undefined
-            );
-            
-            // Clear session storage after use
-            sessionStorage.removeItem('pendingUserFirstName');
-            sessionStorage.removeItem('pendingUserLastName');
-          } catch (initError) {
-            console.error('User initialization failed:', initError);
-            // Don't block the user from using the app
-          }
-        } else if (!currentUser.userId || !currentUser.signInDetails?.loginId) {
-          console.warn('User missing required fields:', { 
-            userId: currentUser.userId, 
-            loginId: currentUser.signInDetails?.loginId 
-          });
-        }
-        
-        // Fetch user data from DynamoDB
-        try {
-          const userResult = await client.models.User.get({ id: currentUser.userId });
-          if (userResult.data) {
-            setUserData(userResult.data);
-            console.log('User data loaded:', userResult.data);
-            
-            // Load subscription data
-            if (userResult.data.subscriptionId) {
-              const subResult = await client.models.UserSubscription.get({ 
-                id: userResult.data.subscriptionId 
-              });
-              if (subResult.data) {
-                setUserSubscription(subResult.data);
-              }
-            }
-          }
-        } catch (err) {
-          console.error('Error loading user data:', err);
-        }
-      }
+      setUser(currentUser);
     } catch (error) {
-      // Check if it's specifically an unauthenticated error
-      if (error instanceof Error && 
-          (error.name === 'UserUnAuthenticatedException' || 
-           error.message.includes('User needs to be authenticated'))) {
-        console.log('User not authenticated, redirecting to auth page');
-        router.push('/auth');
-      } else {
-        // For other errors, log but don't necessarily redirect
-        console.error('Auth check error:', error);
-        router.push('/auth');
-      }
+      console.log('User not authenticated, redirecting to auth page');
+      router.push('/auth');
     } finally {
       setLoading(false);
     }
@@ -153,16 +81,9 @@ export default function DashboardLayout({
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-between py-4">
             <div className="flex items-center gap-3">
-              <h1 className="text-xl md:text-2xl font-bold bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent animate-gradient">PTE Essay Checker</h1>
-              {userSubscription && (
-                <span className="hidden md:inline-flex items-center gap-1.5 px-3 py-1 text-xs font-medium bg-blue-500/10 text-blue-400 border border-blue-500/20 rounded-full">
-                  <span className="relative flex h-2 w-2">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
-                    <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span>
-                  </span>
-                  {userSubscription.essaysRemaining} essays remaining
-                </span>
-              )}
+              <h1 className="text-xl md:text-2xl font-bold bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent animate-gradient">
+                PTE Essay Checker
+              </h1>
             </div>
             <div className="flex items-center gap-2 md:gap-4">
               {/* Desktop Profile Dropdown */}
@@ -175,13 +96,10 @@ export default function DashboardLayout({
                 >
                   <div className="flex items-center gap-2">
                     <div className="h-8 w-8 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center text-white text-sm font-medium">
-                      {userData?.firstName ? userData.firstName[0].toUpperCase() : user?.username?.[0]?.toUpperCase() || 'U'}
+                      {user?.username?.[0]?.toUpperCase() || 'U'}
                     </div>
                     <span className="max-w-[150px] truncate">
-                      {userData?.firstName && userData?.lastName 
-                        ? `${userData.firstName} ${userData.lastName}`
-                        : userData?.email || user?.username || 'Profile'
-                      }
+                      {user?.signInDetails?.loginId || user?.username || 'Profile'}
                     </span>
                     <ChevronDown className={`h-4 w-4 transition-transform ${profileDropdownOpen ? 'rotate-180' : ''}`} />
                   </div>
@@ -192,10 +110,7 @@ export default function DashboardLayout({
                   <div className="absolute right-0 mt-2 w-56 rounded-lg border border-border bg-background/95 backdrop-blur-xl shadow-lg">
                     <div className="p-3 border-b border-border">
                       <p className="text-sm font-medium truncate">
-                        {userData?.email || user?.signInDetails?.loginId}
-                      </p>
-                      <p className="text-xs text-muted-foreground mt-1">
-                        {userSubscription?.plan || 'FREE'} Plan • {userSubscription?.essaysRemaining || 0} essays left
+                        {user?.signInDetails?.loginId}
                       </p>
                     </div>
                     <div className="p-1">
@@ -231,6 +146,7 @@ export default function DashboardLayout({
               </Button>
             </div>
           </div>
+          
           {/* Desktop Navigation */}
           <nav id="navigation" className="hidden md:flex gap-2 border-t border-white/10 pt-2">
             <Link href="/essay-questions">
@@ -273,6 +189,7 @@ export default function DashboardLayout({
               </Button>
             </Link>
           </nav>
+          
           {/* Mobile Navigation */}
           {mobileMenuOpen && (
             <nav className="md:hidden flex flex-col gap-2 py-4 border-t">
@@ -282,10 +199,7 @@ export default function DashboardLayout({
                   className="w-full justify-start gap-2 min-h-[44px]"
                 >
                   <User className="h-4 w-4" />
-                  {userData?.firstName && userData?.lastName 
-                    ? `${userData.firstName} ${userData.lastName}`
-                    : userData?.email || user?.username || 'Profile'
-                  }
+                  Profile
                 </Button>
               </Link>
               <Link href="/essay-questions" onClick={() => setMobileMenuOpen(false)}>
