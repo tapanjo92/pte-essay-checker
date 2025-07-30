@@ -127,6 +127,20 @@ function structuredLog(level: string, message: string, metadata?: any) {
   console.log(JSON.stringify(log));
 }
 
+// Sanitize content to prevent prompt injection attacks
+function sanitizeContent(content: string): string {
+  // Remove potential prompt injection patterns
+  return content
+    .replace(/\{.*?\}/g, '')        // Remove anything in curly braces
+    .replace(/###.*?###/g, '')      // Remove anything between triple hashes
+    .replace(/\[INST\].*?\[\/INST\]/g, '') // Remove instruction markers
+    .replace(/\<\|.*?\|\>/g, '')    // Remove special tokens
+    .replace(/IGNORE.*?INSTRUCTIONS?/gi, '') // Remove "ignore instructions" attempts
+    .replace(/SYSTEM:.*?[\n\r]/gi, '') // Remove system prompt attempts
+    .replace(/\n{3,}/g, '\n\n')     // Normalize excessive newlines
+    .trim();
+}
+
 // Calculate confidence score based on various factors
 function calculateConfidence(similarEssaysFound: number, topicRelevance: number, wordCountCompliance: boolean): number {
   let confidence = 0.5; // base confidence
@@ -167,6 +181,26 @@ export const handler: SQSHandler = async (event: SQSEvent) => {
       
       // Parse the message body
       const args = JSON.parse(record.body) as EssayProcessingEvent;
+      
+      // Sanitize content to prevent prompt injection
+      const originalContent = args.content;
+      args.content = sanitizeContent(args.content);
+      
+      // Also sanitize topic (in case it comes from user input)
+      const originalTopic = args.topic;
+      args.topic = sanitizeContent(args.topic);
+      
+      // Log if content was modified
+      if (originalContent !== args.content || originalTopic !== args.topic) {
+        structuredLog('WARN', 'Content sanitized - potential prompt injection detected', {
+          essayId: args.essayId,
+          contentModified: originalContent !== args.content,
+          topicModified: originalTopic !== args.topic,
+          originalLength: originalContent.length,
+          sanitizedLength: args.content.length,
+          removed: originalContent.length - args.content.length
+        });
+      }
       
       structuredLog('INFO', 'Processing essay', { 
         essayId: args.essayId, 

@@ -12,6 +12,23 @@
     "developmentCoherence": 1,
     "linguisticRange": 0
   },
-  "strengths": [],
-  "weaknesses": []
+  "strengths": [
+    "Addresses both causes and solutions",
+    "Shows awareness of the issue",
+    "Attempts to provide multiple examples",
+    "Basic essay structure present",
+    "Clear opinion about the problem",
+    "Mentions technology as a solution"
+  ],
+  "weaknesses": [
+    "Major grammatical errors throughout (missing articles, wrong verb forms)",
+    "Very basic vocabulary with repetition",
+    "No complex sentence structures",
+    "Incorrect word usage ('alot' instead of 'a lot')",
+    "Missing prepositions and conjunctions",
+    "Informal language throughout",
+    "Weak transitions between ideas",
+    "Limited development of arguments",
+    "Simple errors ('expire date' instead of 'expiry date')"
+  ]
 }

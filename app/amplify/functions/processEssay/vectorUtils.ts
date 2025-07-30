@@ -17,9 +17,9 @@ export interface VectorSearchResult {
 }
 
 /**
- * Generate embedding vector for given text using Cohere Embed English v3
+ * Generate embedding vector for given text using Amazon Titan Embed Text V2
  * @param text - Text to convert to embedding vector
- * @returns Array of numbers representing the embedding (1024 dimensions)
+ * @returns Array of numbers representing the embedding (512 dimensions)
  */
 export async function generateEmbedding(text: string): Promise<number[]> {
   const segment = AWSXRay.getSegment();
@@ -38,18 +38,16 @@ export async function generateEmbedding(text: string): Promise<number[]> {
     subsegment?.addAnnotation('cache', 'miss');
     subsegment?.addMetadata('textLength', text.length);
     
-    // Cohere recommends < 512 tokens for optimal performance
-    // Approximately 2048 characters (assuming ~4 chars per token)
-    const truncatedText = text.substring(0, 2048);
-    
+    // Titan V2 supports up to 8192 tokens - no need to truncate essays
+    // Using 512 dimensions for faster search and lower storage
     const input = {
-      modelId: 'cohere.embed-english-v3',
+      modelId: 'amazon.titan-embed-text-v2:0',
       contentType: 'application/json',
       accept: 'application/json',
       body: JSON.stringify({
-        texts: [truncatedText],
-        input_type: 'search_document',
-        truncate: 'END'
+        inputText: text,
+        dimensions: 512,  // Reduced from 1024 for efficiency
+        normalize: true   // Normalized vectors for cosine similarity
       })
     };
     
@@ -65,11 +63,11 @@ export async function generateEmbedding(text: string): Promise<number[]> {
         const response = await bedrockClient.send(command);
         const responseBody = JSON.parse(new TextDecoder().decode(response.body));
         
-        if (!responseBody.embeddings || !Array.isArray(responseBody.embeddings) || responseBody.embeddings.length === 0) {
-          throw new Error('Invalid embedding response from Cohere');
+        if (!responseBody.embedding || !Array.isArray(responseBody.embedding)) {
+          throw new Error('Invalid embedding response from Titan');
         }
         
-        const embedding = responseBody.embeddings[0];
+        const embedding = responseBody.embedding;
         
         // Cache the result
         embeddingCache.set(cacheKey, { embedding, timestamp: Date.now() });

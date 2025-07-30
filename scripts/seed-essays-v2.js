@@ -14,7 +14,7 @@ const docClient = DynamoDBDocumentClient.from(dynamoClient);
 const bedrockClient = new BedrockRuntimeClient({ region: 'ap-south-1' });
 
 // Table name from environment
-const TABLE_NAME = process.env.GOLD_STANDARD_TABLE_NAME || 'GoldStandardEssay-n7yssgqwc5gxve5vejyyny2dk4-NONE';
+const TABLE_NAME = process.env.GOLD_STANDARD_TABLE_NAME || 'GoldStandardEssay-m2naunrofnagdapazpyg44vavq-NONE';
 
 // Score level definitions
 const SCORE_LEVELS = {
@@ -39,16 +39,16 @@ const TOPIC_CATEGORIES = {
   'plastic-ban': 'AGREE_DISAGREE'
 };
 
-// Generate embedding using Cohere Embed English v3
+// Generate embedding using Amazon Titan Embed Text V2
 async function generateEmbedding(text) {
   const input = {
-    modelId: 'cohere.embed-english-v3',
+    modelId: 'amazon.titan-embed-text-v2:0',
     contentType: 'application/json',
     accept: 'application/json',
     body: JSON.stringify({
-      texts: [text.substring(0, 2048)], // Cohere optimal limit
-      input_type: 'search_document',
-      truncate: 'END'
+      inputText: text, // Titan supports 8192 tokens - no truncation needed
+      dimensions: 512, // Match production setting
+      normalize: true
     })
   };
 
@@ -56,7 +56,7 @@ async function generateEmbedding(text) {
     const command = new InvokeModelCommand(input);
     const response = await bedrockClient.send(command);
     const responseBody = JSON.parse(new TextDecoder().decode(response.body));
-    return responseBody.embeddings[0];
+    return responseBody.embedding;
   } catch (error) {
     console.error('Error generating embedding:', error);
     return null;

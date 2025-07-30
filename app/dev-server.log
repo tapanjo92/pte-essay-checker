@@ -67,3 +67,31 @@ Amplify has not been configured. Please call Amplify.configure() before using th
  GET /favicon.ico 200 in 5ms
  GET /dashboard/results/2e6adb92-eec9-4772-877c-7acc561bb73c 200 in 39ms
  GET /favicon.ico 200 in 5ms
+ ✓ Compiled in 1305ms (2551 modules)
+ GET /essay-questions 200 in 162ms
+ ○ Compiling /favicon.ico ...
+ ✓ Compiled /favicon.ico in 617ms (1397 modules)
+ GET /favicon.ico 200 in 743ms
+ GET /dashboard 200 in 77ms
+ GET /favicon.ico 200 in 5ms
+ GET /dashboard/results/e672fe84-29ad-4c4d-9fe9-08354839c32b 200 in 58ms
+ GET /favicon.ico 200 in 6ms
+ ✓ Compiled in 452ms (1380 modules)
+ ✓ Compiled in 602ms (1171 modules)
+Amplify has not been configured. Please call Amplify.configure() before using this service.
+ GET /dashboard/results/e672fe84-29ad-4c4d-9fe9-08354839c32b 200 in 468ms
+ ✓ Compiled /favicon.ico in 442ms (1397 modules)
+ GET /favicon.ico 200 in 562ms
+ ✓ Compiled in 2.3s (2565 modules)
+ GET /dashboard/results/e672fe84-29ad-4c4d-9fe9-08354839c32b 200 in 207ms
+ ✓ Compiled in 321ms (1376 modules)
+ GET /dashboard/results/e672fe84-29ad-4c4d-9fe9-08354839c32b 200 in 128ms
+ ✓ Compiled in 421ms (1169 modules)
+Amplify has not been configured. Please call Amplify.configure() before using this service.
+ GET /dashboard/results/e672fe84-29ad-4c4d-9fe9-08354839c32b 200 in 320ms
+ ✓ Compiled /favicon.ico in 259ms (1393 modules)
+ GET /favicon.ico 200 in 378ms
+ ○ Compiling /dashboard/profile ...
+ ✓ Compiled /dashboard/profile in 923ms (2573 modules)
+ GET /dashboard/profile 200 in 1045ms
+ GET /favicon.ico 200 in 17ms
