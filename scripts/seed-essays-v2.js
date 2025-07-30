@@ -14,7 +14,7 @@ const docClient = DynamoDBDocumentClient.from(dynamoClient);
 const bedrockClient = new BedrockRuntimeClient({ region: 'ap-south-1' });
 
 // Table name from environment
-const TABLE_NAME = process.env.GOLD_STANDARD_TABLE_NAME || 'GoldStandardEssay-m2naunrofnagdapazpyg44vavq-NONE';
+const TABLE_NAME = process.env.GOLD_STANDARD_TABLE_NAME || 'GoldStandardEssay-n7yssgqwc5gxve5vejyyny2dk4-NONE';
 
 // Score level definitions
 const SCORE_LEVELS = {

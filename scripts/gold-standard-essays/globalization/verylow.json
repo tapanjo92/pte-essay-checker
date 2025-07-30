@@ -12,6 +12,22 @@
     "developmentCoherence": 1,
     "linguisticRange": 0
   },
-  "strengths": [],
-  "weaknesses": []
+  "strengths": [
+    "Shows basic awareness of the topic",
+    "Attempts to provide both advantages and disadvantages",
+    "Tries to reach a conclusion"
+  ],
+  "weaknesses": [
+    "Under word count (195 words)",
+    "Severe grammatical errors in every sentence",
+    "Missing articles throughout",
+    "Wrong verb forms consistently",
+    "Extremely limited vocabulary",
+    "No sentence variety or complexity",
+    "Very poor paragraph development",
+    "No academic language or register",
+    "Spelling error ('alot' instead of 'a lot')",
+    "Lacks cohesive devices",
+    "Ideas presented in fragmented manner"
+  ]
 }

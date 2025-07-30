@@ -95,3 +95,8 @@ Amplify has not been configured. Please call Amplify.configure() before using th
  ✓ Compiled /dashboard/profile in 923ms (2573 modules)
  GET /dashboard/profile 200 in 1045ms
  GET /favicon.ico 200 in 17ms
+ GET /auth 200 in 26ms
+ GET /favicon.ico 200 in 6ms
+ ✓ Compiled in 835ms (1187 modules)
+ ✓ Compiled in 635ms (1187 modules)
+ ✓ Compiled in 1222ms (2556 modules)

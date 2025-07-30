@@ -1,0 +1,29 @@
+{
+  "topic": "Youth unemployment rates are increasing globally. What are the main causes of this problem and what solutions can you suggest?",
+  "essayText": "The burgeoning crisis of youth unemployment transcends mere economic statistics, representing a fundamental rupture in intergenerational social contracts. This phenomenon's multidimensional causality demands equally sophisticated remediation strategies addressing structural, educational, and technological disruptions.\n\nContemporary youth unemployment emanates from converging systemic failures. Technological displacement through artificial intelligence and automation disproportionately eliminates entry-level positions, traditionally serving as career launching pads. Simultaneously, educational institutions perpetuate obsolescent pedagogical models, producing graduates equipped with anachronistic competencies misaligned with digital economy demands. The credential inflation phenomenon further exacerbates competition, rendering bachelor's degrees insufficient for positions previously requiring secondary education.\n\nMacroeconomic volatility compounds these structural impediments. Recessionary cycles invariably trigger last-in-first-out employment practices, decimating youth opportunities. The proliferation of precarious employment—zero-hour contracts, unpaid internships, gig economy exploitation—masquerades as flexibility while denying career progression pathways. Geographic polarization concentrates opportunities in metropolitan hubs, creating spatial mismatches between youth populations and employment clusters.\n\nComprehensive solutions necessitate paradigmatic shifts across multiple domains. Educational transformation must prioritize experiential learning, integrating apprenticeships, coding bootcamps, and industry-embedded curricula. Governments should implement countercyclical youth employment schemes, creating public sector opportunities during economic downturns. Tax incentivization for youth hiring, coupled with wage subsidies, can offset perceived productivity differentials.\n\nEntrepreneurial ecosystems require cultivation through incubators, seed funding, and mentorship networks specifically targeting youth ventures. Digital infrastructure investment can enable remote work, mitigating geographic constraints.\n\nIn conclusion, addressing youth unemployment demands holistic interventions recognizing its origins in technological disruption, educational obsolescence, and economic restructuring, requiring unprecedented coordination between educational, governmental, and private sector stakeholders.",
+  "wordCount": 250,
+  "officialScore": 95,
+  "scoreBreakdown": {
+    "content": 3,
+    "form": 2,
+    "grammar": 2,
+    "vocabulary": 2,
+    "spelling": 1,
+    "developmentCoherence": 2,
+    "linguisticRange": 2
+  },
+  "strengths": [
+    "Exceptional vocabulary (burgeoning, anachronistic, obsolescent, paradigmatic)",
+    "Sophisticated opening with sociological framing",
+    "Complex sentence structures with multiple embedded clauses",
+    "Advanced economic terminology (credential inflation, countercyclical)",
+    "Excellent analysis of systemic issues",
+    "Strong cohesion through sophisticated transitions",
+    "Innovative solutions with specific mechanisms",
+    "Powerful synthesis addressing multiple stakeholders"
+  ],
+  "weaknesses": [
+    "Minimal weaknesses at this level",
+    "Could potentially include specific country examples"
+  ]
+}

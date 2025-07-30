@@ -12,6 +12,23 @@
     "developmentCoherence": 1,
     "linguisticRange": 0
   },
-  "strengths": [],
-  "weaknesses": []
+  "strengths": [
+    "Clear opinion expressed throughout",
+    "Shows understanding of the topic",
+    "Attempts to provide specific examples",
+    "Basic essay structure maintained",
+    "Shows awareness of cost implications",
+    "Personal voice comes through"
+  ],
+  "weaknesses": [
+    "Major grammatical errors throughout (missing articles, wrong verb forms)",
+    "Spelling error ('dont' instead of 'don't')",
+    "Subject-verb agreement errors ('Earth have', 'Hospital dont have')",
+    "Very basic vocabulary with repetition",
+    "No complex sentence structures",
+    "Informal register inappropriate for academic writing",
+    "Missing cohesive devices and transitions",
+    "Limited development of ideas",
+    "Colloquial expressions ('stupid idea')"
+  ]
 }
