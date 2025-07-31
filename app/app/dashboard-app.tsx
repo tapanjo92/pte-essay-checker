@@ -1,50 +1,46 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter, usePathname } from 'next/navigation';
-import { signOut } from 'aws-amplify/auth';
+import { usePathname, useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { FileText, PenTool, List, User, Menu, X, LogOut, ChevronDown } from 'lucide-react';
 import { initializeUserIfNeeded } from '@/lib/user-init';
 import { createTracedClient } from '@/lib/xray-client';
 import { GradientBackground } from '@/components/ui/gradient-background';
-import { useAuth } from '@/lib/auth-provider';
 
 // Client is created once globally
 const client = createTracedClient();
 
-export default function DashboardGroupLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
-  const router = useRouter();
+interface DashboardAppProps {
+  user: any;
+  signOut: () => void;
+}
+
+// 🔐 Cipher's L10 Pattern - Authenticated App Component
+export function DashboardApp({ user, signOut }: DashboardAppProps) {
   const pathname = usePathname();
-  const { user, loading, error, isAuthenticated, retry } = useAuth();
+  const router = useRouter();
   const [userData, setUserData] = useState<any>(null);
   const [initialized, setInitialized] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [userSubscription, setUserSubscription] = useState<any>(null);
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
 
-  // 🔐 Cipher's L10 Gen 2 Auth Pattern - No race conditions
+  // Initialize user when component mounts
   useEffect(() => {
-    console.log('🔍 Cipher: Auth state check:', { loading, isAuthenticated, hasUser: !!user, error: !!error });
-    
-    // Only make decisions when auth state is stable (not loading)
-    if (!loading) {
-      if (!user) {
-        // No user found after loading complete - redirect to auth
-        console.log('🔒 Cipher: No authenticated user, redirecting to auth');
-        router.push('/auth');
-      } else if (!initialized) {
-        // User is authenticated but not initialized yet - initialize once
-        console.log('✅ Cipher: User authenticated, initializing...');
-        initializeUser();
-      }
+    if (user) {
+      initializeUser();
     }
-  }, [loading, user, initialized, router]); // Add initialized to dependencies
+  }, [user]);
+
+  // Handle auth form redirect - if on auth page and authenticated, go to dashboard
+  useEffect(() => {
+    if (pathname === '/auth' && user) {
+      console.log('🔐 Cipher: User authenticated on auth page, redirecting to dashboard');
+      router.push('/dashboard');
+    }
+  }, [pathname, user, router]);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -65,7 +61,7 @@ export default function DashboardGroupLayout({
     if (!user || initialized) return;
     
     try {
-      console.log('🔧 Cipher: Initializing user data...');
+      console.log('🔐 Cipher: Initializing user data...');
       
       // Initialize user in database if needed (only once)
       if (user.userId && user.signInDetails?.loginId) {
@@ -92,7 +88,7 @@ export default function DashboardGroupLayout({
         const userResult = await client.models.User.get({ id: user.userId });
         if (userResult.data) {
           setUserData(userResult.data);
-          console.log('✅ Cipher: User data loaded:', userResult.data);
+          console.log('✅ Cipher: User data loaded');
           
           // Load subscription data
           if (userResult.data.subscriptionId) {
@@ -116,44 +112,25 @@ export default function DashboardGroupLayout({
   const handleSignOut = async () => {
     try {
       await signOut();
-      router.push('/auth');
     } catch (error) {
-      console.error('Error signing out:', error);
+      console.error('🔐 Cipher: Error signing out:', error);
     }
   };
 
-  // Show loading or error states
-  if (loading) {
+  // Show auth form if on auth route
+  if (pathname === '/auth') {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-purple-950 via-violet-900 to-pink-950">
-        <div className="text-center space-y-4">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-400 mx-auto"></div>
-          <div className="text-lg text-white">🔧 Aurora: Initializing authentication...</div>
-        </div>
-      </div>
-    );
-  }
-  
-  if (error) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-purple-950 via-violet-900 to-pink-950">
-        <div className="text-center space-y-4 max-w-md mx-auto p-6">
-          <div className="text-red-400 text-lg font-semibold">🚨 Authentication Error</div>
-          <p className="text-gray-300">{error}</p>
-          <div className="space-x-4">
-            <Button onClick={retry} variant="outline">Retry</Button>
-            <Button onClick={() => router.push('/auth')}>Sign In</Button>
+      <div className="min-h-screen bg-gradient-to-br from-purple-950 via-violet-900 to-pink-950 flex items-center justify-center p-8">
+        <div className="w-full max-w-md">
+          <div className="text-center mb-8">
+            <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent mb-4">
+              PTE Essay Checker
+            </h1>
+            <p className="text-gray-400">
+              You are signed in! Redirecting to dashboard...
+            </p>
           </div>
         </div>
-      </div>
-    );
-  }
-  
-  // 🔐 Cipher's L10 Gen 2 Pattern - Only show content when user is present
-  if (!user) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-purple-950 via-violet-900 to-pink-950">
-        <div className="text-lg text-white">🔒 Cipher: Redirecting to authentication...</div>
       </div>
     );
   }
@@ -353,7 +330,7 @@ export default function DashboardGroupLayout({
       </header>
       <main id="main-content" className="relative z-10 w-full">
         <div className="container mx-auto max-w-7xl px-4 py-8 md:px-6 lg:px-8">
-          {children}
+          {/* This will be replaced by page content via routing */}
         </div>
       </main>
     </GradientBackground>

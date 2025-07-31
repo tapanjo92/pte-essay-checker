@@ -9,12 +9,12 @@ import { fileURLToPath } from 'url';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
 // Initialize AWS clients
-const dynamoClient = new DynamoDBClient({ region: process.env.AWS_REGION || 'ap-south-1' });
+const dynamoClient = new DynamoDBClient({ region: process.env.AWS_REGION || 'us-east-1' });
 const docClient = DynamoDBDocumentClient.from(dynamoClient);
-const bedrockClient = new BedrockRuntimeClient({ region: 'ap-south-1' });
+const bedrockClient = new BedrockRuntimeClient({ region: 'us-east-1' });
 
 // Table name from environment
-const TABLE_NAME = process.env.GOLD_STANDARD_TABLE_NAME || 'GoldStandardEssay-nzzldtmucfdetf476gv6kitpsu-NONE';
+const TABLE_NAME = process.env.GOLD_STANDARD_TABLE_NAME || 'GoldStandardEssay-owkclqkxjza4njw55mixb3iwea-NONE';
 
 // Score level definitions
 const SCORE_LEVELS = {

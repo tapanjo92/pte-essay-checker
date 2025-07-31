@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { getCurrentUser } from 'aws-amplify/auth';
+import { useAuth } from '@/lib/auth-provider';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -24,16 +24,24 @@ interface EssayWithResult {
 }
 
 export default function EssayHistoryPage() {
+  const { user, loading: authLoading, isAuthenticated } = useAuth();
   const [essays, setEssays] = useState<EssayWithResult[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchEssays();
-  }, []);
+    if (!authLoading && isAuthenticated && user) {
+      fetchEssays();
+    }
+  }, [authLoading, isAuthenticated, user]);
 
   const fetchEssays = async () => {
     try {
-      const user = await getCurrentUser();
+      if (!user) {
+        console.log('🔒 Cipher: No user available for history fetch');
+        return;
+      }
+      
+      console.log('📚 Cipher: Fetching essay history for user:', user.userId);
       
       // Fetch all essays for the user
       // Try to get essays by userId (new) or by owner (Amplify default)
@@ -142,7 +150,7 @@ export default function EssayHistoryPage() {
     }
   };
 
-  if (loading) {
+  if (authLoading || loading) {
     return (
       <div className="mx-auto max-w-4xl">
         <div className="mb-6">

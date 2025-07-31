@@ -18,6 +18,8 @@ import {
   CheckCircle,
   AlertCircle,
   Loader2,
+  Key,
+  ChevronRight,
   Zap
 } from 'lucide-react';
 
@@ -52,13 +54,6 @@ export function AuthForm() {
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        // Skip auth check if we're in the middle of OAuth flow
-        const urlParams = new URLSearchParams(window.location.search);
-        if (urlParams.has('code') || urlParams.has('state')) {
-          console.log('OAuth flow detected in auth-form, skipping auth check');
-          return;
-        }
-        
         await getCurrentUser();
         // User is already signed in, redirect to dashboard
         router.push('/dashboard');
@@ -67,13 +62,6 @@ export function AuthForm() {
       }
     };
     checkAuth();
-    
-    // Check for OAuth errors stored in session storage
-    const storedError = sessionStorage.getItem('authError');
-    if (storedError) {
-      setError(storedError);
-      sessionStorage.removeItem('authError');
-    }
   }, [router]);
   
   useEffect(() => {
@@ -96,7 +84,10 @@ export function AuthForm() {
       const { isSignedIn } = await signIn({ username: email, password });
       console.log('Sign in successful:', isSignedIn);
       if (isSignedIn) {
-        router.push('/dashboard');
+        // Small delay to allow auth provider to update
+        setTimeout(() => {
+          router.push('/dashboard');
+        }, 500);
       }
     } catch (err: any) {
       console.error('Sign in error:', err);
@@ -111,9 +102,7 @@ export function AuthForm() {
       if (errorMessage.includes('User does not exist')) {
         setError('No account found with this email. Please sign up first.');
       } else if (errorMessage.includes('Incorrect username or password')) {
-        setError('Incorrect email or password. If you signed up with Google, please use "Continue with Google" instead.');
-      } else if (errorMessage.includes('Please sign in with Google') || errorMessage.includes('social provider')) {
-        setError('This account uses Google sign-in. Please click "Continue with Google" below.');
+        setError('Incorrect email or password.');
       } else if (errorMessage.includes('Network')) {
         setError('Network error. Please check your connection.');
       } else {
@@ -154,11 +143,9 @@ export function AuthForm() {
     } catch (err: any) {
       const errorMessage = err.message || 'An error occurred during sign up';
       if (errorMessage.includes('already exists')) {
-        setError('An account with this email already exists. Please sign in instead, or use "Continue with Google" if you previously signed up with Google.');
-      } else if (errorMessage.includes('sign in with Google')) {
-        setError('An account with this email already exists through Google. Please use "Continue with Google" to sign in.');
+        setError('An account with this email already exists. Please sign in instead.');
       } else if (errorMessage.includes('password')) {
-        setError('Password must be at least 8 characters and include uppercase, lowercase, numbers, and special characters.');
+        setError('Password must be at least 8 characters.');
       } else if (errorMessage.includes('Network')) {
         setError('Network error. Please check your connection.');
       } else {
@@ -182,7 +169,10 @@ export function AuthForm() {
 
       if (isSignUpComplete) {
         await signIn({ username: email, password });
-        router.push('/dashboard');
+        // Small delay to allow auth provider to update
+        setTimeout(() => {
+          router.push('/dashboard');
+        }, 500);
       }
     } catch (err: any) {
       const errorMessage = err.message || 'An error occurred during confirmation';
