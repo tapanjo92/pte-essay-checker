@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { signIn, signUp, confirmSignUp, signInWithRedirect, getCurrentUser } from 'aws-amplify/auth';
+import { signIn, signUp, confirmSignUp, getCurrentUser } from 'aws-amplify/auth';
 import { Button } from '@/components/ui/button';
 import { Amplify } from 'aws-amplify';
 import amplifyConfig from '@/amplify_outputs.json';
@@ -18,9 +18,6 @@ import {
   CheckCircle,
   AlertCircle,
   Loader2,
-  Chrome,
-  Key,
-  ChevronRight,
   Zap
 } from 'lucide-react';
 
@@ -322,40 +319,6 @@ export function AuthForm() {
                 </div>
               )}
 
-              {/* OAuth Buttons (Sign in only) */}
-              {mode === 'signin' && (
-                <div className="space-y-3 mb-6">
-                  <button 
-                    onClick={async () => {
-                      try {
-                        // Set custom state to track OAuth flow
-                        sessionStorage.setItem('oauthInitiated', 'true');
-                        await signInWithRedirect({ provider: 'Google' });
-                      } catch (err: any) {
-                        console.error('OAuth error:', err);
-                        if (err.message?.includes('ACCOUNT_EXISTS_WITH_DIFFERENT_METHOD')) {
-                          setError('An account with this email already exists. Please sign in using your email and password.');
-                        } else {
-                          setError('Unable to sign in with Google. Please try again.');
-                        }
-                      }
-                    }}
-                    className="w-full flex items-center justify-center gap-3 px-4 py-3 bg-white text-black rounded-lg font-medium hover:bg-gray-100 transition-colors"
-                  >
-                    <Chrome className="w-5 h-5" />
-                    Continue with Google
-                  </button>
-                  
-                  <div className="relative my-6">
-                    <div className="absolute inset-0 flex items-center">
-                      <div className="w-full border-t border-gray-800"></div>
-                    </div>
-                    <div className="relative flex justify-center text-sm">
-                      <span className="px-2 bg-gray-900/50 text-gray-500">or</span>
-                    </div>
-                  </div>
-                </div>
-              )}
 
               {/* Form */}
               <form onSubmit={

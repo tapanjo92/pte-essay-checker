@@ -15,31 +15,14 @@ export const handler: PostConfirmationTriggerHandler = async (event) => {
   try {
     let authMethod = 'unknown';
     
-    // Determine authentication method
+    // For MVP: All signups are email/password
     if (triggerSource === 'PostConfirmation_ConfirmSignUp') {
-      // Regular email/password sign-up
       authMethod = 'email';
       console.log(`New user confirmed via email/password - Email: ${email}, Sub: ${sub}`);
     } else if (triggerSource === 'PostConfirmation_ConfirmForgotPassword') {
       // Password reset
       console.log(`Password reset confirmed for: ${email}`);
       return event; // No need to update attributes for password reset
-    }
-    
-    // Check for external provider sign-up
-    if (request.userAttributes.identities) {
-      try {
-        const identities = JSON.parse(request.userAttributes.identities);
-        const provider = identities[0]?.providerName || 'unknown';
-        authMethod = provider.toLowerCase();
-        console.log(`User signed up via ${provider}: ${email}`);
-      } catch (error) {
-        console.error('Error parsing identities:', error);
-      }
-    } else if (userName?.includes('Google_')) {
-      authMethod = 'google';
-    } else if (userName?.includes('Facebook_')) {
-      authMethod = 'facebook';
     }
     
     // Store the authentication method as a custom attribute

@@ -2,10 +2,6 @@
 > app@0.1.0 dev
 > next dev
 
- ⚠ Warning: Found multiple lockfiles. Selecting /root/pte-essay-checker/package-lock.json.
-   Consider removing the lockfiles at:
-   * /root/pte-essay-checker/app/package-lock.json
-
    ▲ Next.js 15.4.2
    - Local:        http://localhost:3000
    - Network:      http://10.120.0.41:3000
@@ -13,34 +9,75 @@
      · serverActions
 
  ✓ Starting...
- ✓ Ready in 2.1s
+ ✓ Ready in 1795ms
  ○ Compiling / ...
- ✓ Compiled / in 3.9s (1832 modules)
- GET / 200 in 4619ms
- ✓ Compiled in 302ms (843 modules)
- ✓ Compiled /favicon.ico in 344ms (1006 modules)
- GET /favicon.ico 200 in 469ms
+ ✓ Compiled / in 3.8s (1832 modules)
+ GET / 200 in 4331ms
+ ✓ Compiled in 331ms (843 modules)
+ GET / 200 in 37ms
+ ✓ Compiled /favicon.ico in 374ms (1006 modules)
+ GET /favicon.ico 200 in 503ms
  ○ Compiling /auth ...
- ✓ Compiled /auth in 887ms (1867 modules)
- GET /auth 200 in 1065ms
- GET /favicon.ico 200 in 18ms
- GET /?code=ee846ad7-a9af-4baf-93ed-b3fc33d38b42&state=IosseTYG6UeILEJVUNrBma0HCrb8HBEy 200 in 117ms
+ ✓ Compiled /auth in 803ms (1867 modules)
+ GET /auth 200 in 992ms
+ GET /favicon.ico 200 in 19ms
+ GET /?code=5635343d-4155-4669-bbe4-ea1084bf80c9&state=H3aztHV4uzGQ3JLZOgit5wcIQuHd3euA 200 in 104ms
  GET /favicon.ico 200 in 7ms
- GET /favicon.ico 200 in 6ms
+ GET /favicon.ico 200 in 5ms
  ○ Compiling /dashboard ...
- ✓ Compiled /dashboard in 1531ms (2463 modules)
- GET /dashboard 200 in 1741ms
- GET /favicon.ico 200 in 18ms
+ ✓ Compiled /dashboard in 1435ms (2463 modules)
+ GET /dashboard 200 in 1671ms
+ GET /favicon.ico 200 in 19ms
  ○ Compiling /essay-questions ...
- ✓ Compiled /essay-questions in 702ms (2525 modules)
- GET /essay-questions 200 in 818ms
- GET /essay-questions 200 in 12ms
- GET /favicon.ico 200 in 16ms
- GET /auth 200 in 26ms
- GET / 200 in 112ms
+ ✓ Compiled /essay-questions in 725ms (2525 modules)
+ GET /essay-questions 200 in 844ms
+ GET /essay-questions 200 in 14ms
+ GET /favicon.ico 200 in 17ms
+ GET / 200 in 134ms
+ GET /auth 200 in 28ms
+ GET /favicon.ico 200 in 5ms
+ GET /auth 200 in 14ms
+ GET /favicon.ico 200 in 9ms
+ GET /dashboard 200 in 25ms
+ GET /favicon.ico 200 in 6ms
+ GET /essay-questions 200 in 15ms
+ GET /essay-questions 200 in 14ms
+ GET /favicon.ico 200 in 7ms
+ GET /auth 200 in 14ms
+ GET /favicon.ico 200 in 5ms
+ GET /?error_description=Unrecognizable+lambda+output+&state=JfnsHEFQEksFgOyxJWPpweyEnus4WdXK&error=invalid_request 200 in 28ms
+ GET /favicon.ico 200 in 6ms
+ GET /auth 200 in 19ms
+ GET /favicon.ico 200 in 5ms
+ GET /?error_description=Unrecognizable+lambda+output+&state=CEtM6MvcEp9YE9skkzov6CKLG5wNIMvp&error=invalid_request 200 in 27ms
  GET /favicon.ico 200 in 6ms
  GET /auth 200 in 14ms
  GET /favicon.ico 200 in 5ms
- ✓ Compiled in 1317ms (2499 modules)
- GET /auth 200 in 167ms
-[?25h
+ ✓ Compiled in 578ms (1149 modules)
+ ✓ Compiled in 363ms (1336 modules)
+ ✓ Compiled in 414ms (1149 modules)
+ GET /?code=4a755dd4-a527-4ce5-aa91-181bb1f2f522&state=lDg5soojqEPhoYQkyDdARDAilFyrWHbA 200 in 246ms
+ ✓ Compiled /dashboard in 466ms (1353 modules)
+ ✓ Compiled (1376 modules)
+ GET /favicon.ico 200 in 825ms
+ GET /dashboard 200 in 446ms
+ GET /favicon.ico 200 in 7ms
+ GET /favicon.ico 200 in 5ms
+ GET /essay-questions 200 in 24ms
+ GET /essay-questions 200 in 11ms
+ GET /favicon.ico 200 in 4ms
+ GET /auth 200 in 26ms
+ GET / 200 in 87ms
+ GET /favicon.ico 200 in 5ms
+ GET /auth 200 in 13ms
+ GET /favicon.ico 200 in 5ms
+ ✓ Compiled in 1943ms (2497 modules)
+ GET /auth 200 in 285ms
+ ✓ Compiled in 842ms (2497 modules)
+ GET /auth 200 in 105ms
+ ✓ Compiled in 229ms (1335 modules)
+ ✓ Compiled in 664ms (1162 modules)
+ GET /auth 200 in 65ms
+ ✓ Compiled in 847ms (2483 modules)
+ GET /auth 200 in 589ms
+ GET /auth 200 in 15ms
