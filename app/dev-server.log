@@ -81,3 +81,27 @@
  ✓ Compiled in 847ms (2483 modules)
  GET /auth 200 in 589ms
  GET /auth 200 in 15ms
+ ✓ Compiled in 643ms (1162 modules)
+ ✓ Compiled in 593ms (1162 modules)
+ ✓ Compiled in 559ms (1162 modules)
+ ✓ Compiled in 546ms (1162 modules)
+ ✓ Compiled in 549ms (1162 modules)
+ ✓ Compiled in 586ms (1162 modules)
+ ✓ Compiled in 749ms (1162 modules)
+ ✓ Compiled in 582ms (1162 modules)
+ ⨯ [Error: ENOENT: no such file or directory, open '/root/pte-essay-checker/app/.next/server/next-font-manifest.json'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/root/pte-essay-checker/app/.next/server/next-font-manifest.json',
+  page: '/'
+}
+ ○ Compiling /_error ...
+ ✓ Compiled /_error in 1434ms (2811 modules)
+ ⨯ [Error: ENOENT: no such file or directory, open '/root/pte-essay-checker/app/.next/routes-manifest.json'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/root/pte-essay-checker/app/.next/routes-manifest.json'
+}
+ GET / 500 in 3079ms

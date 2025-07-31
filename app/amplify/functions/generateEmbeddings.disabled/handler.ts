@@ -5,7 +5,7 @@ import { BedrockRuntimeClient, InvokeModelCommand } from '@aws-sdk/client-bedroc
 const dynamoClient = new DynamoDBClient({});
 const docClient = DynamoDBDocumentClient.from(dynamoClient);
 const bedrockClient = new BedrockRuntimeClient({ 
-  region: process.env.BEDROCK_REGION || 'ap-south-1' 
+  region: process.env.BEDROCK_REGION || 'us-east-1' 
 });
 
 interface Event {

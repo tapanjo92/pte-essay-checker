@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { createTracedClient } from '@/lib/xray-client';
+import { HighlightedEssay, type HighlightedError } from '@/components/highlighted-essay';
 
 interface Result {
   overallScore: number;
@@ -25,6 +26,7 @@ interface Result {
     };
   };
   suggestions: string[];
+  highlightedErrors?: HighlightedError[];
 }
 
 export default function PublicResultsPage() {
@@ -59,7 +61,14 @@ export default function PublicResultsPage() {
             id: essayResponse.data.resultId 
           });
           if (resultResponse.data) {
-            setResult(resultResponse.data as any);
+            // Parse highlightedErrors if it's a string
+            const parsedResult = {
+              ...resultResponse.data,
+              highlightedErrors: typeof resultResponse.data.highlightedErrors === 'string'
+                ? JSON.parse(resultResponse.data.highlightedErrors)
+                : resultResponse.data.highlightedErrors
+            };
+            setResult(parsedResult as any);
           }
         } else if (essayResponse.data.status === 'PROCESSING') {
           // Poll for results if still processing
@@ -284,7 +293,11 @@ export default function PublicResultsPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <p className="whitespace-pre-wrap text-sm">{essay.content}</p>
+            <HighlightedEssay 
+              content={essay.content}
+              errors={result?.highlightedErrors || []}
+              className="text-sm"
+            />
           </CardContent>
         </Card>
 

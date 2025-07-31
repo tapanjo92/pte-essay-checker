@@ -347,7 +347,7 @@ backend.data.resources.tables["Essay"].grantReadWriteData(
 //       'bedrock:InvokeModelWithResponseStream'
 //     ],
 //     resources: [
-//       `arn:aws:bedrock:ap-south-1::foundation-model/amazon.titan-embed-text-v2:0`
+//       `arn:aws:bedrock:us-east-1::foundation-model/amazon.titan-embed-text-v2:0`
 //     ],
 //   })
 // );

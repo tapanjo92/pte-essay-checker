@@ -8,6 +8,7 @@ import Link from 'next/link';
 import { EssayProcessingStatus } from '@/components/essay-processing-status';
 import { Skeleton } from '@/components/ui/skeleton';
 import { createTracedClient } from '@/lib/xray-client';
+import { HighlightedEssay, type HighlightedError } from '@/components/highlighted-essay';
 import { 
   Trophy, 
   Target, 
@@ -48,6 +49,7 @@ interface Result {
     };
   };
   suggestions: string[];
+  highlightedErrors?: HighlightedError[];
 }
 
 export default function ResultsPage() {
@@ -588,11 +590,10 @@ export default function ResultsPage() {
                 </div>
               </CardHeader>
               <CardContent className="pt-8 pb-8">
-                <div className="prose prose-lg dark:prose-invert max-w-none">
-                  <p className="whitespace-pre-wrap leading-relaxed text-gray-700 dark:text-gray-300">
-                    {essay.content}
-                  </p>
-                </div>
+                <HighlightedEssay 
+                  content={essay.content}
+                  errors={result?.highlightedErrors || []}
+                />
               </CardContent>
             </Card>
           </div>

@@ -4,7 +4,7 @@ import * as AWSXRay from 'aws-xray-sdk-core';
 // Initialize Bedrock client with X-Ray tracing
 const { captureAWSv3Client } = AWSXRay;
 const bedrockClient = captureAWSv3Client(new BedrockRuntimeClient({ 
-  region: process.env.BEDROCK_REGION || 'ap-south-1' 
+  region: process.env.BEDROCK_REGION || 'us-east-1' 
 }));
 
 // Cache for embeddings to reduce API calls

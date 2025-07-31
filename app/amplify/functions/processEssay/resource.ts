@@ -7,7 +7,7 @@ export const processEssay = defineFunction({
   memoryMB: 1024, // Increased to 1GB for better performance with concurrent processing
   environment: {
     BEDROCK_MODEL_ID: 'anthropic.claude-3-haiku-20240307-v1:0',
-    BEDROCK_REGION: 'ap-south-1',
+    BEDROCK_REGION: 'us-east-1',
     APP_URL: process.env.APP_URL || 'https://main.d1hed7gjlm8m1f.amplifyapp.com',
     // X-Ray configuration
     AWS_XRAY_CONTEXT_MISSING: 'LOG_ERROR',

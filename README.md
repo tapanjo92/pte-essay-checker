@@ -2,32 +2,15 @@
 
 ## 📋 Prerequisites
 
-- AWS Account with Bedrock access in `ap-south-1`
+- AWS Account with Bedrock access
 - Node.js 18+ installed
 - AWS CLI configured with credentials
 - Google OAuth credentials (Client ID & Secret)
 
 ## 🚀 Deployment Steps
 
-> **Note**: The current CDK configuration has an issue where Lambda IAM permissions are not automatically deployed. Step 3 below is required until this is fixed in the CDK code.
 
-### 1. **Set Google OAuth Secrets**
-
-Before deploying, set your Google OAuth credentials:
-
-```bash
-cd /root/pte-essay-checker/app
-
-# Set Google Client ID (without http:// prefix!)
-printf "YOUR_GOOGLE_CLIENT_ID" | npx ampx sandbox secret set GOOGLE_CLIENT_ID --identifier v3
-
-# Set Google Client Secret
-printf "YOUR_GOOGLE_CLIENT_SECRET" | npx ampx sandbox secret set GOOGLE_CLIENT_SECRET --identifier v3
-```
-
-**Important**: Use `printf` instead of `echo` to avoid newline characters!
-
-### 2. **Deploy Sandbox**
+### 1. **Deploy Sandbox**
 
 ```bash
 # Deploy with a specific identifier
@@ -39,91 +22,37 @@ npx ampx sandbox --identifier v3
 
 Wait for deployment to complete (~10-15 minutes). Check status:
 ```bash
-aws cloudformation describe-stacks --stack-name amplify-app-v3-sandbox-* --region ap-south-1 --query 'Stacks[0].StackStatus'
+# Set your AWS region
+export AWS_REGION=$(aws configure get region)
+
+aws cloudformation describe-stacks --stack-name amplify-app-v3-sandbox-* --region $AWS_REGION --query 'Stacks[0].StackStatus'
 ```
 
-### 3. **Configure Lambda IAM Permissions**
-
-**IMPORTANT**: Due to a CDK deployment issue, you must manually add IAM permissions to the authentication Lambda functions:
-
-```bash
-# 1. Add permissions to Pre-SignUp Lambda
-PRESIGNUP_ROLE=$(aws lambda get-function --function-name $(aws lambda list-functions --region ap-south-1 --query "Functions[?contains(FunctionName, 'v3-sandbox') && contains(FunctionName, 'presignup')].FunctionName" --output text) --region ap-south-1 --query 'Configuration.Role' --output text | awk -F'/' '{print $NF}')
-
-aws iam put-role-policy --role-name "$PRESIGNUP_ROLE" --policy-name "CognitoPermissions" --policy-document '{
-  "Version": "2012-10-17",
-  "Statement": [{
-    "Effect": "Allow",
-    "Action": [
-      "cognito-idp:ListUsers",
-      "cognito-idp:AdminLinkProviderForUser",
-      "cognito-idp:AdminCreateUser",
-      "cognito-idp:AdminSetUserPassword",
-      "cognito-idp:AdminUpdateUserAttributes"
-    ],
-    "Resource": "*"
-  }]
-}'
-
-# 2. Add permissions to Pre-Authentication Lambda
-PREAUTH_ROLE=$(aws lambda get-function --function-name $(aws lambda list-functions --region ap-south-1 --query "Functions[?contains(FunctionName, 'v3-sandbox') && contains(FunctionName, 'preauthentication')].FunctionName" --output text) --region ap-south-1 --query 'Configuration.Role' --output text | awk -F'/' '{print $NF}')
-
-aws iam put-role-policy --role-name "$PREAUTH_ROLE" --policy-name "CognitoPermissions" --policy-document '{
-  "Version": "2012-10-17",
-  "Statement": [{
-    "Effect": "Allow",
-    "Action": [
-      "cognito-idp:ListUsers",
-      "cognito-idp:AdminUpdateUserAttributes"
-    ],
-    "Resource": "*"
-  }]
-}'
-
-# 3. Add permissions to Post-Confirmation Lambda
-POSTCONF_ROLE=$(aws lambda get-function --function-name $(aws lambda list-functions --region ap-south-1 --query "Functions[?contains(FunctionName, 'v3-sandbox') && contains(FunctionName, 'postconfirmation')].FunctionName" --output text) --region ap-south-1 --query 'Configuration.Role' --output text | awk -F'/' '{print $NF}')
-
-aws iam put-role-policy --role-name "$POSTCONF_ROLE" --policy-name "CognitoPermissions" --policy-document '{
-  "Version": "2012-10-17",
-  "Statement": [{
-    "Effect": "Allow",
-    "Action": ["cognito-idp:AdminUpdateUserAttributes"],
-    "Resource": "*"
-  }]
-}'
-
-# Verify permissions were added
-echo "Verifying Lambda permissions..."
-aws iam get-role-policy --role-name "$PRESIGNUP_ROLE" --policy-name "CognitoPermissions" --query 'PolicyDocument.Statement[0].Action' --output json
-aws iam get-role-policy --role-name "$PREAUTH_ROLE" --policy-name "CognitoPermissions" --query 'PolicyDocument.Statement[0].Action' --output json
-aws iam get-role-policy --role-name "$POSTCONF_ROLE" --policy-name "CognitoPermissions" --query 'PolicyDocument.Statement[0].Action' --output json
-```
-
-### 4. **Update Lambda Environment Variables**
+### 2. **Update Lambda Environment Variables**
 
 After deployment, the Lambda functions need proper table names:
 
 ```bash
 # Find the processEssay Lambda
-LAMBDA_NAME=$(aws lambda list-functions --region ap-south-1 --query 'Functions[?contains(FunctionName, `v3`) && contains(FunctionName, `processEssay`)].FunctionName' --output text)
+LAMBDA_NAME=$(aws lambda list-functions --region $AWS_REGION --query 'Functions[?contains(FunctionName, `v3`) && contains(FunctionName, `processEssay`)].FunctionName' --output text)
 
 # Get table names
-ESSAY_TABLE=$(aws dynamodb list-tables --region ap-south-1 | grep -o "Essay-[^,\"]*" | head -1)
-RESULT_TABLE=$(aws dynamodb list-tables --region ap-south-1 | grep -o "Result-[^,\"]*" | head -1)
-USER_TABLE=$(aws dynamodb list-tables --region ap-south-1 | grep -o "User-[^,\"]*" | head -1)
-GOLD_TABLE=$(aws dynamodb list-tables --region ap-south-1 | grep -o "GoldStandardEssay-[^,\"]*" | head -1)
+ESSAY_TABLE=$(aws dynamodb list-tables --region $AWS_REGION | grep -o "Essay-[^,\"]*" | head -1)
+RESULT_TABLE=$(aws dynamodb list-tables --region $AWS_REGION | grep -o "Result-[^,\"]*" | head -1)
+USER_TABLE=$(aws dynamodb list-tables --region $AWS_REGION | grep -o "User-[^,\"]*" | head -1)
+GOLD_TABLE=$(aws dynamodb list-tables --region $AWS_REGION | grep -o "GoldStandardEssay-[^,\"]*" | head -1)
 
 # Update Lambda environment
 aws lambda update-function-configuration \
   --function-name $LAMBDA_NAME \
-  --region ap-south-1 \
+  --region $AWS_REGION \
   --environment "Variables={
     ESSAY_TABLE_NAME=$ESSAY_TABLE,
     RESULT_TABLE_NAME=$RESULT_TABLE,
     USER_TABLE_NAME=$USER_TABLE,
     GOLD_STANDARD_TABLE_NAME=$GOLD_TABLE,
     BEDROCK_MODEL_ID=anthropic.claude-3-haiku-20240307-v1:0,
-    BEDROCK_REGION=ap-south-1,
+    BEDROCK_REGION=$AWS_REGION,
     AWS_XRAY_CONTEXT_MISSING=LOG_ERROR,
     AWS_XRAY_TRACING_NAME=PTE-Essay-ProcessEssay,
     APP_URL=https://main.d1hed7gjlm8m1f.amplifyapp.com,
@@ -131,33 +60,33 @@ aws lambda update-function-configuration \
   }"
 ```
 
-### 4. **Fix Queue Configuration (Important!)**
+### 3. **Fix Queue Configuration (Important!)**
 
 The submitEssayToQueue Lambda needs the SQS queue URL:
 
 ```bash
 # Find the submitEssayToQueue Lambda
-SUBMIT_LAMBDA=$(aws lambda list-functions --region ap-south-1 --query 'Functions[?contains(FunctionName, `v3`) && contains(FunctionName, `submit`)].FunctionName' --output text)
+SUBMIT_LAMBDA=$(aws lambda list-functions --region $AWS_REGION --query 'Functions[?contains(FunctionName, `v3`) && contains(FunctionName, `submit`)].FunctionName' --output text)
 
 # Update with the queue URL and table name
 aws lambda update-function-configuration \
   --function-name $SUBMIT_LAMBDA \
-  --region ap-south-1 \
+  --region $AWS_REGION \
   --environment "Variables={
-    ESSAY_QUEUE_URL=https://sqs.ap-south-1.amazonaws.com/493093635246/essay-local,
+    ESSAY_QUEUE_URL=https://sqs.$AWS_REGION.amazonaws.com/493093635246/essay-local,
     ESSAY_TABLE_NAME=$ESSAY_TABLE,
     AWS_XRAY_CONTEXT_MISSING=LOG_ERROR,
     AWS_XRAY_TRACING_NAME=PTE-Essay-SubmitToQueue
   }"
 ```
 
-### 5. **Update and Run Seed Script**
+### 4. **Update and Run Seed Script**
 
 Update the seed script with your table name:
 
 ```bash
 # Get the GoldStandardEssay table name
-GOLD_TABLE=$(aws dynamodb list-tables --region ap-south-1 | grep -o "GoldStandardEssay-[^,\"]*" | head -1)
+GOLD_TABLE=$(aws dynamodb list-tables --region $AWS_REGION | grep -o "GoldStandardEssay-[^,\"]*" | head -1)
 echo "Gold Standard Table: $GOLD_TABLE"
 
 # Update the seed script
@@ -168,7 +97,7 @@ sed -i "s/GoldStandardEssay-[^']*/$(echo $GOLD_TABLE | sed 's/[[\.*^$()+?{|]/\\&
 node seed-essays-v2.js
 ```
 
-### 6. **Generate Amplify Outputs**
+### 5. **Generate Amplify Outputs**
 
 Generate the configuration file for the frontend:
 
@@ -177,7 +106,7 @@ cd /root/pte-essay-checker/app
 npx ampx generate outputs --stack amplify-app-v3-sandbox-* --format json --out-dir .
 ```
 
-### 7. **Build and Run the Application**
+### 6. **Build and Run the Application**
 
 ```bash
 # Install dependencies (if needed)
@@ -206,17 +135,17 @@ npm run dev
 
 1. **Check Lambda Functions**:
 ```bash
-aws lambda list-functions --region ap-south-1 --query 'Functions[?contains(FunctionName, `v3`)].FunctionName'
+aws lambda list-functions --region $AWS_REGION --query 'Functions[?contains(FunctionName, `v3`)].FunctionName'
 ```
 
 2. **Verify Table Creation**:
 ```bash
-aws dynamodb list-tables --region ap-south-1 | grep -E "(Essay|Result|User|GoldStandard)"
+aws dynamodb list-tables --region $AWS_REGION | grep -E "(Essay|Result|User|GoldStandard)"
 ```
 
 3. **Check Gold Standard Essays**:
 ```bash
-aws dynamodb scan --table-name $GOLD_TABLE --select COUNT --region ap-south-1
+aws dynamodb scan --table-name $GOLD_TABLE --select COUNT --region $AWS_REGION
 ```
 
 4. **Test Essay Submission**:
@@ -245,7 +174,7 @@ npm run dev
 ### "No gold standard essays found"
 - Ensure seed-essays-v2.js has correct table name
 - Verify embeddings are being generated
-- Check Bedrock model access in ap-south-1
+- Check Bedrock model access in your configured region
 
 ### Build Errors
 1. Missing dependencies: `npm install`

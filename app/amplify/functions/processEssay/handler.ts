@@ -11,12 +11,12 @@ const { captureAWSv3Client } = AWSXRay;
 
 // Initialize clients with X-Ray tracing
 const bedrockClient = captureAWSv3Client(new BedrockRuntimeClient({ 
-  region: process.env.BEDROCK_REGION || 'ap-south-1' 
+  region: process.env.BEDROCK_REGION || 'us-east-1' 
 }));
 
 const dynamoClient = captureAWSv3Client(new DynamoDBClient({}));
 const docClient = DynamoDBDocumentClient.from(dynamoClient);
-const sesClient = captureAWSv3Client(new SESClient({ region: process.env.AWS_REGION || 'ap-south-1' }));
+const sesClient = captureAWSv3Client(new SESClient({ region: process.env.AWS_REGION || 'us-east-1' }));
 
 // PTE scoring criteria - Official 7 criteria mapped to 14 points
 const PTE_CRITERIA = {
@@ -110,6 +110,7 @@ interface ScoringResult {
     text: string;
     type: 'grammar' | 'vocabulary' | 'coherence' | 'spelling';
     suggestion: string;
+    explanation?: string; // Optional field for why the error is wrong
     startIndex: number;
     endIndex: number;
   }>;
@@ -518,15 +519,28 @@ CRITICAL: Provide your response as a valid JSON object. Do NOT use markdown form
   "suggestions": ["<suggestion1>", "<suggestion2>", ...],
   "highlightedErrors": [
     {
-      "text": "<error text>",
+      "text": "<EXACT error text from essay>",
       "type": "grammar|vocabulary|coherence|spelling",
-      "correction": "<suggested correction>",
-      "startIndex": <number>,
-      "endIndex": <number>
+      "suggestion": "<specific correction>",
+      "explanation": "<why this is wrong>",
+      "startIndex": <character position where error starts>,
+      "endIndex": <character position where error ends>
     }
   ],
   "comparisonNote": "<brief note comparing this essay to the reference essays>"
-}`;
+}
+
+CRITICAL REQUIREMENTS FOR ERROR DETECTION:
+1. Quote the EXACT text from the essay (character-perfect matching)
+2. Calculate precise character positions by counting from the start of essay content
+3. Provide specific corrections, not general advice  
+4. Find minimum 3-5 specific errors with exact locations
+5. Count characters carefully: startIndex is where error begins, endIndex is where it ends
+6. Example: If essay starts "The AI technology is very good..." and "very good" (positions 23-32) should be "excellent", then:
+   - text: "very good"
+   - startIndex: 23
+   - endIndex: 32
+   - suggestion: "excellent"`;
   
   return {
     prompt: enhancedPrompt,
@@ -603,12 +617,26 @@ CRITICAL: Provide your response as a valid JSON object. Do NOT use markdown form
   "suggestions": ["<specific suggestion 1>", "<specific suggestion 2>", ...],
   "highlightedErrors": [
     {
-      "text": "<error text>",
+      "text": "<EXACT error text from essay>",
       "type": "grammar|vocabulary|coherence|spelling",
-      "suggestion": "<correction>",
-      "context": "<surrounding text>"
+      "suggestion": "<specific correction>",
+      "explanation": "<why this is wrong>",
+      "startIndex": <character position where error starts>,
+      "endIndex": <character position where error ends>
     }
   ]
+
+CRITICAL REQUIREMENTS FOR ERROR DETECTION:
+1. Quote the EXACT text from the essay (character-perfect matching)
+2. Calculate precise character positions by counting from the start of essay content
+3. Provide specific corrections, not general advice  
+4. Find minimum 3-5 specific errors with exact locations
+5. Count characters carefully: startIndex is where error begins, endIndex is where it ends
+6. Example: If essay starts "The AI technology is very good..." and "very good" (positions 23-32) should be "excellent", then:
+   - text: "very good"
+   - startIndex: 23
+   - endIndex: 32
+   - suggestion: "excellent"
 }`;
 }
 
