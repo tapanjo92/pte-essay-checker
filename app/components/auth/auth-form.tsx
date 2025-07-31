@@ -55,6 +55,13 @@ export function AuthForm() {
   useEffect(() => {
     const checkAuth = async () => {
       try {
+        // Skip auth check if we're in the middle of OAuth flow
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.has('code') || urlParams.has('state')) {
+          console.log('OAuth flow detected in auth-form, skipping auth check');
+          return;
+        }
+        
         await getCurrentUser();
         // User is already signed in, redirect to dashboard
         router.push('/dashboard');
@@ -63,6 +70,13 @@ export function AuthForm() {
       }
     };
     checkAuth();
+    
+    // Check for OAuth errors stored in session storage
+    const storedError = sessionStorage.getItem('authError');
+    if (storedError) {
+      setError(storedError);
+      sessionStorage.removeItem('authError');
+    }
   }, [router]);
   
   useEffect(() => {
@@ -101,6 +115,8 @@ export function AuthForm() {
         setError('No account found with this email. Please sign up first.');
       } else if (errorMessage.includes('Incorrect username or password')) {
         setError('Incorrect email or password. If you signed up with Google, please use "Continue with Google" instead.');
+      } else if (errorMessage.includes('Please sign in with Google') || errorMessage.includes('social provider')) {
+        setError('This account uses Google sign-in. Please click "Continue with Google" below.');
       } else if (errorMessage.includes('Network')) {
         setError('Network error. Please check your connection.');
       } else {
@@ -142,8 +158,10 @@ export function AuthForm() {
       const errorMessage = err.message || 'An error occurred during sign up';
       if (errorMessage.includes('already exists')) {
         setError('An account with this email already exists. Please sign in instead, or use "Continue with Google" if you previously signed up with Google.');
+      } else if (errorMessage.includes('sign in with Google')) {
+        setError('An account with this email already exists through Google. Please use "Continue with Google" to sign in.');
       } else if (errorMessage.includes('password')) {
-        setError('Password must be at least 8 characters.');
+        setError('Password must be at least 8 characters and include uppercase, lowercase, numbers, and special characters.');
       } else if (errorMessage.includes('Network')) {
         setError('Network error. Please check your connection.');
       } else {
@@ -310,6 +328,8 @@ export function AuthForm() {
                   <button 
                     onClick={async () => {
                       try {
+                        // Set custom state to track OAuth flow
+                        sessionStorage.setItem('oauthInitiated', 'true');
                         await signInWithRedirect({ provider: 'Google' });
                       } catch (err: any) {
                         console.error('OAuth error:', err);

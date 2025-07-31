@@ -15,6 +15,7 @@ import { Alarm, TreatMissingData } from 'aws-cdk-lib/aws-cloudwatch';
 import { SnsAction } from 'aws-cdk-lib/aws-cloudwatch-actions';
 import { Topic } from 'aws-cdk-lib/aws-sns';
 import { EmailSubscription } from 'aws-cdk-lib/aws-sns-subscriptions';
+import { Function } from 'aws-cdk-lib/aws-lambda';
 
 /**
  * @see https://docs.amplify.aws/react/build-a-backend/ to add storage, functions, and more
@@ -31,16 +32,27 @@ const backend = defineBackend({
 // Get the stack for adding resources
 const stack = backend.createStack('AppStack');
 
-// Grant IAM permissions to auth triggers if they exist
-// TODO: Fix trigger resource access after build
-// if (backend.auth.resources.triggers?.preAuthentication) {
-//   backend.auth.resources.triggers.preAuthentication.addToRolePolicy(
-//     new PolicyStatement({
-//       actions: ['cognito-idp:AdminGetUser'],
-//       resources: [backend.auth.resources.userPool.userPoolArn],
-//     })
-//   );
-// }
+// Grant IAM permissions to auth triggers
+
+// Grant permissions to pre-sign-up trigger for account linking
+const authStack = Stack.of(backend.auth);
+if (backend.auth.resources.cfnResources.triggers?.preSignUp) {
+  const preSignUpRole = backend.auth.resources.cfnResources.triggers.preSignUp.role;
+  if (preSignUpRole) {
+    preSignUpRole.addToPolicy(
+      new PolicyStatement({
+        actions: [
+          'cognito-idp:ListUsers',
+          'cognito-idp:AdminLinkProviderForUser',
+          'cognito-idp:AdminCreateUser',
+          'cognito-idp:AdminSetUserPassword',
+          'cognito-idp:AdminUpdateUserAttributes'
+        ],
+        resources: [backend.auth.resources.userPool.userPoolArn],
+      })
+    );
+  }
+}
 
 // Enable X-Ray tracing for Lambda functions
 backend.processEssay.resources.cfnResources.cfnFunction.tracingConfig = {
@@ -50,6 +62,7 @@ backend.processEssay.resources.cfnResources.cfnFunction.tracingConfig = {
 backend.submitEssayToQueue.resources.cfnResources.cfnFunction.tracingConfig = {
   mode: 'Active'
 };
+
 
 // Grant X-Ray permissions to Lambda functions
 backend.processEssay.resources.lambda.addToRolePolicy(
@@ -277,6 +290,38 @@ const dlqOldMessagesAlarm = new Alarm(dataStack, 'DLQOldMessagesAlarm', {
 });
 
 dlqOldMessagesAlarm.addAlarmAction(new SnsAction(dlqAlertTopic));
+
+// Grant permissions to pre-authentication Lambda
+const authStackNode = Stack.of(backend.auth);
+authStackNode.node.findAll().forEach((construct) => {
+  if (construct instanceof Function && construct.node.id.toLowerCase().includes('preauthentication')) {
+    construct.addToRolePolicy(
+      new PolicyStatement({
+        effect: 'Allow',
+        actions: [
+          'cognito-idp:ListUsers',
+          'cognito-idp:AdminUpdateUserAttributes'
+        ],
+        resources: ['*']
+      })
+    );
+  }
+});
+
+// Grant permissions to post-confirmation Lambda
+if (backend.auth.resources.cfnResources.triggers?.postConfirmation) {
+  const postConfirmationRole = backend.auth.resources.cfnResources.triggers.postConfirmation.role;
+  if (postConfirmationRole) {
+    postConfirmationRole.addToPolicy(
+      new PolicyStatement({
+        actions: [
+          'cognito-idp:AdminUpdateUserAttributes'
+        ],
+        resources: [backend.auth.resources.userPool.userPoolArn],
+      })
+    );
+  }
+}
 
 // Grant access to tables
 backend.data.resources.tables["Essay"].grantReadWriteData(

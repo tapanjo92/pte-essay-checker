@@ -9,6 +9,8 @@
 
 ## 🚀 Deployment Steps
 
+> **Note**: The current CDK configuration has an issue where Lambda IAM permissions are not automatically deployed. Step 3 below is required until this is fixed in the CDK code.
+
 ### 1. **Set Google OAuth Secrets**
 
 Before deploying, set your Google OAuth credentials:
@@ -40,7 +42,64 @@ Wait for deployment to complete (~10-15 minutes). Check status:
 aws cloudformation describe-stacks --stack-name amplify-app-v3-sandbox-* --region ap-south-1 --query 'Stacks[0].StackStatus'
 ```
 
-### 3. **Update Lambda Environment Variables**
+### 3. **Configure Lambda IAM Permissions**
+
+**IMPORTANT**: Due to a CDK deployment issue, you must manually add IAM permissions to the authentication Lambda functions:
+
+```bash
+# 1. Add permissions to Pre-SignUp Lambda
+PRESIGNUP_ROLE=$(aws lambda get-function --function-name $(aws lambda list-functions --region ap-south-1 --query "Functions[?contains(FunctionName, 'v3-sandbox') && contains(FunctionName, 'presignup')].FunctionName" --output text) --region ap-south-1 --query 'Configuration.Role' --output text | awk -F'/' '{print $NF}')
+
+aws iam put-role-policy --role-name "$PRESIGNUP_ROLE" --policy-name "CognitoPermissions" --policy-document '{
+  "Version": "2012-10-17",
+  "Statement": [{
+    "Effect": "Allow",
+    "Action": [
+      "cognito-idp:ListUsers",
+      "cognito-idp:AdminLinkProviderForUser",
+      "cognito-idp:AdminCreateUser",
+      "cognito-idp:AdminSetUserPassword",
+      "cognito-idp:AdminUpdateUserAttributes"
+    ],
+    "Resource": "*"
+  }]
+}'
+
+# 2. Add permissions to Pre-Authentication Lambda
+PREAUTH_ROLE=$(aws lambda get-function --function-name $(aws lambda list-functions --region ap-south-1 --query "Functions[?contains(FunctionName, 'v3-sandbox') && contains(FunctionName, 'preauthentication')].FunctionName" --output text) --region ap-south-1 --query 'Configuration.Role' --output text | awk -F'/' '{print $NF}')
+
+aws iam put-role-policy --role-name "$PREAUTH_ROLE" --policy-name "CognitoPermissions" --policy-document '{
+  "Version": "2012-10-17",
+  "Statement": [{
+    "Effect": "Allow",
+    "Action": [
+      "cognito-idp:ListUsers",
+      "cognito-idp:AdminUpdateUserAttributes"
+    ],
+    "Resource": "*"
+  }]
+}'
+
+# 3. Add permissions to Post-Confirmation Lambda
+POSTCONF_ROLE=$(aws lambda get-function --function-name $(aws lambda list-functions --region ap-south-1 --query "Functions[?contains(FunctionName, 'v3-sandbox') && contains(FunctionName, 'postconfirmation')].FunctionName" --output text) --region ap-south-1 --query 'Configuration.Role' --output text | awk -F'/' '{print $NF}')
+
+aws iam put-role-policy --role-name "$POSTCONF_ROLE" --policy-name "CognitoPermissions" --policy-document '{
+  "Version": "2012-10-17",
+  "Statement": [{
+    "Effect": "Allow",
+    "Action": ["cognito-idp:AdminUpdateUserAttributes"],
+    "Resource": "*"
+  }]
+}'
+
+# Verify permissions were added
+echo "Verifying Lambda permissions..."
+aws iam get-role-policy --role-name "$PRESIGNUP_ROLE" --policy-name "CognitoPermissions" --query 'PolicyDocument.Statement[0].Action' --output json
+aws iam get-role-policy --role-name "$PREAUTH_ROLE" --policy-name "CognitoPermissions" --query 'PolicyDocument.Statement[0].Action' --output json
+aws iam get-role-policy --role-name "$POSTCONF_ROLE" --policy-name "CognitoPermissions" --query 'PolicyDocument.Statement[0].Action' --output json
+```
+
+### 4. **Update Lambda Environment Variables**
 
 After deployment, the Lambda functions need proper table names:
 

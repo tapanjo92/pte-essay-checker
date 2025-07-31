@@ -1,9 +1,9 @@
 {
   "auth": {
-    "user_pool_id": "ap-south-1_Q7dOl5ySk",
+    "user_pool_id": "ap-south-1_3nYVOusBT",
     "aws_region": "ap-south-1",
-    "user_pool_client_id": "5uhpjkc4pn0pvmnvpcvstkt85h",
-    "identity_pool_id": "ap-south-1:1f904e30-395f-4704-a869-a2155eb05d0a",
+    "user_pool_client_id": "4l7js9g6u11llq81t4hlccj91v",
+    "identity_pool_id": "ap-south-1:6d5e13b5-5de4-4a5b-86e7-d1c107faa87d",
     "mfa_methods": [],
     "standard_required_attributes": [
       "email"
@@ -28,7 +28,8 @@
         "GOOGLE"
       ],
       "redirect_sign_in_uri": [
-        "http://localhost:3000/"
+        "http://localhost:3000/",
+        "http://localhost:3000/oauth-callback"
       ],
       "redirect_sign_out_uri": [
         "http://localhost:3000/"
@@ -46,9 +47,9 @@
     "unauthenticated_identities_enabled": true
   },
   "data": {
-    "url": "https://f5hjr6rzdrdrlobh4rtu5g22ta.appsync-api.ap-south-1.amazonaws.com/graphql",
+    "url": "https://wuro2mrg2zc5bex73pz6py6u6y.appsync-api.ap-south-1.amazonaws.com/graphql",
     "aws_region": "ap-south-1",
-    "api_key": "da2-3dr6blonhjbrdcn6e7td4dyosy",
+    "api_key": "da2-teuvkzuilzbwnnu4qgsnel5ble",
     "default_authorization_type": "AMAZON_COGNITO_USER_POOLS",
     "authorization_types": [
       "API_KEY",
@@ -1538,11 +1539,11 @@
   },
   "storage": {
     "aws_region": "ap-south-1",
-    "bucket_name": "amplify-app-v3-sandbox-4d-pteessaystoragebucketc06-u7aiunk3ftkh",
+    "bucket_name": "amplify-app-v3-sandbox-4d-pteessaystoragebucketc06-vwhme82e1co7",
     "buckets": [
       {
         "name": "pteEssayStorage",
-        "bucket_name": "amplify-app-v3-sandbox-4d-pteessaystoragebucketc06-u7aiunk3ftkh",
+        "bucket_name": "amplify-app-v3-sandbox-4d-pteessaystoragebucketc06-vwhme82e1co7",
         "aws_region": "ap-south-1",
         "paths": {
           "essays/*": {
@@ -1580,10 +1581,10 @@
     "DLQUrl": "https://sqs.ap-south-1.amazonaws.com/493093635246/dlq-local",
     "DLQName": "dlq-local",
     "MainQueueUrl": "https://sqs.ap-south-1.amazonaws.com/493093635246/essay-local",
-    "EssayTableName": "Essay-n7yssgqwc5gxve5vejyyny2dk4-NONE",
-    "ResultTableName": "Result-n7yssgqwc5gxve5vejyyny2dk4-NONE",
-    "UserTableName": "User-n7yssgqwc5gxve5vejyyny2dk4-NONE",
-    "GoldStandardTableName": "GoldStandardEssay-n7yssgqwc5gxve5vejyyny2dk4-NONE",
+    "EssayTableName": "Essay-nzzldtmucfdetf476gv6kitpsu-NONE",
+    "ResultTableName": "Result-nzzldtmucfdetf476gv6kitpsu-NONE",
+    "UserTableName": "User-nzzldtmucfdetf476gv6kitpsu-NONE",
+    "GoldStandardTableName": "GoldStandardEssay-nzzldtmucfdetf476gv6kitpsu-NONE",
     "EssayQueueUrl": "https://sqs.ap-south-1.amazonaws.com/493093635246/essay-local"
   }
 }

@@ -1,5 +1,6 @@
 import { defineAuth, secret } from '@aws-amplify/backend';
 import { postConfirmation } from './post-confirmation/resource';
+import { preSignUp } from './pre-sign-up/resource';
 import { preAuthentication } from './pre-authentication/resource';
 
 /**
@@ -16,7 +17,8 @@ export const auth = defineAuth({
         scopes: ['email', 'profile', 'openid'],
       },
       callbackUrls: [
-        'http://localhost:3000/'
+        'http://localhost:3000/',
+        'http://localhost:3000/oauth-callback'
       ],
       logoutUrls: [
         'http://localhost:3000/'
@@ -26,16 +28,28 @@ export const auth = defineAuth({
   userAttributes: {
     email: {
       required: true,
-      mutable: false, // Prevent email changes to avoid account conflicts
+      mutable: true, // Allow OAuth providers to update email
     },
     preferredUsername: {
       mutable: true,
       required: false,
     },
   },
+  // Custom attributes to track authentication methods
+  customAttributes: {
+    auth_method: {
+      dataType: 'String',
+      mutable: true,
+    },
+    signup_date: {
+      dataType: 'DateTime',
+      mutable: false,
+    },
+  },
   accountRecovery: 'EMAIL_ONLY',
   triggers: {
     postConfirmation,
+    preSignUp,
     preAuthentication,
   },
 });

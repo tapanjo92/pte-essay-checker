@@ -1,79 +1,79 @@
 import type { PreAuthenticationTriggerHandler } from 'aws-lambda';
-import { CognitoIdentityProviderClient, AdminGetUserCommand, ListUsersCommand } from '@aws-sdk/client-cognito-identity-provider';
+import { 
+  CognitoIdentityProviderClient, 
+  AdminUpdateUserAttributesCommand,
+  ListUsersCommand 
+} from '@aws-sdk/client-cognito-identity-provider';
 
 const cognitoClient = new CognitoIdentityProviderClient({});
 
 export const handler: PreAuthenticationTriggerHandler = async (event) => {
   console.log('Pre-authentication trigger:', JSON.stringify(event, null, 2));
   
-  // Handle account linking for users with same email
-  if (event.triggerSource === 'PreAuthentication_Authentication') {
-    const email = event.request.userAttributes?.email?.toLowerCase();
-    const currentUsername = event.userName;
-    const userPoolId = event.userPoolId;
+  const { triggerSource, userName, userPoolId, request } = event;
+  const email = request.userAttributes?.email?.toLowerCase();
+  
+  try {
+    switch (triggerSource) {
+      case 'PreAuthentication_Authentication':
+        // Regular sign-in attempt
+        console.log(`Authentication attempt for user: ${userName}`);
+        
+        // Check if this is an email/password user trying to sign in
+        // but they originally signed up with a social provider
+        if (email && !userName?.includes('_')) {
+          // This looks like a Cognito native user (not federated)
+          // Check if there's a federated account with same email
+          const listUsersCommand = new ListUsersCommand({
+            UserPoolId: userPoolId,
+            Filter: `email = "${email}"`,
+            Limit: 5
+          });
+          
+          const listUsersResponse = await cognitoClient.send(listUsersCommand);
+          const users = listUsersResponse.Users || [];
+          
+          // Check if any user is from external provider
+          const federatedUser = users.find(user => 
+            user.Username?.includes('Google_') || 
+            user.Username?.includes('Facebook_') ||
+            user.UserAttributes?.some(attr => attr.Name === 'identities')
+          );
+          
+          if (federatedUser && !users.some(u => u.Username === userName)) {
+            // User is trying email/password but only has social login
+            console.log(`User ${email} should use social login instead`);
+            throw new Error('Please sign in with Google or the social provider you used to create your account.');
+          }
+        }
+        
+        // For federated users signing in
+        if (userName?.includes('_')) {
+          console.log(`Federated login for ${userName}`);
+          // Auto-confirm federated users (shouldn't need this here, but just in case)
+          event.response.autoConfirmUser = true;
+          event.response.autoVerifyEmail = true;
+        }
+        break;
+        
+      case 'PreAuthentication_RefreshToken':
+        // Token refresh - allow it
+        console.log(`Token refresh for user: ${userName}`);
+        break;
+        
+      default:
+        console.log(`Unhandled trigger source: ${triggerSource}`);
+    }
+  } catch (error: any) {
+    console.error('Error in pre-authentication:', error);
     
-    if (!email) {
-      return event;
+    // Re-throw specific errors to block authentication with helpful messages
+    if (error.message?.includes('Please sign in with')) {
+      throw error;
     }
-
-    try {
-      // Check if this is a federated login
-      const isFederatedLogin = currentUsername.includes('Google_') || 
-                              currentUsername.includes('Facebook_') ||
-                              event.request.userAttributes?.identities;
-
-      if (isFederatedLogin) {
-        // Search for existing users with the same email
-        const listUsersResponse = await cognitoClient.send(new ListUsersCommand({
-          UserPoolId: userPoolId,
-          Filter: `email = "${email}"`,
-          Limit: 2
-        }));
-
-        if (listUsersResponse.Users && listUsersResponse.Users.length > 1) {
-          // Multiple accounts with same email exist
-          const nativeUser = listUsersResponse.Users.find(u => 
-            !u.Username?.includes('Google_') && 
-            !u.Username?.includes('Facebook_')
-          );
-
-          if (nativeUser) {
-            console.log(`Linking federated account to existing native account for email: ${email}`);
-            
-            // Auto-link accounts by allowing sign-in
-            // The post-confirmation trigger will handle merging user data
-            event.response.autoConfirmUser = true;
-            event.response.autoVerifyEmail = true;
-          }
-        }
-      } else {
-        // This is a native login attempt
-        // Check if a federated account exists with this email
-        const listUsersResponse = await cognitoClient.send(new ListUsersCommand({
-          UserPoolId: userPoolId,
-          Filter: `email = "${email}"`,
-          Limit: 5
-        }));
-
-        if (listUsersResponse.Users && listUsersResponse.Users.length > 0) {
-          const federatedUser = listUsersResponse.Users.find(u => 
-            u.Username?.includes('Google_') || 
-            u.Username?.includes('Facebook_')
-          );
-
-          if (federatedUser && !listUsersResponse.Users.find(u => u.Username === currentUsername)) {
-            // User has a federated account but trying to create native account
-            console.warn(`User with email ${email} already exists with federated login`);
-            
-            // Note: We can't throw an error here as it would block legitimate logins
-            // The signup process will handle the UsernameExistsException
-          }
-        }
-      }
-    } catch (error) {
-      console.error('Error in pre-authentication:', error);
-      // Don't block authentication on errors
-    }
+    
+    // For other errors, allow authentication to continue
+    console.log('Allowing authentication to continue despite error');
   }
   
   return event;
