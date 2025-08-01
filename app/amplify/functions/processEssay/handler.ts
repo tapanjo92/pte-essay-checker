@@ -1,22 +1,14 @@
 import { SQSHandler, SQSEvent } from 'aws-lambda';
-import { BedrockRuntimeClient, InvokeModelCommand } from '@aws-sdk/client-bedrock-runtime';
-import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
-import { DynamoDBDocumentClient, GetCommand, UpdateCommand, PutCommand, QueryCommand, ScanCommand } from '@aws-sdk/lib-dynamodb';
-import { SESClient, SendEmailCommand } from '@aws-sdk/client-ses';
-import * as AWSXRay from 'aws-xray-sdk-core';
+import { InvokeModelCommand } from '@aws-sdk/client-bedrock-runtime';
+import { GetCommand, UpdateCommand, PutCommand, QueryCommand, ScanCommand } from '@aws-sdk/lib-dynamodb';
+import { SendEmailCommand } from '@aws-sdk/client-ses';
 import { generateEssayEmbedding, findSimilarVectors, VectorSearchResult } from './vectorUtils';
+import { bedrockClient, docClient, sesClient, warmConnections } from './clients';
+import * as AWSXRay from 'aws-xray-sdk-core';
+import { createEnhancedPrompt, detectFallbackErrors } from './enhanced-prompt';
 
-// Capture AWS SDK v3 clients with X-Ray
-const { captureAWSv3Client } = AWSXRay;
-
-// Initialize clients with X-Ray tracing
-const bedrockClient = captureAWSv3Client(new BedrockRuntimeClient({ 
-  region: process.env.BEDROCK_REGION || 'us-east-1' 
-}));
-
-const dynamoClient = captureAWSv3Client(new DynamoDBClient({}));
-const docClient = DynamoDBDocumentClient.from(dynamoClient);
-const sesClient = captureAWSv3Client(new SESClient({ region: process.env.AWS_REGION || 'us-east-1' }));
+// Warm connections on cold start
+warmConnections().catch(console.error);
 
 // PTE scoring criteria - Official 7 criteria mapped to 14 points
 const PTE_CRITERIA = {
@@ -130,6 +122,11 @@ function structuredLog(level: string, message: string, metadata?: any) {
 
 // Sanitize content to prevent prompt injection attacks
 function sanitizeContent(content: string): string {
+  // Handle undefined or null content
+  if (!content || typeof content !== 'string') {
+    return '';
+  }
+  
   // Remove potential prompt injection patterns
   return content
     .replace(/\{.*?\}/g, '')        // Remove anything in curly braces
@@ -381,7 +378,7 @@ export const handler: SQSHandler = async (event: SQSEvent) => {
       
       // 4. Parse AI response and calculate scores
       console.log('Parsing AI response...');
-      const scoringResult = parseAIResponse(aiResponse, args.wordCount);
+      const scoringResult = parseAIResponse(aiResponse, args.wordCount, args.content);
       console.log('Scoring result:', scoringResult.overallScore);
       
       // 5. Save results to DynamoDB with performance metrics
@@ -579,7 +576,7 @@ async function createRAGEnhancedPrompt(topic: string, content: string, wordCount
   if (similarEssays.length === 0) {
     structuredLog('INFO', 'No similar essays found, using standard prompt');
     return {
-      prompt: createAnalysisPrompt(topic, content),
+      prompt: createEnhancedPrompt(topic, content, wordCount),
       similarEssaysCount: 0,
       vectorSearchUsed
     };
@@ -753,7 +750,8 @@ CRITICAL REQUIREMENTS FOR ERROR DETECTION:
   };
 }
 
-function createAnalysisPrompt(topic: string, content: string): string {
+// Create fallback prompt when RAG is not available
+function createFallbackPrompt(topic: string, content: string, wordCount: number): string {
   return `You are an expert PTE Academic essay evaluator. Analyze the following essay and provide detailed scoring and feedback based on official PTE criteria.
 
 Topic: ${topic}
@@ -1058,7 +1056,43 @@ async function callBedrockAI(prompt: string): Promise<any> {
   }
 }
 
-function parseAIResponse(aiResponse: any, wordCount: number): ScoringResult {
+// Industry-standard error enhancement
+function enhanceHighlightedErrors(aiErrors: any[], content: string, wordCount: number): any[] {
+  // If AI provided good errors, use them
+  if (aiErrors && aiErrors.length >= 5) {
+    return aiErrors;
+  }
+  
+  console.log(`AI only provided ${aiErrors?.length || 0} errors. Adding fallback detection...`);
+  
+  // Combine AI errors with fallback detection
+  const fallbackErrors = detectFallbackErrors(content);
+  const combinedErrors = [...(aiErrors || [])];
+  
+  // Add fallback errors that don't overlap with AI errors
+  fallbackErrors.forEach(fallbackError => {
+    const isDuplicate = combinedErrors.some(aiError => 
+      (aiError.startIndex === fallbackError.startIndex) ||
+      (Math.abs(aiError.startIndex - fallbackError.startIndex) < 5 && aiError.type === fallbackError.type)
+    );
+    
+    if (!isDuplicate && combinedErrors.length < 15) {
+      combinedErrors.push(fallbackError);
+    }
+  });
+  
+  // Sort by position
+  combinedErrors.sort((a, b) => a.startIndex - b.startIndex);
+  
+  // Ensure we have at least 5 errors for good UX
+  if (combinedErrors.length < 5) {
+    console.warn(`Only found ${combinedErrors.length} errors. Essay might be very well written.`);
+  }
+  
+  return combinedErrors;
+}
+
+function parseAIResponse(aiResponse: any, wordCount: number, content: string): ScoringResult {
   let overallScore: number;
   let result: ScoringResult;
   
@@ -1205,7 +1239,7 @@ function parseAIResponse(aiResponse: any, wordCount: number): ScoringResult {
         }
       },
       suggestions: aiResponse.suggestions || [],
-      highlightedErrors: aiResponse.highlightedErrors || []
+      highlightedErrors: enhanceHighlightedErrors(aiResponse.highlightedErrors || [], content, wordCount)
     };
   } else {
     // Fallback to old format
@@ -1232,7 +1266,7 @@ function parseAIResponse(aiResponse: any, wordCount: number): ScoringResult {
         }
       },
       suggestions: aiResponse.suggestions || [],
-      highlightedErrors: aiResponse.highlightedErrors || []
+      highlightedErrors: enhanceHighlightedErrors(aiResponse.highlightedErrors || [], content, wordCount)
     };
   }
   

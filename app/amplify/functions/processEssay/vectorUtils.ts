@@ -1,11 +1,6 @@
-import { BedrockRuntimeClient, InvokeModelCommand } from '@aws-sdk/client-bedrock-runtime';
+import { InvokeModelCommand } from '@aws-sdk/client-bedrock-runtime';
 import * as AWSXRay from 'aws-xray-sdk-core';
-
-// Initialize Bedrock client with X-Ray tracing
-const { captureAWSv3Client } = AWSXRay;
-const bedrockClient = captureAWSv3Client(new BedrockRuntimeClient({ 
-  region: process.env.BEDROCK_REGION || 'us-east-1' 
-}));
+import { bedrockClient } from './clients';
 
 // Cache for embeddings to reduce API calls
 const embeddingCache = new Map<string, { embedding: number[], timestamp: number }>();

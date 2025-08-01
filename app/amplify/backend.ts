@@ -158,10 +158,10 @@ const branchName = process.env.AWS_BRANCH || 'main';
 const sandboxId = process.env.AWS_APP_ID || '';
 const isSandbox = !process.env.AWS_BRANCH;
 
-// For sandboxes, use last 6 chars of sandbox ID to ensure uniqueness
-// For branches, use first 8 chars of branch name
+// For sandboxes, use identifier + timestamp for true uniqueness
+// For branches, use branch name
 const uniqueSuffix = isSandbox 
-  ? sandboxId.slice(-6) || 'local' // Last 6 chars of sandbox ID
+  ? `v3-${Date.now().toString(36).slice(-4)}` // v3 + last 4 chars of timestamp
   : branchName.replace(/[^a-zA-Z0-9]/g, '').slice(0, 8);
 new CfnSamplingRule(dataStack, 'BasicSamplingRule', {
   samplingRule: {

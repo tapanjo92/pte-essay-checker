@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { signIn, signUp, confirmSignUp, getCurrentUser } from 'aws-amplify/auth';
+import { Hub } from 'aws-amplify/utils';
 import { Button } from '@/components/ui/button';
 import { Amplify } from 'aws-amplify';
 import amplifyConfig from '@/amplify_outputs.json';
@@ -62,6 +63,21 @@ export function AuthForm() {
       }
     };
     checkAuth();
+    
+    // Also listen for auth events
+    const unsubscribe = Hub.listen('auth', ({ payload }) => {
+      if (payload.event === 'signedIn') {
+        console.log('Auth form: Received signedIn event, redirecting to dashboard');
+        // Force redirect with replace to ensure navigation
+        router.replace('/dashboard');
+        // Fallback with window.location if router doesn't work
+        setTimeout(() => {
+          window.location.href = '/dashboard';
+        }, 100);
+      }
+    });
+    
+    return () => unsubscribe();
   }, [router]);
   
   useEffect(() => {
@@ -84,10 +100,13 @@ export function AuthForm() {
       const { isSignedIn } = await signIn({ username: email, password });
       console.log('Sign in successful:', isSignedIn);
       if (isSignedIn) {
-        // Small delay to allow auth provider to update
+        // Force immediate redirect
+        console.log('Forcing redirect to dashboard...');
+        router.replace('/dashboard');
+        // Double-ensure with window.location
         setTimeout(() => {
-          router.push('/dashboard');
-        }, 500);
+          window.location.href = '/dashboard';
+        }, 100);
       }
     } catch (err: any) {
       console.error('Sign in error:', err);
@@ -169,10 +188,13 @@ export function AuthForm() {
 
       if (isSignUpComplete) {
         await signIn({ username: email, password });
-        // Small delay to allow auth provider to update
+        // Force immediate redirect
+        console.log('Sign up complete, forcing redirect to dashboard...');
+        router.replace('/dashboard');
+        // Double-ensure with window.location
         setTimeout(() => {
-          router.push('/dashboard');
-        }, 500);
+          window.location.href = '/dashboard';
+        }, 100);
       }
     } catch (err: any) {
       const errorMessage = err.message || 'An error occurred during confirmation';

@@ -1,6 +1,7 @@
 'use client';
 
 import { Amplify } from 'aws-amplify';
+import { Authenticator } from '@aws-amplify/ui-react';
 import '@aws-amplify/ui-react/styles.css';
 import { useEffect, useState } from 'react';
 import amplifyConfig from '@/amplify_outputs.json';
@@ -20,9 +21,11 @@ export function Providers({ children }: { children: React.ReactNode }) {
 
   return (
     <ErrorBoundary>
-      <AuthProvider>
-        {children}
-      </AuthProvider>
+      <Authenticator.Provider>
+        <AuthProvider>
+          {children}
+        </AuthProvider>
+      </Authenticator.Provider>
     </ErrorBoundary>
   );
 }

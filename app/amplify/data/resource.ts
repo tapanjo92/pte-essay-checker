@@ -37,6 +37,7 @@ const schema = a.schema({
     content: a.string().required(),
     wordCount: a.integer().required(),
     status: a.enum(['PENDING', 'QUEUED', 'PROCESSING', 'COMPLETED', 'FAILED']),
+    processingProgress: a.integer().default(0), // 0-100 for real-time updates
     resultId: a.string(),
     result: a.hasOne('Result', 'essayId'),
     // Analytics fields
@@ -95,7 +96,7 @@ const schema = a.schema({
     allow.groups(['Admin']).to(['create', 'update', 'delete'])
   ]),
 
-  // Gold Standard Essays for RAG implementation
+  // Gold Standard Essays for RAG implementation with native vector search
   GoldStandardEssay: a.model({
     id: a.id(),
     topic: a.string().required(),
@@ -107,7 +108,7 @@ const schema = a.schema({
     scoreBreakdown: a.json().required(), // {task: 80, coherence: 75, vocabulary: 70, grammar: 85}
     strengths: a.json(), // ["Clear thesis", "Good examples", "Varied vocabulary"]
     weaknesses: a.json(), // ["Minor grammar errors", "Repetitive phrases"]
-    embedding: a.json(), // Vector embedding for similarity search (future)
+    embedding: a.float().array(), // Native vector field for OpenSearch - 512 dimensions
     scoreRange: a.string(), // "65-74", "75-84", "85-90"
     createdAt: a.datetime(),
     updatedAt: a.datetime(),
