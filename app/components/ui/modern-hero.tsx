@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { ModernButton } from "./modern-button";
+import { Button } from "./button";
 import { GradientText } from "./modern-layout";
 import { ArrowRight, Sparkles, Zap, Brain } from "lucide-react";
 
@@ -81,23 +81,23 @@ export function ModernHero({
             className="flex flex-wrap items-center justify-center gap-4"
           >
             {primaryAction && (
-              <ModernButton
+              <Button
                 variant="glow"
                 size="lg"
                 onClick={primaryAction.onClick}
                 icon={<ArrowRight className="w-5 h-5" />}
               >
                 {primaryAction.label}
-              </ModernButton>
+              </Button>
             )}
             {secondaryAction && (
-              <ModernButton
+              <Button
                 variant="secondary"
                 size="lg"
                 onClick={secondaryAction.onClick}
               >
                 {secondaryAction.label}
-              </ModernButton>
+              </Button>
             )}
           </motion.div>
         )}

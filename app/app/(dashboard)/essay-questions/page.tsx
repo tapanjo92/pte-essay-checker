@@ -163,7 +163,7 @@ export default function EssayQuestionsPage() {
         </GlassCard>
 
         {/* Topics */}
-        <GlassCard variant="gradient">
+        <GlassCard variant="gradient-border">
           <GlassCardHeader>
             <GlassCardTitle className="text-xl">Available Essay Topics</GlassCardTitle>
             <GlassCardDescription className="text-gray-300">

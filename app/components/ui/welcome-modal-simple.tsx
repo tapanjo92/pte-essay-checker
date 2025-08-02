@@ -1,7 +1,7 @@
 "use client";
 
 import { X, Sparkles, Clock, Target, Brain, ArrowRight, CheckCircle, Zap } from "lucide-react";
-import { ModernButton } from "./modern-button";
+import { Button } from "./button";
 import { useEffect } from "react";
 
 interface WelcomeModalProps {
@@ -127,14 +127,14 @@ export function WelcomeModal({ isOpen, onClose, userName, essaysRemaining = 5 }:
 
             {/* CTA */}
             <div className="flex justify-center">
-              <ModernButton
+              <Button
                 variant="glow"
                 size="lg"
                 onClick={onClose}
                 icon={<ArrowRight className="w-5 h-5" />}
               >
                 Start Writing My First Essay
-              </ModernButton>
+              </Button>
             </div>
           </div>
         </div>
