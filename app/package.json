@@ -16,6 +16,7 @@
     "@aws-amplify/backend-cli": "^1.8.0",
     "@aws-amplify/data-schema-types": "^1.2.0",
     "@aws-amplify/ui-react": "^6.11.2",
+    "@aws-sdk/client-cloudwatch": "^3.859.0",
     "@aws-sdk/client-cognito-identity-provider": "^3.856.0",
     "@aws-sdk/client-ses": "^3.848.0",
     "@radix-ui/react-dialog": "^1.1.14",
@@ -40,7 +41,8 @@
     "sonner": "^2.0.6",
     "tailwind-merge": "^3.3.1",
     "tailwindcss-animate": "^1.0.7",
-    "xstate": "^4.38.3"
+    "xstate": "^4.38.3",
+    "zod": "^4.0.14"
   },
   "devDependencies": {
     "@types/aws-lambda": "^8.10.152",

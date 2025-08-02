@@ -24,10 +24,12 @@ export enum EssayStatus {
 export interface HighlightedError {
   text: string;
   type: 'grammar' | 'vocabulary' | 'coherence' | 'spelling';
-  suggestion: string;
-  explanation: string;
+  suggestion?: string;
+  correction?: string; // Some backend responses use 'correction' instead of 'suggestion'
+  explanation?: string;
   startIndex: number;
   endIndex: number;
+  severity?: 'high' | 'medium' | 'low';
 }
 
 // Detailed feedback structure

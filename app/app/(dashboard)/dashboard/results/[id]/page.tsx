@@ -98,9 +98,24 @@ export default function ResultsPage() {
           suggestions: typeof resultResponse.data.suggestions === 'string'
             ? JSON.parse(resultResponse.data.suggestions)
             : resultResponse.data.suggestions,
-          highlightedErrors: typeof resultResponse.data.highlightedErrors === 'string'
-            ? JSON.parse(resultResponse.data.highlightedErrors)
-            : resultResponse.data.highlightedErrors
+          highlightedErrors: (() => {
+            const errors = typeof resultResponse.data.highlightedErrors === 'string'
+              ? JSON.parse(resultResponse.data.highlightedErrors)
+              : resultResponse.data.highlightedErrors;
+            
+            // Normalize errors to ensure consistent structure
+            return errors?.map((error: any) => ({
+              ...error,
+              // Ensure we have suggestion field (some backend responses use 'correction')
+              suggestion: error.suggestion || error.correction || 'No suggestion available',
+              // Ensure we have required fields
+              text: error.text || '',
+              type: error.type || 'grammar',
+              startIndex: error.startIndex || 0,
+              endIndex: error.endIndex || error.text?.length || 0,
+              explanation: error.explanation || ''
+            })) || [];
+          })()
         };
       }
     }

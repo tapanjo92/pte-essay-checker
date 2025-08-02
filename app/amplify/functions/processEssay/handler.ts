@@ -20,9 +20,16 @@ import {
 } from './realistic-pte-prompt';
 import { createRealisticRAGPrompt } from './realistic-rag-prompt';
 import { validateAndAdjustScore, scoreValidator } from './score-validator';
+import { EssayProcessingError, AIServiceError, ValidationError, handleProcessingError } from './errors';
+import { logger } from './logger';
+import { validateEssayInput, validateAIResponse } from './validators';
+import { bedrockCircuitBreaker } from './circuit-breaker';
+import { metrics } from './monitoring';
 
 // Warm connections on cold start
-warmConnections().catch(console.error);
+warmConnections().catch(error => {
+  logger.error('Failed to warm connections', error, { operation: 'warmup' });
+});
 
 // PTE scoring criteria - Official 7 criteria mapped to 14 points
 const PTE_CRITERIA = {
@@ -137,16 +144,24 @@ interface ScoringResult {
   errorMessage?: string;
 }
 
-// Structured logging helper
+// Structured logging helper (now uses centralized logger)
 function structuredLog(level: string, message: string, metadata?: any) {
-  const log = {
-    timestamp: new Date().toISOString(),
-    level,
-    message,
-    ...metadata,
-    traceId: process.env._X_AMZN_TRACE_ID
-  };
-  console.log(JSON.stringify(log));
+  switch (level.toLowerCase()) {
+    case 'info':
+      logger.info(message, metadata);
+      break;
+    case 'warn':
+      logger.warn(message, metadata);
+      break;
+    case 'error':
+      logger.error(message, new Error(message), metadata);
+      break;
+    case 'debug':
+      logger.debug(message, metadata);
+      break;
+    default:
+      logger.info(message, metadata);
+  }
 }
 
 // Sanitize content to prevent prompt injection attacks
@@ -171,14 +186,14 @@ function sanitizeContent(content: string): string {
 // 🔧 NEW: Attempt to recover from truncated JSON responses
 function attemptPartialJSONRecovery(truncatedJson: string): any | null {
   try {
-    console.log('Attempting partial JSON recovery...');
+    logger.debug('Attempting partial JSON recovery');
     
     // Try to find and extract the topicRelevance section at minimum
     const topicRelevanceMatch = truncatedJson.match(/"topicRelevance"\s*:\s*\{[^}]*"relevanceScore"\s*:\s*(\d+)[^}]*\}/);
     
     if (topicRelevanceMatch) {
       const relevanceScore = parseInt(topicRelevanceMatch[1]) || 50;
-      console.log(`Extracted relevance score: ${relevanceScore} from truncated JSON`);
+      logger.debug('Extracted relevance score from truncated JSON', { relevanceScore });
       
       // Try to extract any partial PTE scores
       const contentMatch = truncatedJson.match(/"content"\s*:\s*(\d+)/);
@@ -195,7 +210,7 @@ function attemptPartialJSONRecovery(truncatedJson: string): any | null {
         linguisticRange: 1
       };
       
-      console.log('Created partial recovery with scores:', partialScores);
+      logger.debug('Created partial recovery with scores', { partialScores });
       
       return {
         topicRelevance: {
@@ -222,14 +237,14 @@ function attemptPartialJSONRecovery(truncatedJson: string): any | null {
     
     return null;
   } catch (error) {
-    console.error('Partial JSON recovery failed:', error);
+    logger.error('Partial JSON recovery failed', error as Error);
     return null;
   }
 }
 
 // Create strict fallback response - no scores when analysis fails
 function createFallbackResponse(reason: string): any {
-  console.log(`Creating fallback response due to: ${reason}`);
+  logger.info('Creating fallback response', { reason });
   
   // Don't provide inflated scores when analysis fails
   // This prevents grade inflation from technical issues
@@ -272,36 +287,71 @@ function createFallbackResponse(reason: string): any {
 }
 
 // 🔧 NEW: Bedrock AI with retry logic for incomplete responses
-async function callBedrockAIWithRetry(prompt: string, essayId: string, maxRetries: number = 2): Promise<any> {
+async function callBedrockAIWithRetry(
+  prompt: string, 
+  essayId: string, 
+  correlationId: string,
+  maxRetries: number = 2
+): Promise<any> {
   let lastError: Error | null = null;
+  const operationTimer = logger.startTimer('bedrock_ai_call');
   
   for (let attempt = 1; attempt <= maxRetries + 1; attempt++) {
     try {
-      console.log(`Bedrock AI attempt ${attempt}/${maxRetries + 1} for essay ${essayId}`);
+      logger.info('Calling Bedrock AI', {
+        essayId,
+        correlationId,
+        attempt,
+        maxRetries: maxRetries + 1
+      });
       
-      const response = await callBedrockAI(prompt);
+      // Use circuit breaker
+      const response = await bedrockCircuitBreaker.execute(async () => {
+        const startTime = Date.now();
+        const result = await callBedrockAI(prompt);
+        
+        // Record latency
+        await metrics.recordAILatency(
+          Date.now() - startTime,
+          process.env.BEDROCK_MODEL_ID || 'unknown'
+        );
+        
+        return result;
+      });
       
-      // Validate response completeness
-      if (!response || typeof response !== 'object') {
-        throw new Error('Invalid response format from Bedrock AI');
+      // Validate response
+      try {
+        const validatedResponse = validateAIResponse(response);
+        operationTimer();
+        return validatedResponse;
+      } catch (validationError) {
+        // Log validation error but try to recover if possible
+        logger.warn('AI response validation failed', {
+          essayId,
+          correlationId,
+          error: (validationError as Error).message,
+          attempt
+        });
+        
+        // If we have partial data, use it
+        if (response?.topicRelevance && response?.pteScores) {
+          logger.info('Using partial AI response despite validation errors', {
+            essayId,
+            correlationId
+          });
+          return response;
+        }
+        
+        throw validationError;
       }
-      
-      // Check if we have essential fields (topicRelevance or pteScores)
-      if (!response.topicRelevance && !response.pteScores) {
-        throw new Error('Incomplete response - missing essential fields');
-      }
-      
-      // If we have topicRelevance but missing feedback, that's acceptable for partial recovery
-      if (response.topicRelevance && !response.feedback) {
-        console.warn(`Attempt ${attempt}: Response missing feedback but has topicRelevance - acceptable`);
-      }
-      
-      console.log(`Attempt ${attempt}: Bedrock AI response validated successfully`);
-      return response;
       
     } catch (error) {
       lastError = error as Error;
-      console.error(`Attempt ${attempt} failed:`, error);
+      logger.error('Bedrock AI attempt failed', lastError, {
+        essayId,
+        correlationId,
+        attempt
+      });
       
       // If this is the last attempt, don't retry
       if (attempt === maxRetries + 1) {
@@ -310,13 +360,17 @@ async function callBedrockAIWithRetry(prompt: string, essayId: string, maxRetrie
       
       // Wait before retry (exponential backoff)
       const waitTime = Math.min(1000 * Math.pow(2, attempt - 1), 5000);
-      console.log(`Waiting ${waitTime}ms before retry...`);
+      logger.debug('Waiting before retry', { waitTimeMs: waitTime, attempt });
       await new Promise(resolve => setTimeout(resolve, waitTime));
     }
   }
   
   // All retries failed - return fallback response instead of throwing
-  console.error(`All ${maxRetries + 1} attempts failed. Last error:`, lastError?.message);
+  logger.error('All Bedrock attempts failed', lastError || new Error('Unknown error'), {
+    essayId,
+    correlationId,
+    attempts: maxRetries + 1
+  });
   
   return createFallbackResponse(`Bedrock AI failed after ${maxRetries + 1} attempts: ${lastError?.message || 'Unknown error'}`);
 }
@@ -341,7 +395,9 @@ function calculateConfidence(similarEssaysFound: number, topicRelevance: number,
 
 export const handler: SQSHandler = async (event: SQSEvent) => {
   const segment = AWSXRay.getSegment();
-  structuredLog('INFO', 'SQS Event received', { 
+  const batchTimer = logger.startTimer('sqs_batch_processing');
+  
+  logger.info('SQS batch received', { 
     recordCount: event.Records.length,
     eventSourceARNs: event.Records.map(r => r.eventSourceARN) 
   });
@@ -350,6 +406,7 @@ export const handler: SQSHandler = async (event: SQSEvent) => {
   for (const record of event.Records) {
     const subsegment = segment?.addNewSubsegment('ProcessEssay');
     const processingStartTime = Date.now();
+    const correlationId = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
     let queueWaitTime = 0;
     
     try {
@@ -360,60 +417,64 @@ export const handler: SQSHandler = async (event: SQSEvent) => {
       }
       
       // Parse the message body
-      const args = JSON.parse(record.body) as EssayProcessingEvent;
+      const messageBody = JSON.parse(record.body) as EssayProcessingEvent;
+      
+      // Validate input using Zod
+      const validatedInput = validateEssayInput(messageBody);
       
       // Sanitize content to prevent prompt injection
-      const originalContent = args.content;
-      args.content = sanitizeContent(args.content);
+      const originalContent = validatedInput.content;
+      validatedInput.content = sanitizeContent(validatedInput.content);
       
       // Also sanitize topic (in case it comes from user input)
-      const originalTopic = args.topic;
-      args.topic = sanitizeContent(args.topic);
+      const originalTopic = validatedInput.topic;
+      validatedInput.topic = sanitizeContent(validatedInput.topic);
       
       // Log if content was modified
-      if (originalContent !== args.content || originalTopic !== args.topic) {
-        structuredLog('WARN', 'Content sanitized - potential prompt injection detected', {
-          essayId: args.essayId,
-          contentModified: originalContent !== args.content,
-          topicModified: originalTopic !== args.topic,
+      if (originalContent !== validatedInput.content || originalTopic !== validatedInput.topic) {
+        logger.warn('Content sanitized - potential prompt injection detected', {
+          essayId: validatedInput.essayId,
+          correlationId,
+          contentModified: originalContent !== validatedInput.content,
+          topicModified: originalTopic !== validatedInput.topic,
           originalLength: originalContent.length,
-          sanitizedLength: args.content.length,
-          removed: originalContent.length - args.content.length
+          sanitizedLength: validatedInput.content.length,
+          removed: originalContent.length - validatedInput.content.length
         });
       }
       
-      structuredLog('INFO', 'Processing essay', { 
-        essayId: args.essayId, 
-        wordCount: args.wordCount, 
-        userId: args.userId 
+      logger.info('Processing essay', { 
+        essayId: validatedInput.essayId,
+        correlationId,
+        wordCount: validatedInput.wordCount, 
+        userId: validatedInput.userId 
       });
       
       // Validate word count (PTE requirement: 200-300 words)
-      if (args.wordCount < 200 || args.wordCount > 300) {
-        structuredLog('WARN', 'Essay word count outside PTE requirements', {
-          essayId: args.essayId,
-          wordCount: args.wordCount,
+      if (validatedInput.wordCount < 200 || validatedInput.wordCount > 300) {
+        logger.warn('Essay word count outside PTE requirements', {
+          essayId: validatedInput.essayId,
+          correlationId,
+          wordCount: validatedInput.wordCount,
           required: '200-300'
         });
       }
       
       // 1. Update essay status to PROCESSING
-      console.log('Updating essay status to PROCESSING...');
-      await updateEssayStatus(args.essayId, 'PROCESSING');
-      console.log('Essay status updated');
+      await updateEssayStatus(validatedInput.essayId, 'PROCESSING');
       
       // 2. Prepare the prompt for AI analysis with RAG enhancement
-      const { prompt, similarEssaysCount, vectorSearchUsed } = await createRAGEnhancedPrompt(args.topic, args.content, args.wordCount);
+      const { prompt, similarEssaysCount, vectorSearchUsed } = await createRAGEnhancedPrompt(
+        validatedInput.topic, 
+        validatedInput.content, 
+        validatedInput.wordCount
+      );
       
       // 3. Call Bedrock AI for analysis with retry logic
-      console.log('Calling Bedrock AI...');
-      const aiResponse = await callBedrockAIWithRetry(prompt, args.essayId);
-      console.log('AI Response received:', JSON.stringify(aiResponse, null, 2));
+      const aiResponse = await callBedrockAIWithRetry(prompt, validatedInput.essayId, correlationId);
       
       // 4. Parse AI response and calculate scores
-      console.log('Parsing AI response...');
-      let scoringResult = parseAIResponse(aiResponse, args.wordCount, args.content);
-      console.log('Initial scoring result:', scoringResult.overallScore);
+      let scoringResult = parseAIResponse(aiResponse, validatedInput.wordCount, validatedInput.content);
       
       // 4a. Validate and adjust score if needed
       const { finalScore, validationWarnings } = validateAndAdjustScore(
@@ -422,7 +483,7 @@ export const handler: SQSHandler = async (event: SQSEvent) => {
       );
       
       if (validationWarnings.length > 0) {
-        console.log('Score validation warnings:', validationWarnings);
+        logger.info('Score validation warnings', { validationWarnings });
         structuredLog('WARN', 'Score adjusted by validator', {
           originalScore: scoringResult.overallScore,
           adjustedScore: finalScore,
@@ -443,41 +504,57 @@ export const handler: SQSHandler = async (event: SQSEvent) => {
       
       // Log distribution report periodically
       if (Math.random() < 0.1) { // 10% of requests
-        console.log('\n' + scoreValidator.getDistributionReport());
+        logger.debug('Score distribution report', { report: scoreValidator.getDistributionReport() });
       }
       
       // 5. Save results to DynamoDB with performance metrics
-      console.log('Saving results to DynamoDB...');
       const processingDuration = Date.now() - processingStartTime;
       const resultId = await saveResults(
-        args.essayId, 
-        args.userId || 'anonymous', 
+        validatedInput.essayId, 
+        validatedInput.userId || 'anonymous', 
         scoringResult,
         {
           processingDuration,
           queueWaitTime,
           vectorSearchUsed,
           similarEssaysFound: similarEssaysCount,
-          confidenceScore: calculateConfidence(similarEssaysCount, aiResponse.topicRelevance?.relevanceScore || 100, args.wordCount >= 200 && args.wordCount <= 300)
+          confidenceScore: calculateConfidence(
+            similarEssaysCount, 
+            aiResponse.topicRelevance?.relevanceScore || 100, 
+            validatedInput.wordCount >= 200 && validatedInput.wordCount <= 300
+          )
         }
       );
-      console.log('Results saved with ID:', resultId);
       
       // 5a. If essay scored highly, consider adding to gold standard
       if (scoringResult.overallScore >= 85) {
-        console.log('High-scoring essay detected, considering for gold standard...');
-        await considerForGoldStandard(args.topic, args.content, args.wordCount, scoringResult);
+        await considerForGoldStandard(
+          validatedInput.topic, 
+          validatedInput.content, 
+          validatedInput.wordCount, 
+          scoringResult
+        );
       }
       
       // 6. Update essay status to COMPLETED
-      await updateEssayStatus(args.essayId, 'COMPLETED', resultId);
+      await updateEssayStatus(validatedInput.essayId, 'COMPLETED', resultId);
       
-      console.log(`Successfully processed essay ${args.essayId}`);
-      subsegment?.addAnnotation('essayId', args.essayId);
-      subsegment?.addAnnotation('userId', args.userId || 'anonymous');
+      // Record metrics
+      await metrics.recordProcessingTime(processingDuration, 'success');
+      await metrics.recordAIScore(scoringResult.overallScore);
+      
+      logger.info('Successfully processed essay', { 
+        essayId: validatedInput.essayId,
+        correlationId,
+        processingDuration,
+        overallScore: scoringResult.overallScore
+      });
+      
+      subsegment?.addAnnotation('essayId', validatedInput.essayId);
+      subsegment?.addAnnotation('userId', validatedInput.userId || 'anonymous');
+      subsegment?.addAnnotation('score', scoringResult.overallScore);
       subsegment?.close();
     } catch (error) {
-      console.error('Error processing essay from SQS:', error);
       subsegment?.addError(error as Error);
       subsegment?.close();
       
@@ -485,7 +562,6 @@ export const handler: SQSHandler = async (event: SQSEvent) => {
       try {
         const message = JSON.parse(record.body);
         if (message.essayId) {
-          console.log(`Attempting to save fallback results for essay ${message.essayId} due to processing error`);
           
           // Create emergency fallback scoring
           const emergencyFallback = createFallbackResponse(`Processing error: ${(error as Error).message || 'Unknown error'}`);
@@ -508,13 +584,11 @@ export const handler: SQSHandler = async (event: SQSEvent) => {
           
           // Mark as completed with low-confidence results instead of failed
           await updateEssayStatus(message.essayId, 'COMPLETED', resultId);
-          console.log(`Emergency fallback results saved for essay ${message.essayId} with result ID ${resultId}`);
           
           // Don't re-throw - we've handled the error gracefully
           return;
         }
       } catch (fallbackError) {
-        console.error('Emergency fallback also failed:', fallbackError);
         
         // Only now mark as FAILED if we truly cannot handle it
         try {
@@ -523,7 +597,6 @@ export const handler: SQSHandler = async (event: SQSEvent) => {
             await updateEssayStatus(message.essayId, 'FAILED');
           }
         } catch (parseError) {
-          console.error('Could not parse message to update status:', parseError);
         }
         
         // Re-throw to make the message visible again for retry
@@ -531,6 +604,8 @@ export const handler: SQSHandler = async (event: SQSEvent) => {
       }
     }
   }
+  
+  batchTimer();
 };
 
 // RAG: Find similar essays from gold standard using vector search
@@ -539,7 +614,7 @@ async function findSimilarEssays(topic: string, content: string, wordCount: numb
   const subsegment = segment?.addNewSubsegment('RAG.FindSimilarEssays');
   
   try {
-    structuredLog('INFO', 'Finding similar essays for RAG', { topic, wordCount });
+    logger.info('Finding similar essays for RAG', { topic, wordCount });
     
     // First, try vector-based semantic search
     try {
@@ -566,7 +641,7 @@ async function findSimilarEssays(topic: string, content: string, wordCount: numb
         );
         
         if (vectorResults.length > 0) {
-          structuredLog('INFO', 'Found similar essays via vector search', { 
+          logger.info('Found similar essays via vector search', { 
             count: vectorResults.length,
             similarities: vectorResults.map(r => r.similarity)
           });
@@ -584,7 +659,7 @@ async function findSimilarEssays(topic: string, content: string, wordCount: numb
         }
       }
     } catch (vectorError) {
-      structuredLog('WARN', 'Vector search failed, falling back to topic match', { error: vectorError });
+      logger.warn('Vector search failed, falling back to topic match', { error: (vectorError as Error).message });
       subsegment?.addAnnotation('vectorSearchFailed', true);
     }
     
@@ -606,7 +681,7 @@ async function findSimilarEssays(topic: string, content: string, wordCount: numb
       const response = await docClient.send(new QueryCommand(params));
       
       if (response.Items && response.Items.length > 0) {
-        structuredLog('INFO', 'Found similar essays via topic match', { count: response.Items.length });
+        logger.info('Found similar essays via topic match', { count: response.Items.length });
         subsegment?.addAnnotation('topicMatchFound', response.Items.length);
         
         // Sort by closest word count
@@ -621,13 +696,13 @@ async function findSimilarEssays(topic: string, content: string, wordCount: numb
         };
       }
     } catch (queryError) {
-      structuredLog('WARN', 'Gold standard query failed', { error: queryError });
+      logger.warn('Gold standard query failed', { error: (queryError as Error).message });
     }
     
     return { essays: [], count: 0, vectorSearchUsed: false };
   } catch (error) {
     subsegment?.addError(error as Error);
-    structuredLog('ERROR', 'RAG enhancement failed', { error });
+    logger.error('RAG enhancement failed', error as Error);
     return { essays: [], count: 0, vectorSearchUsed: false };
   } finally {
     subsegment?.close();
@@ -639,7 +714,7 @@ async function createRAGEnhancedPrompt(topic: string, content: string, wordCount
   const { essays: similarEssays, count, vectorSearchUsed } = await findSimilarEssays(topic, content, wordCount);
   
   if (similarEssays.length === 0) {
-    structuredLog('INFO', 'No similar essays found, using standard prompt');
+    logger.info('No similar essays found, using standard prompt');
     return {
       prompt: createRealisticPrompt(topic, content, wordCount),
       similarEssaysCount: 0,
@@ -819,6 +894,11 @@ async function callBedrockAI(prompt: string): Promise<any> {
     const modelId = process.env.BEDROCK_MODEL_ID || 'anthropic.claude-3-sonnet-20240229-v1:0';
     subsegment?.addAnnotation('modelId', modelId);
     
+    logger.debug('Preparing Bedrock request', { 
+      modelId, 
+      promptLength: prompt.length 
+    });
+    
     let requestBody;
   
   // Different input formats for different models
@@ -891,11 +971,23 @@ async function callBedrockAI(prompt: string): Promise<any> {
       if (error.name === 'ThrottlingException' && retries < maxRetries - 1) {
         retries++;
         const delay = Math.pow(2, retries) * 1000; // Exponential backoff: 2s, 4s, 8s, 16s
-        console.log(`Throttled by Bedrock, retrying in ${delay/1000}s... (attempt ${retries}/${maxRetries})`);
+        logger.warn('Bedrock throttled, retrying', {
+          attempt: retries,
+          maxRetries,
+          delayMs: delay,
+          errorName: error.name
+        });
         retrySubsegment?.addAnnotation('retryDelay', delay);
         await new Promise(resolve => setTimeout(resolve, delay));
       } else {
-        throw error; // Re-throw if not throttling or max retries reached
+        // Convert to proper error type
+        if (error.name === 'ThrottlingException') {
+          throw new AIServiceError('AI service is currently busy. Please try again in a moment.');
+        } else if (error.name === 'ValidationException') {
+          throw new ValidationError('Invalid request to AI service', { details: error.message });
+        } else {
+          throw new AIServiceError(`AI service error: ${error.message || 'Unknown error'}`);
+        }
       }
     } finally {
       retrySubsegment?.close();
@@ -907,7 +999,7 @@ async function callBedrockAI(prompt: string): Promise<any> {
   }
   
   const responseBody = JSON.parse(new TextDecoder().decode(response.body));
-  console.log('Bedrock response structure:', JSON.stringify(Object.keys(responseBody)));
+  logger.debug('Bedrock response structure', { keys: Object.keys(responseBody) });
   
   // Different output formats for different models
   let responseText = '';
@@ -926,12 +1018,16 @@ async function callBedrockAI(prompt: string): Promise<any> {
   }
   
   if (!responseText) {
-    console.error('Empty response from Bedrock. Full response:', JSON.stringify(responseBody).substring(0, 500));
+    logger.error('Empty response from Bedrock', new Error('Empty response'), {
+      responsePreview: JSON.stringify(responseBody).substring(0, 500)
+    });
     throw new Error('Bedrock returned empty response');
   }
   
-  console.log('Raw AI response length:', responseText.length);
-  console.log('Raw AI response preview:', responseText.substring(0, 200));
+  logger.debug('Raw AI response received', {
+    length: responseText.length,
+    preview: responseText.substring(0, 200)
+  });
   
   // Try multiple patterns to extract JSON
   let cleanJson = responseText.trim();
@@ -957,33 +1053,34 @@ async function callBedrockAI(prompt: string): Promise<any> {
   }
   
   try {
-    console.log('Attempting to parse cleaned JSON, length:', cleanJson.length);
+    logger.debug('Attempting to parse cleaned JSON', { length: cleanJson.length });
     const parsed = JSON.parse(cleanJson);
-    console.log('Successfully parsed AI response');
+    logger.debug('Successfully parsed AI response');
     
     // Validate that we have the essential fields
     if (!parsed.topicRelevance && !parsed.pteScores) {
-      console.warn('Parsed JSON missing essential fields, treating as incomplete');
+      logger.warn('Parsed JSON missing essential fields, treating as incomplete');
       throw new Error('Incomplete JSON structure - missing essential fields');
     }
     
     subsegment?.close();
     return parsed;
   } catch (parseError) {
-    console.error('Failed to parse JSON:', cleanJson.substring(0, 500));
-    console.error('Parse error:', parseError);
+    logger.error('Failed to parse JSON', parseError as Error, {
+      jsonPreview: cleanJson.substring(0, 500)
+    });
     
     // 🔧 NEW: Try to recover from truncated JSON by attempting partial parsing
     const partialResult = attemptPartialJSONRecovery(cleanJson);
     if (partialResult) {
-      console.log('Successfully recovered from truncated JSON');
+      logger.info('Successfully recovered from truncated JSON');
       subsegment?.close();
       return partialResult;
     }
     
     // If the response looks like a markdown table, it might be an error response
     if (cleanJson.includes('|') && cleanJson.includes('---')) {
-      console.error('AI returned a markdown table instead of JSON. This often indicates an error or confusion in the prompt.');
+      logger.error('AI returned a markdown table instead of JSON', new Error('Invalid response format'));
       subsegment?.addError(new Error('AI returned markdown instead of JSON'));
       subsegment?.close();
       
@@ -992,7 +1089,7 @@ async function callBedrockAI(prompt: string): Promise<any> {
     }
     
     // 🔧 NEW: For JSON parsing failures, return a structured fallback instead of throwing
-    console.error('JSON parsing failed completely, returning fallback response');
+    logger.error('JSON parsing failed completely, returning fallback response', parseError as Error);
     subsegment?.addError(parseError as Error);
     subsegment?.close();
     
@@ -1005,28 +1102,90 @@ async function callBedrockAI(prompt: string): Promise<any> {
   }
 }
 
-// Realistic score scaling function - matches actual PTE distributions
-function getPhoenixScaledScore(rawScore: number, maxScore: number): number {
-  return getRealisticScaledScore(rawScore, maxScore);
-}
+// Note: getRealisticScaledScore is imported from './realistic-pte-prompt'
 
 // Industry-standard error enhancement
 function enhanceHighlightedErrors(aiErrors: any[], content: string, wordCount: number): any[] {
-  const combinedErrors = [...(aiErrors || [])];
+  const validatedErrors: any[] = [];
+  
+  // First, validate and fix AI errors with incorrect indices
+  (aiErrors || []).forEach((error, index) => {
+    if (!error.text) {
+      logger.warn('Error missing text field', { errorIndex: index });
+      return;
+    }
+    
+    // Find the actual position of the error text in the content
+    const actualIndex = content.indexOf(error.text);
+    
+    if (actualIndex === -1) {
+      // Text not found - this might be a truncated text
+      logger.warn('Error text not found in content', { 
+        errorText: error.text,
+        errorIndex: index 
+      });
+      
+      // Try to find a partial match (first 20 chars)
+      const partialText = error.text.substring(0, 20);
+      const partialIndex = content.indexOf(partialText);
+      
+      if (partialIndex !== -1) {
+        // Found partial match - try to find the complete phrase
+        const words = error.text.split(' ');
+        let searchText = words[0];
+        let foundIndex = content.indexOf(searchText, partialIndex);
+        
+        if (foundIndex !== -1) {
+          // Build up the phrase word by word
+          for (let i = 1; i < words.length; i++) {
+            const nextWord = words[i];
+            const nextIndex = content.indexOf(nextWord, foundIndex + searchText.length);
+            
+            if (nextIndex === -1 || nextIndex > foundIndex + searchText.length + 10) {
+              // Word not found or too far away - use what we have
+              break;
+            }
+            searchText = content.substring(foundIndex, nextIndex + nextWord.length);
+          }
+          
+          validatedErrors.push({
+            ...error,
+            text: searchText,
+            startIndex: foundIndex,
+            endIndex: foundIndex + searchText.length
+          });
+        }
+      }
+    } else {
+      // Text found - use actual indices
+      validatedErrors.push({
+        ...error,
+        startIndex: actualIndex,
+        endIndex: actualIndex + error.text.length
+      });
+    }
+  });
+  
+  const combinedErrors = [...validatedErrors];
   
   // Check if AI errors cover the full essay
-  const maxAIErrorEnd = aiErrors && aiErrors.length > 0 
-    ? Math.max(...aiErrors.map(e => parseInt(e.endIndex) || 0)) 
+  const maxAIErrorEnd = validatedErrors.length > 0 
+    ? Math.max(...validatedErrors.map(e => e.endIndex || 0)) 
     : 0;
   
   const coveragePercent = content.length > 0 ? (maxAIErrorEnd / content.length) * 100 : 0;
   
-  console.log(`AI error coverage: ${maxAIErrorEnd}/${content.length} characters (${coveragePercent.toFixed(1)}%)`);
-  console.log(`AI provided ${aiErrors?.length || 0} errors`);
+  logger.debug('AI error coverage after validation', {
+    originalCount: aiErrors?.length || 0,
+    validatedCount: validatedErrors.length,
+    covered: maxAIErrorEnd,
+    total: content.length,
+    percentage: coveragePercent.toFixed(1)
+  });
   
   // If AI errors don't cover at least 80% of the essay OR we have fewer than 5 errors, add fallback detection
   if (coveragePercent < 80 || combinedErrors.length < 5) {
-    console.log(`Insufficient coverage or too few errors. Adding fallback detection...`);
+    logger.debug('Insufficient coverage or too few errors, adding fallback detection');
     
     const fallbackErrors = detectFallbackErrors(content);
     
@@ -1046,6 +1205,19 @@ function enhanceHighlightedErrors(aiErrors: any[], content: string, wordCount: n
     });
   }
   
+  // Log sample of errors for debugging
+  if (combinedErrors.length > 0) {
+    logger.debug('Sample of final errors', {
+      firstError: {
+        text: combinedErrors[0].text,
+        startIndex: combinedErrors[0].startIndex,
+        endIndex: combinedErrors[0].endIndex,
+        type: combinedErrors[0].type
+      },
+      totalErrors: combinedErrors.length
+    });
+  }
+  
   // Sort by position
   combinedErrors.sort((a, b) => a.startIndex - b.startIndex);
   
@@ -1055,8 +1227,12 @@ function enhanceHighlightedErrors(aiErrors: any[], content: string, wordCount: n
     : 0;
   const finalCoverage = content.length > 0 ? (finalMaxEnd / content.length) * 100 : 0;
   
-  console.log(`Final error coverage: ${finalMaxEnd}/${content.length} characters (${finalCoverage.toFixed(1)}%)`);
-  console.log(`Total errors: ${combinedErrors.length}`);
+  logger.debug('Final error coverage', {
+    covered: finalMaxEnd,
+    total: content.length,
+    percentage: finalCoverage.toFixed(1)
+  });
+  logger.debug('Total errors after enhancement', { count: combinedErrors.length });
   
   return combinedErrors;
 }
@@ -1097,12 +1273,12 @@ function parseAIResponse(aiResponse: any, wordCount: number, content: string): S
     };
   }
   
-  // CRITICAL: Check for off-topic essays first (Phoenix's First Law)
+  // CRITICAL: Check for off-topic essays first
   if (aiResponse.topicRelevance) {
     const relevanceScore = aiResponse.topicRelevance.relevanceScore || 100;
     const isOnTopic = aiResponse.topicRelevance.isOnTopic !== false;
     
-    structuredLog('INFO', 'Topic Relevance Check', {
+    logger.info('Topic Relevance Check', {
       isOnTopic,
       relevanceScore,
       explanation: aiResponse.topicRelevance.explanation
@@ -1114,11 +1290,11 @@ function parseAIResponse(aiResponse: any, wordCount: number, content: string): S
       
       if (relevanceScore >= 90) {
         // 90-100% relevant: Full content score (no change)
-        structuredLog('INFO', 'Essay is fully on-topic', { relevanceScore });
+        logger.info('Essay is fully on-topic', { relevanceScore });
       } else if (relevanceScore >= 70) {
         // 70-89% relevant: 2/3 content
         aiResponse.pteScores.content = Math.min(originalContent, 2);
-        structuredLog('WARN', 'Essay is mostly on-topic, capping content at 2/3', {
+        logger.warn('Essay is mostly on-topic, capping content at 2/3', {
           relevanceScore,
           originalContentScore: originalContent,
           adjustedContentScore: aiResponse.pteScores.content
@@ -1126,7 +1302,7 @@ function parseAIResponse(aiResponse: any, wordCount: number, content: string): S
       } else if (relevanceScore >= 50) {
         // 50-69% relevant: 1/3 content
         aiResponse.pteScores.content = Math.min(originalContent, 1);
-        structuredLog('WARN', 'Essay is partially on-topic, capping content at 1/3', {
+        logger.warn('Essay is partially on-topic, capping content at 1/3', {
           relevanceScore,
           originalContentScore: originalContent,
           adjustedContentScore: aiResponse.pteScores.content
@@ -1134,7 +1310,7 @@ function parseAIResponse(aiResponse: any, wordCount: number, content: string): S
       } else {
         // <50% relevant: 0/3 content
         aiResponse.pteScores.content = 0;
-        structuredLog('WARN', 'Essay is off-topic, setting content to 0/3', {
+        logger.warn('Essay is off-topic, setting content to 0/3', {
           relevanceScore,
           originalContentScore: originalContent
         });
@@ -1146,11 +1322,11 @@ function parseAIResponse(aiResponse: any, wordCount: number, content: string): S
       }
       
       if (relevanceScore < 50) {
-        aiResponse.feedback.summary = `🚨 PHOENIX ALERT: This essay is OFF-TOPIC and does not address the given prompt. In PTE Academic, off-topic essays receive automatic failure (max 25/90) regardless of language quality. ${aiResponse.feedback.summary || ''}`;
+        aiResponse.feedback.summary = `🚨 CRITICAL: This essay is OFF-TOPIC and does not address the given prompt. In PTE Academic, off-topic essays receive automatic failure (max 25/90) regardless of language quality. ${aiResponse.feedback.summary || ''}`;
       } else if (relevanceScore < 70) {
-        aiResponse.feedback.summary = `⚠️ PHOENIX WARNING: This essay only partially addresses the topic. Key aspects of the prompt are missing. Maximum achievable score is limited to 65/90. ${aiResponse.feedback.summary || ''}`;
+        aiResponse.feedback.summary = `⚠️ WARNING: This essay only partially addresses the topic. Key aspects of the prompt are missing. Maximum achievable score is limited to 65/90. ${aiResponse.feedback.summary || ''}`;
       } else if (relevanceScore < 90) {
-        aiResponse.feedback.summary = `📝 PHOENIX NOTE: While this essay addresses the topic, some aspects could be more directly related to the prompt. ${aiResponse.feedback.summary || ''}`;
+        aiResponse.feedback.summary = `📝 NOTE: While this essay addresses the topic, some aspects could be more directly related to the prompt. ${aiResponse.feedback.summary || ''}`;
       }
     }
   }
@@ -1161,7 +1337,7 @@ function parseAIResponse(aiResponse: any, wordCount: number, content: string): S
     const originalFormScore = aiResponse.pteScores.form || 0;
     if (wordCount < 200 || wordCount > 300) {
       aiResponse.pteScores.form = Math.max(0, originalFormScore - 1);
-      structuredLog('WARN', 'Applied word count penalty to Form score', {
+      logger.warn('Applied word count penalty to Form score', {
         wordCount,
         originalFormScore,
         adjustedFormScore: aiResponse.pteScores.form,
@@ -1194,7 +1370,7 @@ function parseAIResponse(aiResponse: any, wordCount: number, content: string): S
     
     // Validation: Perfect scores are extremely rare
     if (overallScore >= 85 && rawTotal < 13) {
-      structuredLog('WARN', 'Score adjustment - perfect scores require exceptional writing', {
+      logger.warn('Score adjustment - perfect scores require exceptional writing', {
         rawTotal,
         calculatedScore: overallScore,
         adjustedScore: Math.round((rawTotal / 14) * 90)
@@ -1207,7 +1383,7 @@ function parseAIResponse(aiResponse: any, wordCount: number, content: string): S
     if (relevanceScore < 50) {
       // <50% relevant: Cap at 25/90
       overallScore = Math.min(overallScore, 25);
-      structuredLog('WARN', 'Applied off-topic score cap (25/90)', {
+      logger.warn('Applied off-topic score cap (25/90)', {
         relevanceScore,
         originalScore: Math.round((rawTotal / 14) * 90),
         cappedScore: overallScore
@@ -1215,7 +1391,7 @@ function parseAIResponse(aiResponse: any, wordCount: number, content: string): S
     } else if (relevanceScore >= 50 && relevanceScore < 70) {
       // 50-69% relevant: Cap at 65/90
       overallScore = Math.min(overallScore, 65);
-      structuredLog('WARN', 'Applied partial relevance score cap (65/90)', {
+      logger.warn('Applied partial relevance score cap (65/90)', {
         relevanceScore,
         originalScore: Math.round((rawTotal / 14) * 90),
         cappedScore: overallScore
@@ -1223,7 +1399,9 @@ function parseAIResponse(aiResponse: any, wordCount: number, content: string): S
     }
     
     // Generate realistic feedback
-    const enhancedErrors = enhanceHighlightedErrors(aiResponse.highlightedErrors || [], content, wordCount);
+    // Map detailedErrors (from AI) to highlightedErrors (expected by code)
+    const aiErrors = aiResponse.detailedErrors || aiResponse.highlightedErrors || [];
+    const enhancedErrors = enhanceHighlightedErrors(aiErrors, content, wordCount);
     const realisticFeedback = generateRealisticFeedback(
       overallScore,
       aiResponse.pteScores,
@@ -1241,20 +1419,20 @@ function parseAIResponse(aiResponse: any, wordCount: number, content: string): S
       overallScore,
       // Map roughly to old system
       // Realistic scoring: Raw scores mapped accurately
-      taskResponseScore: Math.round(getPhoenixScaledScore(aiResponse.pteScores.content, 3)),
-      coherenceScore: Math.round(getPhoenixScaledScore(aiResponse.pteScores.developmentCoherence, 2)),
-      vocabularyScore: Math.round(getPhoenixScaledScore(aiResponse.pteScores.vocabulary, 2)),
-      grammarScore: Math.round(getPhoenixScaledScore(aiResponse.pteScores.grammar, 2)),
+      taskResponseScore: Math.round(getRealisticScaledScore(aiResponse.pteScores.content, 3)),
+      coherenceScore: Math.round(getRealisticScaledScore(aiResponse.pteScores.developmentCoherence, 2)),
+      vocabularyScore: Math.round(getRealisticScaledScore(aiResponse.pteScores.vocabulary, 2)),
+      grammarScore: Math.round(getRealisticScaledScore(aiResponse.pteScores.grammar, 2)),
       pteScores: aiResponse.scaledScores || {
-        // Phoenix realistic scaling with stricter interpretation
+        // Realistic scaling with stricter interpretation
         // 0/max = 0-30, 1/max = 35-55, 2/max = 60-75, max/max = 80-90
-        content: Math.round(getPhoenixScaledScore(aiResponse.pteScores.content, 3)),
-        form: Math.round(getPhoenixScaledScore(aiResponse.pteScores.form, 2)),
-        grammar: Math.round(getPhoenixScaledScore(aiResponse.pteScores.grammar, 2)),
-        vocabulary: Math.round(getPhoenixScaledScore(aiResponse.pteScores.vocabulary, 2)),
-        spelling: Math.round(getPhoenixScaledScore(aiResponse.pteScores.spelling, 1)),
-        developmentCoherence: Math.round(getPhoenixScaledScore(aiResponse.pteScores.developmentCoherence, 2)),
-        linguisticRange: Math.round(getPhoenixScaledScore(aiResponse.pteScores.linguisticRange, 2))
+        content: Math.round(getRealisticScaledScore(aiResponse.pteScores.content, 3)),
+        form: Math.round(getRealisticScaledScore(aiResponse.pteScores.form, 2)),
+        grammar: Math.round(getRealisticScaledScore(aiResponse.pteScores.grammar, 2)),
+        vocabulary: Math.round(getRealisticScaledScore(aiResponse.pteScores.vocabulary, 2)),
+        spelling: Math.round(getRealisticScaledScore(aiResponse.pteScores.spelling, 1)),
+        developmentCoherence: Math.round(getRealisticScaledScore(aiResponse.pteScores.developmentCoherence, 2)),
+        linguisticRange: Math.round(getRealisticScaledScore(aiResponse.pteScores.linguisticRange, 2))
       },
       topicRelevance: aiResponse.topicRelevance,
       aiInsights: aiResponse.aiInsights || {
@@ -1312,14 +1490,23 @@ function parseAIResponse(aiResponse: any, wordCount: number, content: string): S
         }
       },
       suggestions: aiResponse.suggestions || [],
-      highlightedErrors: enhanceHighlightedErrors(aiResponse.highlightedErrors || [], content, wordCount)
+      highlightedErrors: enhanceHighlightedErrors(aiResponse.detailedErrors || aiResponse.highlightedErrors || [], content, wordCount)
     };
   }
   
   return result;
 }
 
-async function updateEssayStatus(essayId: string, status: string, resultId?: string) {
+async function updateEssayStatus(
+  essayId: string, 
+  status: string, 
+  resultId?: string,
+  errorDetails?: {
+    error: string;
+    errorCode: string;
+    correlationId: string;
+  }
+) {
   const segment = AWSXRay.getSegment();
   const subsegment = segment?.addNewSubsegment('DynamoDB.UpdateEssayStatus');
   
@@ -1328,13 +1515,23 @@ async function updateEssayStatus(essayId: string, status: string, resultId?: str
     subsegment?.addAnnotation('status', status);
     if (resultId) subsegment?.addAnnotation('resultId', resultId);
     
-    const updateExpression = resultId 
-      ? 'SET #status = :status, resultId = :resultId, updatedAt = :updatedAt'
-      : 'SET #status = :status, updatedAt = :updatedAt';
-      
-    const expressionAttributeValues = resultId
-      ? { ':status': status, ':resultId': resultId, ':updatedAt': new Date().toISOString() }
-      : { ':status': status, ':updatedAt': new Date().toISOString() };
+    let updateExpression = 'SET #status = :status, updatedAt = :updatedAt';
+    let expressionAttributeValues: any = {
+      ':status': status,
+      ':updatedAt': new Date().toISOString()
+    };
+    
+    if (resultId) {
+      updateExpression += ', resultId = :resultId';
+      expressionAttributeValues[':resultId'] = resultId;
+    }
+    
+    if (errorDetails) {
+      updateExpression += ', errorMessage = :errorMessage, errorCode = :errorCode, correlationId = :correlationId';
+      expressionAttributeValues[':errorMessage'] = errorDetails.error;
+      expressionAttributeValues[':errorCode'] = errorDetails.errorCode;
+      expressionAttributeValues[':correlationId'] = errorDetails.correlationId;
+    }
     
     const params = {
       TableName: process.env.ESSAY_TABLE_NAME || 'Essay',
@@ -1401,9 +1598,9 @@ async function saveResults(
           similarEssaysFound: performanceMetrics.similarEssaysFound,
           confidenceScore: performanceMetrics.confidenceScore
         }),
-        // Phoenix insights
-        phoenixMethodVersion: '1.0',
-        analysisEngine: 'Phoenix PTE Expert System',
+        // Analysis insights
+        methodVersion: '1.0',
+        analysisEngine: 'PTE Expert System',
         createdAt: timestamp,
         updatedAt: timestamp
       }
@@ -1442,7 +1639,7 @@ async function getUserEmail(userId: string): Promise<string | null> {
     const response = await docClient.send(new GetCommand(params));
     return response.Item?.email || null;
   } catch (error) {
-    console.error('Error fetching user email:', error);
+    logger.error('Error fetching user email', error as Error);
     return null;
   }
 }
@@ -1511,9 +1708,9 @@ async function sendResultEmail(
   
   try {
     await sesClient.send(new SendEmailCommand(emailParams));
-    console.log('Email sent successfully to:', userEmail);
+    logger.info('Email sent successfully', { userEmail });
   } catch (error) {
-    console.error('Error sending email:', error);
+    logger.error('Error sending email', error as Error);
     // Don't throw - we don't want to fail the whole process if email fails
   }
 }
@@ -1532,7 +1729,7 @@ async function considerForGoldStandard(
     }
 
     // Generate embedding for the essay
-    console.log('Generating embedding for potential gold standard essay...');
+    logger.info('Generating embedding for potential gold standard essay');
     const embedding = await generateEssayEmbedding(topic, essayText);
     
     // Determine score range
@@ -1580,10 +1777,10 @@ async function considerForGoldStandard(
     };
     
     await docClient.send(new PutCommand(putParams));
-    console.log('Successfully added high-scoring essay to gold standard');
+    logger.info('Successfully added high-scoring essay to gold standard');
     
   } catch (error) {
-    console.error('Error adding to gold standard:', error);
+    logger.error('Error adding to gold standard', error as Error);
     // Don't throw - this is a nice-to-have feature
   }
 }

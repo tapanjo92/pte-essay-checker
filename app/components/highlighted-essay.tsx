@@ -6,10 +6,12 @@ import { cn } from '@/lib/utils';
 export interface HighlightedError {
   text: string;
   type: 'grammar' | 'vocabulary' | 'coherence' | 'spelling';
-  suggestion: string;
+  suggestion?: string;
+  correction?: string; // Some errors use 'correction' instead of 'suggestion'
   explanation?: string;
   startIndex: number;
   endIndex: number;
+  severity?: 'high' | 'medium' | 'low';
 }
 
 interface TextSegment {
@@ -83,7 +85,7 @@ function ErrorTooltip({ error, isVisible, position }: ErrorTooltipProps) {
             Error: "{error.text}"
           </p>
           <p className="text-green-600 dark:text-green-400 mb-2">
-            <strong>Suggestion:</strong> {error.suggestion}
+            <strong>Suggestion:</strong> {error.suggestion || error.correction || 'No suggestion available'}
           </p>
           {error.explanation && (
             <p className="text-gray-600 dark:text-gray-400 text-xs">
@@ -217,7 +219,7 @@ export function HighlightedEssay({ content, errors = [], className }: Highlighte
               )}
               onMouseEnter={(e) => handleErrorHover(segment.error!, e)}
               onMouseLeave={handleErrorLeave}
-              title={`${errorStyle.label}: ${segment.error!.suggestion}`}
+              title={`${errorStyle.label}: ${segment.error!.suggestion || segment.error!.correction || 'View details'}`}
             >
               {segment.text}
             </span>

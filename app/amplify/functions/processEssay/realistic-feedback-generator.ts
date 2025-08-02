@@ -230,6 +230,19 @@ export function generateRealisticFeedback(
   const band = getRealisticScoreBand(score);
   const template = REALISTIC_FEEDBACK_TEMPLATES[band];
   
+  // Safety check for undefined template
+  if (!template) {
+    console.error(`No feedback template found for band: ${band}, score: ${score}`);
+    return {
+      executiveSummary: 'Analysis completed.',
+      scoreAnalysis: `Score: ${score}/90`,
+      priorityActions: ['Review essay feedback', 'Practice writing'],
+      detailedBreakdown: {},
+      studyPlan: 'Continue practicing PTE essays.',
+      realityCheck: 'Keep working on your skills.'
+    };
+  }
+  
   // Build detailed breakdown based on PTE criteria
   const detailedBreakdown: { [key: string]: string } = {};
   
@@ -280,15 +293,15 @@ export function generateRealisticFeedback(
     detailedBreakdown.form = 'Major structural problems or significant word count issues.';
   }
   
-  // Replace template variables
-  const executiveSummary = template.executiveSummary.replace('{{SCORE}}', score.toString());
-  const scoreAnalysis = template.scoreAnalysis
+  // Replace template variables with safety checks
+  const executiveSummary = (template.executiveSummary || '').replace('{{SCORE}}', score.toString());
+  const scoreAnalysis = (template.scoreAnalysis || '')
     .replace('{{SCORE}}', score.toString())
     .replace('{{ERROR_COUNT}}', errors.length.toString());
   
   // Update priority actions with actual error count
-  const priorityActions = template.priorityActions.map(action => 
-    action.replace('{{ERROR_COUNT}}', errors.length.toString())
+  const priorityActions = (template.priorityActions || []).map(action => 
+    typeof action === 'string' ? action.replace('{{ERROR_COUNT}}', errors.length.toString()) : action
   );
   
   return {
@@ -296,8 +309,8 @@ export function generateRealisticFeedback(
     scoreAnalysis,
     priorityActions,
     detailedBreakdown,
-    studyPlan: template.studyPlan,
-    realityCheck: template.realityCheck
+    studyPlan: template.studyPlan || 'Continue practicing PTE essays regularly.',
+    realityCheck: template.realityCheck || 'Keep working to improve your score.'
   };
 }
 
@@ -305,6 +318,7 @@ export function generateRealisticFeedback(
 function getGrammarFocus(errors: any[]): string {
   const grammarErrors = errors.filter(e => e.type === 'grammar');
   const errorTypes = new Set(grammarErrors.map(e => {
+    if (!e.suggestion) return 'sentence structure';
     if (e.suggestion.includes('article')) return 'articles';
     if (e.suggestion.includes('tense')) return 'verb tenses';
     if (e.suggestion.includes('agreement')) return 'subject-verb agreement';
@@ -317,7 +331,7 @@ function getGrammarFocus(errors: any[]): string {
 // Helper function to identify basic vocabulary
 function getBasicWords(errors: any[]): string {
   const vocabErrors = errors.filter(e => e.type === 'vocabulary');
-  const basicWords = vocabErrors.map(e => e.text).slice(0, 5);
+  const basicWords = vocabErrors.map(e => e.text || '').filter(word => word).slice(0, 5);
   return basicWords.length > 0 ? basicWords.join(', ') : 'common words like get, make, good, bad';
 }
 
