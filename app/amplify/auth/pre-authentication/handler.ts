@@ -14,20 +14,16 @@ export const handler: PreAuthenticationTriggerHandler = async (event) => {
   const email = request.userAttributes?.email?.toLowerCase();
   
   try {
-    switch (triggerSource) {
-      case 'PreAuthentication_Authentication':
-        // Regular email/password sign-in
-        console.log(`Email/password authentication for user: ${userName}`);
-        // For MVP: Just allow all email/password authentication
-        break;
-        
-      case 'PreAuthentication_RefreshToken':
-        // Token refresh - allow it
-        console.log(`Token refresh for user: ${userName}`);
-        break;
-        
-      default:
-        console.log(`Unhandled trigger source: ${triggerSource}`);
+    // Handle different authentication scenarios
+    if (triggerSource === 'PreAuthentication_Authentication') {
+      // Regular email/password sign-in
+      console.log(`Email/password authentication for user: ${userName}`);
+      // For MVP: Just allow all email/password authentication
+    } else if ((triggerSource as string) === 'PreAuthentication_RefreshToken') {
+      // Token refresh - allow it
+      console.log(`Token refresh for user: ${userName}`);
+    } else {
+      console.log(`Unhandled trigger source: ${triggerSource}`);
     }
   } catch (error: any) {
     console.error('Error in pre-authentication:', error);

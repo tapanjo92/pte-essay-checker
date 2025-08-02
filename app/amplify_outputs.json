@@ -1,9 +1,9 @@
 {
   "auth": {
-    "user_pool_id": "us-east-1_S8743Mw8d",
+    "user_pool_id": "us-east-1_WyCWY7Td4",
     "aws_region": "us-east-1",
-    "user_pool_client_id": "5ccb9ukfbmdnjanqlhog6itbsm",
-    "identity_pool_id": "us-east-1:4010104a-17f9-4182-8386-0972d21c1908",
+    "user_pool_client_id": "207290lav09eagj4d09rtfgbst",
+    "identity_pool_id": "us-east-1:09a027f1-caf7-4878-9228-e1ae6304d5b2",
     "mfa_methods": [],
     "standard_required_attributes": [
       "email"
@@ -14,7 +14,6 @@
     "user_verification_types": [
       "email"
     ],
-    "groups": [],
     "mfa_configuration": "NONE",
     "password_policy": {
       "min_length": 8,
@@ -23,12 +22,34 @@
       "require_symbols": true,
       "require_uppercase": true
     },
+    "oauth": {
+      "identity_providers": [
+        "GOOGLE"
+      ],
+      "redirect_sign_in_uri": [
+        "http://localhost:3000",
+        "https://main.d1hed7gjlm8m1f.amplifyapp.com"
+      ],
+      "redirect_sign_out_uri": [
+        "http://localhost:3000",
+        "https://main.d1hed7gjlm8m1f.amplifyapp.com"
+      ],
+      "response_type": "code",
+      "scopes": [
+        "phone",
+        "email",
+        "openid",
+        "profile",
+        "aws.cognito.signin.user.admin"
+      ],
+      "domain": "b8b95ca17662b06cbabf.auth.us-east-1.amazoncognito.com"
+    },
     "unauthenticated_identities_enabled": true
   },
   "data": {
-    "url": "https://susynarnszcurd3s6zayiu75xe.appsync-api.us-east-1.amazonaws.com/graphql",
+    "url": "https://rigrirdql5ctflqfcijtaxqgna.appsync-api.us-east-1.amazonaws.com/graphql",
     "aws_region": "us-east-1",
-    "api_key": "da2-vf3wugw6vnge5hzcyuhhjie67y",
+    "api_key": "da2-ykxrlvo4e5bsdi3k734jhgyeji",
     "default_authorization_type": "AMAZON_COGNITO_USER_POOLS",
     "authorization_types": [
       "API_KEY",
@@ -1526,52 +1547,17 @@
   },
   "storage": {
     "aws_region": "us-east-1",
-    "bucket_name": "amplify-app-v3-sandbox-4d-pteessaystoragebucketc06-id3q9twiewxm",
-    "buckets": [
-      {
-        "name": "pteEssayStorage",
-        "bucket_name": "amplify-app-v3-sandbox-4d-pteessaystoragebucketc06-id3q9twiewxm",
-        "aws_region": "us-east-1",
-        "paths": {
-          "essays/*": {
-            "authenticated": [
-              "get",
-              "list",
-              "write",
-              "delete"
-            ],
-            "guest": [
-              "get",
-              "list"
-            ]
-          },
-          "results/*": {
-            "authenticated": [
-              "get",
-              "list"
-            ]
-          },
-          "exports/*": {
-            "authenticated": [
-              "get",
-              "list",
-              "write",
-              "delete"
-            ]
-          }
-        }
-      }
-    ]
+    "bucket_name": "amplify-app-v4-sandbox-a9-pteessaystoragebucketc06-mbohgqdrsqsz"
   },
   "version": "1.4",
   "custom": {
-    "DLQUrl": "https://sqs.us-east-1.amazonaws.com/493093635246/dlq-v3-zc06",
-    "DLQName": "dlq-v3-zc06",
-    "MainQueueUrl": "https://sqs.us-east-1.amazonaws.com/493093635246/essay-v3-zc06",
-    "EssayTableName": "Essay-dq5wpe6bmvgp3atdny3sbjhesa-NONE",
-    "ResultTableName": "Result-dq5wpe6bmvgp3atdny3sbjhesa-NONE",
-    "UserTableName": "User-dq5wpe6bmvgp3atdny3sbjhesa-NONE",
-    "GoldStandardTableName": "GoldStandardEssay-dq5wpe6bmvgp3atdny3sbjhesa-NONE",
-    "EssayQueueUrl": "https://sqs.us-east-1.amazonaws.com/493093635246/essay-v3-zc06"
+    "DLQUrl": "https://sqs.us-east-1.amazonaws.com/493093635246/dlq-v3-oxys",
+    "DLQName": "dlq-v3-oxys",
+    "MainQueueUrl": "https://sqs.us-east-1.amazonaws.com/493093635246/essay-v3-oxys",
+    "EssayTableName": "Essay-dy5k2cuaf5hgvfgexfyroxt2bu-NONE",
+    "ResultTableName": "Result-dy5k2cuaf5hgvfgexfyroxt2bu-NONE",
+    "UserTableName": "User-dy5k2cuaf5hgvfgexfyroxt2bu-NONE",
+    "GoldStandardTableName": "GoldStandardEssay-dy5k2cuaf5hgvfgexfyroxt2bu-NONE",
+    "EssayQueueUrl": "https://sqs.us-east-1.amazonaws.com/493093635246/essay-v3-oxys"
   }
 }
