@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { GlassCard, GlassCardContent, GlassCardDescription, GlassCardHeader, GlassCardTitle } from '@/components/ui/glass-card';
 import { getCurrentUser } from 'aws-amplify/auth';
 import { toast } from 'sonner';
-import { createTracedClient } from '@/lib/xray-client';
+import { getGraphQLClient } from '@/lib/xray-client';
 import { useNetworkStatus, retryWithBackoff, isNetworkError } from '@/lib/network-utils';
 import { EssayTracker, trackEvent } from '@/lib/analytics';
 
@@ -57,12 +57,12 @@ export default function DashboardPage() {
       .then(user => {
         setUser(user);
         // Create client after we have auth context
-        setClient(createTracedClient());
+        getGraphQLClient().then(setClient).catch(console.error);
       })
       .catch(() => {
         // Silent fail - essay writing should work even if auth is wonky
         console.log('Auth check failed, continuing anyway');
-        setClient(createTracedClient());
+        getGraphQLClient().then(setClient).catch(console.error);
       });
   }, []);
   

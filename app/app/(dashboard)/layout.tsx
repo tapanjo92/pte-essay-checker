@@ -7,12 +7,9 @@ import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { FileText, PenTool, List, User, Menu, X, LogOut, ChevronDown } from 'lucide-react';
 import { initializeUserIfNeeded } from '@/lib/user-init';
-import { createTracedClient } from '@/lib/xray-client';
+import { getGraphQLClient } from '@/lib/xray-client';
 import { GradientBackground } from '@/components/ui/gradient-background';
 import { useAuth } from '@/lib/auth-provider';
-
-// Client is created once globally
-const client = createTracedClient();
 
 export default function DashboardGroupLayout({
   children,
@@ -80,6 +77,7 @@ export default function DashboardGroupLayout({
       
       // Fetch user data from DynamoDB
       try {
+        const client = await getGraphQLClient();
         const userResult = await client.models.User.get({ id: user.userId });
         if (userResult.data) {
           setUserData(userResult.data);

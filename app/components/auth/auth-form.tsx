@@ -5,8 +5,7 @@ import { useRouter } from 'next/navigation';
 import { signIn, signUp, confirmSignUp, getCurrentUser } from 'aws-amplify/auth';
 import { Hub } from 'aws-amplify/utils';
 import { Button } from '@/components/ui/button';
-import { Amplify } from 'aws-amplify';
-import amplifyConfig from '@/amplify_outputs.json';
+import { ensureAmplifyConfigured } from '@/lib/amplify-singleton';
 import { usePrefersReducedMotion } from '@/lib/motion-safe';
 import { 
   Mail, 
@@ -24,10 +23,8 @@ import {
   Zap
 } from 'lucide-react';
 
-// Ensure Amplify is configured
-if (!Amplify.getConfig().Auth) {
-  Amplify.configure(amplifyConfig);
-}
+// Ensure Amplify is configured using singleton pattern
+ensureAmplifyConfigured().catch(console.error);
 
 type AuthMode = 'signin' | 'signup' | 'confirm';
 

@@ -125,6 +125,11 @@ export function HighlightedEssay({ content, errors = [], className }: Highlighte
     let currentIndex = 0;
 
     sortedErrors.forEach((error, errorIndex) => {
+      // Skip if this error overlaps with a previous one
+      if (error.startIndex < currentIndex) {
+        return;
+      }
+
       // Add text before the error
       if (currentIndex < error.startIndex) {
         segments.push({
@@ -142,7 +147,7 @@ export function HighlightedEssay({ content, errors = [], className }: Highlighte
         key: `error-${errorIndex}-${error.startIndex}`
       });
 
-      currentIndex = Math.max(currentIndex, error.endIndex);
+      currentIndex = error.endIndex;
     });
 
     // Add remaining text after all errors
@@ -153,6 +158,14 @@ export function HighlightedEssay({ content, errors = [], className }: Highlighte
         key: `text-final-${currentIndex}`
       });
     }
+
+    console.log('[HighlightedEssay] Segments created:', {
+      totalSegments: segments.length,
+      errorSegments: segments.filter(s => s.isError).length,
+      lastErrorEnd: sortedErrors[sortedErrors.length - 1]?.endIndex,
+      contentLength: content.length,
+      remainingText: currentIndex < content.length ? content.length - currentIndex : 0
+    });
 
     return segments;
   }, [content, errors]);

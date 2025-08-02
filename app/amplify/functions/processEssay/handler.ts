@@ -5,7 +5,18 @@ import { SendEmailCommand } from '@aws-sdk/client-ses';
 import { generateEssayEmbedding, findSimilarVectors, VectorSearchResult } from './vectorUtils';
 import { bedrockClient, docClient, sesClient, warmConnections } from './clients';
 import * as AWSXRay from 'aws-xray-sdk-core';
-import { createEnhancedPrompt, detectFallbackErrors } from './enhanced-prompt';
+import { 
+  createEnhancedPrompt, 
+  detectFallbackErrors,
+  PHOENIX_ERROR_PATTERNS,
+  PHOENIX_ESSAY_TEMPLATES,
+  PHOENIX_SCORE_BANDS
+} from './enhanced-prompt';
+import { 
+  generatePhoenixFeedback, 
+  generateScoreProjection,
+  generatePersonalizedStudyPlan 
+} from './phoenix-feedback-generator';
 
 // Warm connections on cold start
 warmConnections().catch(console.error);
@@ -80,6 +91,17 @@ interface ScoringResult {
     relevanceScore: number;
     explanation: string;
   };
+  // Phoenix insights
+  phoenixInsights?: {
+    aiPreferences: string[];
+    commonPitfalls: string[];
+    quickWins: string[];
+  };
+  scoreProjection?: {
+    currentBand: string;
+    potentialBand: string;
+    timeToTarget: string;
+  };
   feedback: {
     summary: string;
     strengths: string[];
@@ -105,6 +127,7 @@ interface ScoringResult {
     explanation?: string; // Optional field for why the error is wrong
     startIndex: number;
     endIndex: number;
+    severity?: 'high' | 'medium' | 'low'; // Phoenix addition
   }>;
 }
 
@@ -209,13 +232,13 @@ function createFallbackResponse(reason: string): any {
       explanation: `Unable to determine topic relevance due to technical issue: ${reason}`
     },
     pteScores: {
-      content: 1,
-      form: 1,
-      grammar: 1,
-      vocabulary: 1,
-      spelling: 1,
-      developmentCoherence: 1,
-      linguisticRange: 1
+      content: 1,      // 30/90 when scaled
+      form: 1,         // 45/90 when scaled
+      grammar: 1,      // 45/90 when scaled
+      vocabulary: 1,   // 45/90 when scaled
+      spelling: 0,     // 0/90 when scaled
+      developmentCoherence: 1,  // 45/90 when scaled
+      linguisticRange: 1        // 45/90 when scaled
     },
     feedback: {
       summary: `Unable to complete full essay analysis due to technical issue. Reason: ${reason}. Please resubmit your essay for a complete evaluation.`,
@@ -735,9 +758,11 @@ CRITICAL REQUIREMENTS FOR ERROR DETECTION:
 1. Quote the EXACT text from the essay (character-perfect matching)
 2. Calculate precise character positions by counting from the start of essay content
 3. Provide specific corrections, not general advice  
-4. Find minimum 3-5 specific errors with exact locations
+4. Find minimum 5-10 specific errors with exact locations
 5. Count characters carefully: startIndex is where error begins, endIndex is where it ends
-6. Example: If essay starts "The AI technology is very good..." and "very good" (positions 23-32) should be "excellent", then:
+6. IMPORTANT: You MUST analyze the ENTIRE essay from beginning to end, including the conclusion paragraph
+7. CRITICAL: Make sure to find errors throughout the essay - beginning, middle AND end sections
+8. Example: If essay starts "The AI technology is very good..." and "very good" (positions 23-32) should be "excellent", then:
    - text: "very good"
    - startIndex: 23
    - endIndex: 32
@@ -852,9 +877,11 @@ CRITICAL REQUIREMENTS FOR ERROR DETECTION:
 1. Quote the EXACT text from the essay (character-perfect matching)
 2. Calculate precise character positions by counting from the start of essay content
 3. Provide specific corrections, not general advice  
-4. Find minimum 3-5 specific errors with exact locations
+4. Find minimum 5-10 specific errors with exact locations
 5. Count characters carefully: startIndex is where error begins, endIndex is where it ends
-6. Example: If essay starts "The AI technology is very good..." and "very good" (positions 23-32) should be "excellent", then:
+6. IMPORTANT: You MUST analyze the ENTIRE essay from beginning to end, including the conclusion paragraph
+7. CRITICAL: Make sure to find errors throughout the essay - beginning, middle AND end sections
+8. Example: If essay starts "The AI technology is very good..." and "very good" (positions 23-32) should be "excellent", then:
    - text: "very good"
    - startIndex: 23
    - endIndex: 32
@@ -877,8 +904,8 @@ async function callBedrockAI(prompt: string): Promise<any> {
     // Claude format
     requestBody = {
       anthropic_version: "bedrock-2023-05-31",
-      max_tokens: 4000,
-      temperature: 0.2,
+      max_tokens: 8000,
+      temperature: 0.0,
       messages: [
         {
           role: "user",
@@ -892,7 +919,7 @@ async function callBedrockAI(prompt: string): Promise<any> {
     requestBody = {
       prompt: prompt,
       max_gen_len: 4000,
-      temperature: 0.2,
+      temperature: 0.0,
       top_p: 0.9
     };
   } else {
@@ -901,7 +928,7 @@ async function callBedrockAI(prompt: string): Promise<any> {
       inputText: prompt,
       textGenerationConfig: {
         maxTokenCount: 4000,
-        temperature: 0.2,
+        temperature: 0.0,
         topP: 0.9
       }
     };
@@ -1056,38 +1083,78 @@ async function callBedrockAI(prompt: string): Promise<any> {
   }
 }
 
+// Phoenix realistic score scaling function
+function getPhoenixScaledScore(rawScore: number, maxScore: number): number {
+  const percentage = rawScore / maxScore;
+  
+  // Phoenix scoring bands (stricter interpretation)
+  if (percentage === 0) {
+    return 0; // Complete failure
+  } else if (percentage <= 0.33) {
+    // 0-33% = 15-35 on 90 scale
+    return 15 + (percentage * 3) * 20;
+  } else if (percentage <= 0.5) {
+    // 34-50% = 35-45 on 90 scale  
+    return 35 + ((percentage - 0.33) / 0.17) * 10;
+  } else if (percentage <= 0.67) {
+    // 51-67% = 45-60 on 90 scale (most common band)
+    return 45 + ((percentage - 0.5) / 0.17) * 15;
+  } else if (percentage < 1) {
+    // 68-99% = 60-75 on 90 scale
+    return 60 + ((percentage - 0.67) / 0.33) * 15;
+  } else {
+    // 100% = 80-90 on 90 scale (perfect scores are rare)
+    return 85; // Even perfect raw scores rarely get 90
+  }
+}
+
 // Industry-standard error enhancement
 function enhanceHighlightedErrors(aiErrors: any[], content: string, wordCount: number): any[] {
-  // If AI provided good errors, use them
-  if (aiErrors && aiErrors.length >= 5) {
-    return aiErrors;
-  }
-  
-  console.log(`AI only provided ${aiErrors?.length || 0} errors. Adding fallback detection...`);
-  
-  // Combine AI errors with fallback detection
-  const fallbackErrors = detectFallbackErrors(content);
   const combinedErrors = [...(aiErrors || [])];
   
-  // Add fallback errors that don't overlap with AI errors
-  fallbackErrors.forEach(fallbackError => {
-    const isDuplicate = combinedErrors.some(aiError => 
-      (aiError.startIndex === fallbackError.startIndex) ||
-      (Math.abs(aiError.startIndex - fallbackError.startIndex) < 5 && aiError.type === fallbackError.type)
-    );
+  // Check if AI errors cover the full essay
+  const maxAIErrorEnd = aiErrors && aiErrors.length > 0 
+    ? Math.max(...aiErrors.map(e => parseInt(e.endIndex) || 0)) 
+    : 0;
+  
+  const coveragePercent = content.length > 0 ? (maxAIErrorEnd / content.length) * 100 : 0;
+  
+  console.log(`AI error coverage: ${maxAIErrorEnd}/${content.length} characters (${coveragePercent.toFixed(1)}%)`);
+  console.log(`AI provided ${aiErrors?.length || 0} errors`);
+  
+  // If AI errors don't cover at least 80% of the essay OR we have fewer than 5 errors, add fallback detection
+  if (coveragePercent < 80 || combinedErrors.length < 5) {
+    console.log(`Insufficient coverage or too few errors. Adding fallback detection...`);
     
-    if (!isDuplicate && combinedErrors.length < 15) {
-      combinedErrors.push(fallbackError);
-    }
-  });
+    const fallbackErrors = detectFallbackErrors(content);
+    
+    // Add fallback errors that don't overlap with AI errors
+    fallbackErrors.forEach(fallbackError => {
+      const isDuplicate = combinedErrors.some(aiError => 
+        (aiError.startIndex === fallbackError.startIndex) ||
+        (Math.abs(aiError.startIndex - fallbackError.startIndex) < 5 && aiError.type === fallbackError.type)
+      );
+      
+      // Prioritize errors in uncovered areas
+      const isInUncoveredArea = fallbackError.startIndex > maxAIErrorEnd;
+      
+      if (!isDuplicate && (combinedErrors.length < 15 || isInUncoveredArea)) {
+        combinedErrors.push(fallbackError);
+      }
+    });
+  }
   
   // Sort by position
   combinedErrors.sort((a, b) => a.startIndex - b.startIndex);
   
-  // Ensure we have at least 5 errors for good UX
-  if (combinedErrors.length < 5) {
-    console.warn(`Only found ${combinedErrors.length} errors. Essay might be very well written.`);
-  }
+  // Log final coverage
+  const finalMaxEnd = combinedErrors.length > 0 
+    ? Math.max(...combinedErrors.map(e => parseInt(e.endIndex) || 0))
+    : 0;
+  const finalCoverage = content.length > 0 ? (finalMaxEnd / content.length) * 100 : 0;
+  
+  console.log(`Final error coverage: ${finalMaxEnd}/${content.length} characters (${finalCoverage.toFixed(1)}%)`);
+  console.log(`Total errors: ${combinedErrors.length}`);
   
   return combinedErrors;
 }
@@ -1096,28 +1163,28 @@ function parseAIResponse(aiResponse: any, wordCount: number, content: string): S
   let overallScore: number;
   let result: ScoringResult;
   
-  // CRITICAL: Check for off-topic essays first
+  // CRITICAL: Check for off-topic essays first (Phoenix's First Law)
   if (aiResponse.topicRelevance) {
     const relevanceScore = aiResponse.topicRelevance.relevanceScore || 100;
     const isOnTopic = aiResponse.topicRelevance.isOnTopic !== false;
     
-    structuredLog('INFO', 'Topic relevance check', {
+    structuredLog('INFO', 'Phoenix Topic Relevance Check', {
       isOnTopic,
       relevanceScore,
       explanation: aiResponse.topicRelevance.explanation
     });
     
-    // Implement graduated content scoring based on relevance
+    // Implement Phoenix's graduated content scoring based on relevance
     if (aiResponse.pteScores) {
       const originalContent = aiResponse.pteScores.content || 0;
       
       if (relevanceScore >= 90) {
         // 90-100% relevant: Full content score (no change)
-        structuredLog('INFO', 'Essay is fully on-topic', { relevanceScore });
+        structuredLog('INFO', 'Phoenix: Essay is fully on-topic', { relevanceScore });
       } else if (relevanceScore >= 70) {
         // 70-89% relevant: 2/3 content
         aiResponse.pteScores.content = Math.min(originalContent, 2);
-        structuredLog('WARN', 'Essay is mostly on-topic, capping content at 2/3', {
+        structuredLog('WARN', 'Phoenix: Essay is mostly on-topic, capping content at 2/3', {
           relevanceScore,
           originalContentScore: originalContent,
           adjustedContentScore: aiResponse.pteScores.content
@@ -1125,7 +1192,7 @@ function parseAIResponse(aiResponse: any, wordCount: number, content: string): S
       } else if (relevanceScore >= 50) {
         // 50-69% relevant: 1/3 content
         aiResponse.pteScores.content = Math.min(originalContent, 1);
-        structuredLog('WARN', 'Essay is partially on-topic, capping content at 1/3', {
+        structuredLog('WARN', 'Phoenix: Essay is partially on-topic, capping content at 1/3', {
           relevanceScore,
           originalContentScore: originalContent,
           adjustedContentScore: aiResponse.pteScores.content
@@ -1133,23 +1200,23 @@ function parseAIResponse(aiResponse: any, wordCount: number, content: string): S
       } else {
         // <50% relevant: 0/3 content
         aiResponse.pteScores.content = 0;
-        structuredLog('WARN', 'Essay is off-topic, setting content to 0/3', {
+        structuredLog('WARN', 'Phoenix: Essay is off-topic, setting content to 0/3', {
           relevanceScore,
           originalContentScore: originalContent
         });
       }
       
-      // Add appropriate feedback based on relevance
+      // Add Phoenix's appropriate feedback based on relevance
       if (!aiResponse.feedback) {
         aiResponse.feedback = {};
       }
       
       if (relevanceScore < 50) {
-        aiResponse.feedback.summary = `CRITICAL: This essay is off-topic and does not address the given prompt. In PTE Academic, off-topic essays receive very low scores regardless of language quality. ${aiResponse.feedback.summary || ''}`;
+        aiResponse.feedback.summary = `🚨 PHOENIX ALERT: This essay is OFF-TOPIC and does not address the given prompt. In PTE Academic, off-topic essays receive automatic failure (max 25/90) regardless of language quality. ${aiResponse.feedback.summary || ''}`;
       } else if (relevanceScore < 70) {
-        aiResponse.feedback.summary = `WARNING: This essay only partially addresses the topic. Some key aspects of the prompt are missing or underdeveloped. ${aiResponse.feedback.summary || ''}`;
+        aiResponse.feedback.summary = `⚠️ PHOENIX WARNING: This essay only partially addresses the topic. Key aspects of the prompt are missing. Maximum achievable score is limited to 65/90. ${aiResponse.feedback.summary || ''}`;
       } else if (relevanceScore < 90) {
-        aiResponse.feedback.summary = `NOTE: While this essay addresses the topic, some minor aspects could be more directly related to the prompt. ${aiResponse.feedback.summary || ''}`;
+        aiResponse.feedback.summary = `📝 PHOENIX NOTE: While this essay addresses the topic, some aspects could be more directly related to the prompt. ${aiResponse.feedback.summary || ''}`;
       }
     }
   }
@@ -1187,8 +1254,18 @@ function parseAIResponse(aiResponse: any, wordCount: number, content: string): S
       aiResponse.pteScores.developmentCoherence +
       aiResponse.pteScores.linguisticRange;
     
-    // Scale to 90
+    // Scale to 90 with Phoenix's realistic scoring
+    // Most essays score 8-11 out of 14 (57-79%)
     overallScore = Math.round((rawTotal / 14) * 90);
+    
+    // Phoenix validation: Perfect scores are extremely rare
+    if (overallScore >= 85 && rawTotal < 13) {
+      structuredLog('WARN', 'Phoenix: Score adjustment - perfect scores require exceptional writing', {
+        rawTotal,
+        calculatedScore: overallScore,
+        adjustedScore: Math.round((rawTotal / 14) * 90)
+      });
+    }
     
     // Apply relevance-based caps
     const relevanceScore = aiResponse.topicRelevance?.relevanceScore || 100;
@@ -1211,35 +1288,70 @@ function parseAIResponse(aiResponse: any, wordCount: number, content: string): S
       });
     }
     
+    // Generate enhanced Phoenix feedback
+    const enhancedErrors = enhanceHighlightedErrors(aiResponse.highlightedErrors || [], content, wordCount);
+    const phoenixFeedback = generatePhoenixFeedback(
+      overallScore,
+      aiResponse.pteScores,
+      aiResponse.topicRelevance,
+      enhancedErrors,
+      aiResponse.feedback?.strengths || [],
+      aiResponse.feedback?.improvements || []
+    );
+    
+    // Generate score projection
+    const projection = generateScoreProjection(overallScore, enhancedErrors.length);
+    
     // Map new scores to legacy format for backward compatibility
     result = {
       overallScore,
       // Map roughly to old system
-      taskResponseScore: aiResponse.scaledScores?.content || Math.round((aiResponse.pteScores.content / 3) * 90),
-      coherenceScore: aiResponse.scaledScores?.developmentCoherence || Math.round((aiResponse.pteScores.developmentCoherence / 2) * 90),
-      vocabularyScore: aiResponse.scaledScores?.vocabulary || Math.round((aiResponse.pteScores.vocabulary / 2) * 90),
-      grammarScore: aiResponse.scaledScores?.grammar || Math.round((aiResponse.pteScores.grammar / 2) * 90),
+      // Phoenix-adjusted scoring: Raw scores mapped realistically
+      taskResponseScore: Math.round(getPhoenixScaledScore(aiResponse.pteScores.content, 3)),
+      coherenceScore: Math.round(getPhoenixScaledScore(aiResponse.pteScores.developmentCoherence, 2)),
+      vocabularyScore: Math.round(getPhoenixScaledScore(aiResponse.pteScores.vocabulary, 2)),
+      grammarScore: Math.round(getPhoenixScaledScore(aiResponse.pteScores.grammar, 2)),
       pteScores: aiResponse.scaledScores || {
-        content: Math.round((aiResponse.pteScores.content / 3) * 90),
-        form: Math.round((aiResponse.pteScores.form / 2) * 90),
-        grammar: Math.round((aiResponse.pteScores.grammar / 2) * 90),
-        vocabulary: Math.round((aiResponse.pteScores.vocabulary / 2) * 90),
-        spelling: Math.round((aiResponse.pteScores.spelling / 1) * 90),
-        developmentCoherence: Math.round((aiResponse.pteScores.developmentCoherence / 2) * 90),
-        linguisticRange: Math.round((aiResponse.pteScores.linguisticRange / 2) * 90)
+        // Phoenix realistic scaling with stricter interpretation
+        // 0/max = 0-30, 1/max = 35-55, 2/max = 60-75, max/max = 80-90
+        content: Math.round(getPhoenixScaledScore(aiResponse.pteScores.content, 3)),
+        form: Math.round(getPhoenixScaledScore(aiResponse.pteScores.form, 2)),
+        grammar: Math.round(getPhoenixScaledScore(aiResponse.pteScores.grammar, 2)),
+        vocabulary: Math.round(getPhoenixScaledScore(aiResponse.pteScores.vocabulary, 2)),
+        spelling: Math.round(getPhoenixScaledScore(aiResponse.pteScores.spelling, 1)),
+        developmentCoherence: Math.round(getPhoenixScaledScore(aiResponse.pteScores.developmentCoherence, 2)),
+        linguisticRange: Math.round(getPhoenixScaledScore(aiResponse.pteScores.linguisticRange, 2))
       },
       topicRelevance: aiResponse.topicRelevance,
+      phoenixInsights: aiResponse.phoenixInsights || {
+        aiPreferences: ['Sentence length 15-20 words', 'Academic vocabulary preferred', 'Clear paragraph structure'],
+        commonPitfalls: enhancedErrors.slice(0, 3).map(e => e.explanation),
+        quickWins: phoenixFeedback.priorityActions.slice(0, 3)
+      },
+      scoreProjection: aiResponse.scoreProjection || {
+        currentBand: `${Math.floor(overallScore / 5) * 5}-${Math.floor(overallScore / 5) * 5 + 5}`,
+        potentialBand: `${projection.potential - 5}-${projection.potential}`,
+        timeToTarget: projection.timeframe
+      },
       feedback: {
-        ...aiResponse.feedback,
+        summary: phoenixFeedback.executiveSummary,
+        strengths: aiResponse.feedback?.strengths || [],
+        improvements: phoenixFeedback.priorityActions,
         detailedFeedback: {
-          taskResponse: aiResponse.feedback?.detailedFeedback?.content || 'No specific feedback available.',
-          coherence: aiResponse.feedback?.detailedFeedback?.developmentCoherence || 'No specific feedback available.',
-          vocabulary: aiResponse.feedback?.detailedFeedback?.vocabulary || 'No specific feedback available.',
-          grammar: aiResponse.feedback?.detailedFeedback?.grammar || 'No specific feedback available.'
+          ...phoenixFeedback.detailedBreakdown,
+          // Legacy fields
+          taskResponse: phoenixFeedback.detailedBreakdown.content || aiResponse.feedback?.detailedFeedback?.content || 'No specific feedback available.',
+          coherence: phoenixFeedback.detailedBreakdown.developmentCoherence || aiResponse.feedback?.detailedFeedback?.developmentCoherence || 'No specific feedback available.',
+          vocabulary: phoenixFeedback.detailedBreakdown.vocabulary || aiResponse.feedback?.detailedFeedback?.vocabulary || 'No specific feedback available.',
+          grammar: phoenixFeedback.detailedBreakdown.grammar || aiResponse.feedback?.detailedFeedback?.grammar || 'No specific feedback available.'
         }
       },
-      suggestions: aiResponse.suggestions || [],
-      highlightedErrors: enhanceHighlightedErrors(aiResponse.highlightedErrors || [], content, wordCount)
+      suggestions: [
+        ...phoenixFeedback.priorityActions,
+        phoenixFeedback.studyPlan.split('\n')[0], // First line of study plan
+        phoenixFeedback.motivationalNote
+      ].filter(Boolean).slice(0, 5),
+      highlightedErrors: enhancedErrors
     };
   } else {
     // Fallback to old format
@@ -1355,6 +1467,9 @@ async function saveResults(
           similarEssaysFound: performanceMetrics.similarEssaysFound,
           confidenceScore: performanceMetrics.confidenceScore
         }),
+        // Phoenix insights
+        phoenixMethodVersion: '1.0',
+        analysisEngine: 'Phoenix PTE Expert System',
         createdAt: timestamp,
         updatedAt: timestamp
       }

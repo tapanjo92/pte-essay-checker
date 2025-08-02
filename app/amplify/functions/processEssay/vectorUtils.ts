@@ -12,9 +12,9 @@ export interface VectorSearchResult {
 }
 
 /**
- * Generate embedding vector for given text using Amazon Titan Embed Text V2
+ * Generate embedding vector for given text using Amazon Titan Embed Text V1
  * @param text - Text to convert to embedding vector
- * @returns Array of numbers representing the embedding (512 dimensions)
+ * @returns Array of numbers representing the embedding (1536 dimensions)
  */
 export async function generateEmbedding(text: string): Promise<number[]> {
   const segment = AWSXRay.getSegment();
@@ -33,16 +33,14 @@ export async function generateEmbedding(text: string): Promise<number[]> {
     subsegment?.addAnnotation('cache', 'miss');
     subsegment?.addMetadata('textLength', text.length);
     
-    // Titan V2 supports up to 8192 tokens - no need to truncate essays
-    // Using 512 dimensions for faster search and lower storage
+    // Titan V1 to match existing gold standard embeddings
+    // Must use same model as seed script for compatibility
     const input = {
-      modelId: 'amazon.titan-embed-text-v2:0',
+      modelId: 'amazon.titan-embed-text-v1',
       contentType: 'application/json',
       accept: 'application/json',
       body: JSON.stringify({
-        inputText: text,
-        dimensions: 512,  // Reduced from 1024 for efficiency
-        normalize: true   // Normalized vectors for cosine similarity
+        inputText: text.substring(0, 8192) // Titan V1 limit
       })
     };
     
