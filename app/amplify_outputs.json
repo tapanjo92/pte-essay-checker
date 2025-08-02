@@ -1565,13 +1565,13 @@
   },
   "version": "1.4",
   "custom": {
-    "DLQUrl": "https://sqs.us-east-1.amazonaws.com/493093635246/dlq-v3-a1hk",
-    "DLQName": "dlq-v3-a1hk",
-    "MainQueueUrl": "https://sqs.us-east-1.amazonaws.com/493093635246/essay-v3-a1hk",
+    "DLQUrl": "https://sqs.us-east-1.amazonaws.com/493093635246/dlq-v3-zc06",
+    "DLQName": "dlq-v3-zc06",
+    "MainQueueUrl": "https://sqs.us-east-1.amazonaws.com/493093635246/essay-v3-zc06",
     "EssayTableName": "Essay-dq5wpe6bmvgp3atdny3sbjhesa-NONE",
     "ResultTableName": "Result-dq5wpe6bmvgp3atdny3sbjhesa-NONE",
     "UserTableName": "User-dq5wpe6bmvgp3atdny3sbjhesa-NONE",
     "GoldStandardTableName": "GoldStandardEssay-dq5wpe6bmvgp3atdny3sbjhesa-NONE",
-    "EssayQueueUrl": "https://sqs.us-east-1.amazonaws.com/493093635246/essay-v3-a1hk"
+    "EssayQueueUrl": "https://sqs.us-east-1.amazonaws.com/493093635246/essay-v3-zc06"
   }
 }
