@@ -1,9 +1,17 @@
 // Analytics utility functions for tracking user events and metrics
-import { generateClient } from 'aws-amplify/data';
+import { getGraphQLClient } from './xray-client';
 import type { Schema } from '@/amplify/data/resource';
 import { v4 as uuidv4 } from 'uuid';
 
-const client = generateClient<Schema>();
+// Client will be initialized when needed
+let client: Awaited<ReturnType<typeof getGraphQLClient>> | null = null;
+
+async function getClient() {
+  if (!client) {
+    client = await getGraphQLClient();
+  }
+  return client;
+}
 
 // Get device type from user agent
 export function getDeviceType(): string {
@@ -53,7 +61,8 @@ export async function trackEvent(
   essayId?: string
 ) {
   try {
-    await client.models.AnalyticsEvent.create({
+    const analyticsClient = await getClient();
+    await analyticsClient.models.AnalyticsEvent.create({
       event: event as any,
       metadata: JSON.stringify(metadata || {}),
       essayId,
@@ -111,7 +120,8 @@ export async function updateUserProgress(
 ) {
   try {
     // Find existing progress for this category
-    const { data: existingProgress } = await client.models.UserProgress.list({
+    const progressClient = await getClient();
+    const { data: existingProgress } = await progressClient.models.UserProgress.list({
       filter: {
         userId: { eq: userId },
         topicCategory: { eq: topicCategory }
@@ -148,7 +158,7 @@ export async function updateUserProgress(
       else if (improvement < -5) trend = 'DECLINING';
       
       // Update progress
-      await client.models.UserProgress.update({
+      await progressClient.models.UserProgress.update({
         id: current.id,
         averageScore: newAverage,
         attemptCount: newAttemptCount,
@@ -172,7 +182,7 @@ export async function updateUserProgress(
       const weakAreas = sortedAreas.slice(0, 2).map(([area]) => area);
       const strongAreas = sortedAreas.slice(-2).map(([area]) => area);
       
-      await client.models.UserProgress.create({
+      await progressClient.models.UserProgress.create({
         userId,
         topicCategory: topicCategory as any,
         averageScore: newScore,

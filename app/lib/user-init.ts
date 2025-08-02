@@ -1,9 +1,10 @@
-import { createTracedClient } from './xray-client';
-
-const client = createTracedClient();
+import { getGraphQLClient } from './xray-client';
 
 export async function initializeUserIfNeeded(userId: string, email: string, firstName?: string, lastName?: string) {
   console.log('Initializing user:', { userId, email, firstName, lastName });
+  
+  // Get the singleton client
+  const client = await getGraphQLClient();
   
   // First, always try to find existing user
   try {

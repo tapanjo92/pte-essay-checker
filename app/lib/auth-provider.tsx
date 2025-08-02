@@ -2,18 +2,14 @@
 
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { getCurrentUser, AuthUser } from 'aws-amplify/auth';
-import { Amplify } from 'aws-amplify';
 import { Hub } from 'aws-amplify/utils';
-import amplifyConfig from '@/amplify_outputs.json';
+import { ensureAmplifyConfigured } from './amplify-singleton';
 
-// 🚀 Aurora's L10 Pattern: Configure Amplify immediately, globally, once
+// Initialize Amplify configuration on module load
 if (typeof window !== 'undefined') {
-  try {
-    Amplify.configure(amplifyConfig);
-    console.log('🔧 Aurora: Amplify configured globally');
-  } catch (error) {
-    console.error('🚨 Aurora: Amplify configuration failed:', error);
-  }
+  ensureAmplifyConfigured().catch(error => {
+    console.error('🚨 AuthProvider: Amplify configuration failed:', error);
+  });
 }
 
 interface AuthContextType {

@@ -8,9 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
 import { Clock, FileText, TrendingUp, ArrowRight } from 'lucide-react';
 import { toast } from 'sonner';
-import { createTracedClient } from '@/lib/xray-client';
-
-const client = createTracedClient();
+import { getGraphQLClient } from '@/lib/xray-client';
 
 interface EssayWithResult {
   id: string;
@@ -42,6 +40,9 @@ export default function EssayHistoryPage() {
       }
       
       console.log('📚 Cipher: Fetching essay history for user:', user.userId);
+      
+      // Get the singleton client
+      const client = await getGraphQLClient();
       
       // Fetch all essays for the user
       // Try to get essays by userId (new) or by owner (Amplify default)

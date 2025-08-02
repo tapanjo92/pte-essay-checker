@@ -7,8 +7,19 @@ import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { EssayProcessingStatus } from '@/components/essay-processing-status';
 import { Skeleton } from '@/components/ui/skeleton';
-import { createTracedClient } from '@/lib/xray-client';
-import { HighlightedEssay, type HighlightedError } from '@/components/highlighted-essay';
+import { getGraphQLClient } from '@/lib/xray-client';
+import { HighlightedEssay } from '@/components/highlighted-essay';
+import type { 
+  Essay, 
+  ProcessedResult, 
+  ViewType, 
+  ResultSection, 
+  ScoreCategory, 
+  ChartDataPoint, 
+  ApiError,
+  HighlightedError,
+  Feedback
+} from '@/types/essay';
 import { 
   Trophy, 
   Target, 
@@ -59,15 +70,15 @@ export default function ResultsPage() {
   const essay2Id = searchParams.get('essay2');
   
   const [loading, setLoading] = useState(true);
-  const [essay1, setEssay1] = useState<any>(null);
-  const [essay2, setEssay2] = useState<any>(null);
-  const [result1, setResult1] = useState<Result | null>(null);
-  const [result2, setResult2] = useState<Result | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [currentView, setCurrentView] = useState<'essay1' | 'essay2' | 'both'>('essay1');
-  const [selectedSection, setSelectedSection] = useState<'overview' | 'feedback' | 'essay'>('overview');
+  const [essay1, setEssay1] = useState<Essay | null>(null);
+  const [essay2, setEssay2] = useState<Essay | null>(null);
+  const [result1, setResult1] = useState<ProcessedResult | null>(null);
+  const [result2, setResult2] = useState<ProcessedResult | null>(null);
+  const [error, setError] = useState<ApiError | null>(null);
+  const [currentView, setCurrentView] = useState<ViewType>('essay1');
+  const [selectedSection, setSelectedSection] = useState<ResultSection>('overview');
 
-  const fetchEssayAndResult = async (essayId: string, client: any) => {
+  const fetchEssayAndResult = async (essayId: string, client: Awaited<ReturnType<typeof getGraphQLClient>>): Promise<{ essay: Essay; result: ProcessedResult | null }> => {
     const essayResponse = await client.models.Essay.get({ id: essayId });
     if (!essayResponse.data) {
       throw new Error(`Essay ${essayId} not found`);
@@ -100,9 +111,15 @@ export default function ResultsPage() {
   useEffect(() => {
     if (!essay1Id) return;
 
+    // Track active timeout for cleanup
+    let pollTimeout: NodeJS.Timeout | null = null;
+    let isMounted = true;
+
     const fetchResults = async () => {
+      // Don't proceed if component is unmounted
+      if (!isMounted) return;
       try {
-        const client = createTracedClient();
+        const client = await getGraphQLClient();
         
         // Fetch essay 1
         const { essay: essay1Data, result: result1Data } = await fetchEssayAndResult(essay1Id, client);
@@ -123,19 +140,37 @@ export default function ResultsPage() {
         const shouldPoll = (essay1Data.status === 'PROCESSING' || essay1Data.status === 'QUEUED') ||
                           (essay2Id && essay2Data && (essay2Data.status === 'PROCESSING' || essay2Data.status === 'QUEUED'));
         
-        if (shouldPoll) {
-          setTimeout(() => fetchResults(), 2000);
+        if (shouldPoll && isMounted) {
+          // Store timeout reference for cleanup
+          pollTimeout = setTimeout(() => {
+            if (isMounted) {
+              fetchResults();
+            }
+          }, 2000);
           return;
         }
       } catch (err: any) {
         console.error('Error fetching results:', err);
-        setError(err.message || 'Failed to fetch results');
+        setError({ 
+          name: err.name || 'FetchError', 
+          message: err.message || 'Failed to fetch results',
+          retryable: true
+        });
       } finally {
         setLoading(false);
       }
     };
 
     fetchResults();
+
+    // Cleanup function to prevent memory leaks
+    return () => {
+      isMounted = false;
+      if (pollTimeout) {
+        clearTimeout(pollTimeout);
+        pollTimeout = null;
+      }
+    };
   }, [essay1Id, essay2Id]);
 
   const getScoreColor = (score: number) => {
@@ -285,7 +320,7 @@ export default function ResultsPage() {
           ].map((section) => (
             <button
               key={section.id}
-              onClick={() => setSelectedSection(section.id as any)}
+              onClick={() => setSelectedSection(section.id as ResultSection)}
               className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-lg font-medium transition-all ${
                 selectedSection === section.id
                   ? 'bg-white dark:bg-gray-800 shadow-md text-blue-600 dark:text-blue-400'
@@ -671,11 +706,11 @@ export default function ResultsPage() {
           )}
 
           {/* Content based on view */}
-          {currentView === 'essay1' && essay1 && renderEssayResults(essay1, result1, 1)}
-          {currentView === 'essay2' && essay2 && renderEssayResults(essay2, result2, 2)}
+          {essay2 && currentView === 'essay1' && essay1 && renderEssayResults(essay1, result1, 1)}
+          {essay2 && currentView === 'essay2' && renderEssayResults(essay2, result2, 2)}
           
           {/* Comparison View */}
-          {currentView === 'both' && essay2 && (
+          {essay2 && currentView === 'both' && (
             <div className="space-y-8 animate-fadeIn">
               <div className="grid gap-6 lg:grid-cols-2">
                 {/* Essay 1 Summary */}

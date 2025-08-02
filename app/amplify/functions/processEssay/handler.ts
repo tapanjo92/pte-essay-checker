@@ -1,22 +1,28 @@
 import { SQSHandler, SQSEvent } from 'aws-lambda';
-import { BedrockRuntimeClient, InvokeModelCommand } from '@aws-sdk/client-bedrock-runtime';
-import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
-import { DynamoDBDocumentClient, GetCommand, UpdateCommand, PutCommand, QueryCommand, ScanCommand } from '@aws-sdk/lib-dynamodb';
-import { SESClient, SendEmailCommand } from '@aws-sdk/client-ses';
-import * as AWSXRay from 'aws-xray-sdk-core';
+import { InvokeModelCommand } from '@aws-sdk/client-bedrock-runtime';
+import { GetCommand, UpdateCommand, PutCommand, QueryCommand, ScanCommand } from '@aws-sdk/lib-dynamodb';
+import { SendEmailCommand } from '@aws-sdk/client-ses';
 import { generateEssayEmbedding, findSimilarVectors, VectorSearchResult } from './vectorUtils';
+import { bedrockClient, docClient, sesClient, warmConnections } from './clients';
+import * as AWSXRay from 'aws-xray-sdk-core';
+import { 
+  detectFallbackErrors
+} from './enhanced-prompt';
+import { 
+  generateRealisticFeedback, 
+  generateRealisticScoreProjection
+} from './realistic-feedback-generator';
+import { 
+  createRealisticPrompt, 
+  getRealisticScaledScore, 
+  createStrictFallbackResponse,
+  REALISTIC_PTE_CRITERIA 
+} from './realistic-pte-prompt';
+import { createRealisticRAGPrompt } from './realistic-rag-prompt';
+import { validateAndAdjustScore, scoreValidator } from './score-validator';
 
-// Capture AWS SDK v3 clients with X-Ray
-const { captureAWSv3Client } = AWSXRay;
-
-// Initialize clients with X-Ray tracing
-const bedrockClient = captureAWSv3Client(new BedrockRuntimeClient({ 
-  region: process.env.BEDROCK_REGION || 'us-east-1' 
-}));
-
-const dynamoClient = captureAWSv3Client(new DynamoDBClient({}));
-const docClient = DynamoDBDocumentClient.from(dynamoClient);
-const sesClient = captureAWSv3Client(new SESClient({ region: process.env.AWS_REGION || 'us-east-1' }));
+// Warm connections on cold start
+warmConnections().catch(console.error);
 
 // PTE scoring criteria - Official 7 criteria mapped to 14 points
 const PTE_CRITERIA = {
@@ -88,6 +94,17 @@ interface ScoringResult {
     relevanceScore: number;
     explanation: string;
   };
+  // AI insights
+  aiInsights?: {
+    aiPreferences: string[];
+    commonPitfalls: string[];
+    quickWins: string[];
+  };
+  scoreProjection?: {
+    currentBand: string;
+    potentialBand: string;
+    timeToTarget: string;
+  };
   feedback: {
     summary: string;
     strengths: string[];
@@ -113,7 +130,11 @@ interface ScoringResult {
     explanation?: string; // Optional field for why the error is wrong
     startIndex: number;
     endIndex: number;
+    severity?: 'high' | 'medium' | 'low';
   }>;
+  // Error handling fields
+  errorStatus?: 'analysis_failed' | 'partial_failure';
+  errorMessage?: string;
 }
 
 // Structured logging helper
@@ -130,6 +151,11 @@ function structuredLog(level: string, message: string, metadata?: any) {
 
 // Sanitize content to prevent prompt injection attacks
 function sanitizeContent(content: string): string {
+  // Handle undefined or null content
+  if (!content || typeof content !== 'string') {
+    return '';
+  }
+  
   // Remove potential prompt injection patterns
   return content
     .replace(/\{.*?\}/g, '')        // Remove anything in curly braces
@@ -201,42 +227,47 @@ function attemptPartialJSONRecovery(truncatedJson: string): any | null {
   }
 }
 
-// 🔧 NEW: Create consistent fallback responses
+// Create strict fallback response - no scores when analysis fails
 function createFallbackResponse(reason: string): any {
   console.log(`Creating fallback response due to: ${reason}`);
   
+  // Don't provide inflated scores when analysis fails
+  // This prevents grade inflation from technical issues
   return {
+    analysisStatus: 'failed',
+    failureReason: reason,
     topicRelevance: { 
-      isOnTopic: true, 
-      relevanceScore: 60,
-      explanation: `Unable to determine topic relevance due to technical issue: ${reason}`
+      isOnTopic: false, 
+      relevanceScore: 0,
+      explanation: `Analysis failed: ${reason}`
     },
     pteScores: {
-      content: 1,
-      form: 1,
-      grammar: 1,
-      vocabulary: 1,
-      spelling: 1,
-      developmentCoherence: 1,
-      linguisticRange: 1
+      content: 0,
+      form: 0,
+      grammar: 0,
+      vocabulary: 0,
+      spelling: 0,
+      developmentCoherence: 0,
+      linguisticRange: 0
     },
     feedback: {
-      summary: `Unable to complete full essay analysis due to technical issue. Reason: ${reason}. Please resubmit your essay for a complete evaluation.`,
-      strengths: ["Essay was successfully submitted"],
-      improvements: ["Technical issue prevented detailed analysis", "Please resubmit for complete feedback"],
+      summary: `Technical error prevented essay analysis: ${reason}. This is not a reflection of your essay quality. Please try again.`,
+      strengths: [],
+      improvements: ["Unable to analyze due to technical error"],
       detailedFeedback: {
-        taskResponse: "Analysis incomplete due to technical issue",
-        coherence: "Analysis incomplete due to technical issue",
-        vocabulary: "Analysis incomplete due to technical issue",
-        grammar: "Analysis incomplete due to technical issue"
+        taskResponse: "Analysis failed - please resubmit",
+        coherence: "Analysis failed - please resubmit",
+        vocabulary: "Analysis failed - please resubmit",
+        grammar: "Analysis failed - please resubmit"
       }
     },
     suggestions: [
-      "Please resubmit your essay for complete analysis",
-      "Ensure stable internet connection",
-      "Contact support if issue persists"
+      "Please resubmit your essay for analysis",
+      "If this error persists, contact support"
     ],
-    highlightedErrors: []
+    highlightedErrors: [],
+    errorMessage: `Analysis could not be completed: ${reason}`,
+    requiresResubmission: true
   };
 }
 
@@ -381,8 +412,39 @@ export const handler: SQSHandler = async (event: SQSEvent) => {
       
       // 4. Parse AI response and calculate scores
       console.log('Parsing AI response...');
-      const scoringResult = parseAIResponse(aiResponse, args.wordCount);
-      console.log('Scoring result:', scoringResult.overallScore);
+      let scoringResult = parseAIResponse(aiResponse, args.wordCount, args.content);
+      console.log('Initial scoring result:', scoringResult.overallScore);
+      
+      // 4a. Validate and adjust score if needed
+      const { finalScore, validationWarnings } = validateAndAdjustScore(
+        scoringResult.overallScore, 
+        aiResponse
+      );
+      
+      if (validationWarnings.length > 0) {
+        console.log('Score validation warnings:', validationWarnings);
+        structuredLog('WARN', 'Score adjusted by validator', {
+          originalScore: scoringResult.overallScore,
+          adjustedScore: finalScore,
+          warnings: validationWarnings
+        });
+        
+        // Update the scoring result with validated score
+        scoringResult.overallScore = finalScore;
+        
+        // Add validation warnings to feedback
+        if (!scoringResult.feedback.improvements) {
+          scoringResult.feedback.improvements = [];
+        }
+        scoringResult.feedback.improvements.push(
+          ...validationWarnings.map(w => `Score validation: ${w}`)
+        );
+      }
+      
+      // Log distribution report periodically
+      if (Math.random() < 0.1) { // 10% of requests
+        console.log('\n' + scoreValidator.getDistributionReport());
+      }
       
       // 5. Save results to DynamoDB with performance metrics
       console.log('Saving results to DynamoDB...');
@@ -579,7 +641,7 @@ async function createRAGEnhancedPrompt(topic: string, content: string, wordCount
   if (similarEssays.length === 0) {
     structuredLog('INFO', 'No similar essays found, using standard prompt');
     return {
-      prompt: createAnalysisPrompt(topic, content),
+      prompt: createRealisticPrompt(topic, content, wordCount),
       similarEssaysCount: 0,
       vectorSearchUsed
     };
@@ -625,126 +687,8 @@ Essay Excerpt: ${essay.essayText.substring(0, 200)}...
     }
   }).join('\n---\n');
 
-  // Create enhanced prompt
-  const enhancedPrompt = `You are an expert PTE Academic essay evaluator. You have access to similar essays with official PTE scores for reference.
-
-REFERENCE ESSAYS WITH OFFICIAL SCORES:
-${ragContext}
-
-IMPORTANT: Use the reference essays above to calibrate your scoring. Essays with similar quality should receive similar scores.
-
-Now evaluate the following essay:
-
-Topic: ${topic}
-Word Count: ${wordCount}
-
-Essay:
-${content}
-
-🚨 CRITICAL PTE TOPIC RELEVANCE RULES - READ CAREFULLY:
-⚠️  STRICT TOPIC MATCHING REQUIRED - PTE essays MUST directly address the specific prompt given.
-
-1. FIRST AND MOST IMPORTANT: Check if the essay DIRECTLY addresses the EXACT topic provided.
-   
-   TOPIC RELEVANCE EXAMPLES:
-   ❌ OFF-TOPIC (0-10% relevance):
-   - Topic: "Unpaid internships exploit young workers vs. valuable learning opportunities"
-   - Essay about: AI replacing human workers, robots, automation → COMPLETELY OFF-TOPIC
-   
-   ❌ OFF-TOPIC (0-20% relevance):
-   - Topic: "Social media impact on teenagers"  
-   - Essay about: Online education benefits → DIFFERENT TOPIC
-   
-   ⚠️  PARTIALLY RELEVANT (30-60% relevance):
-   - Topic: "Should governments ban smoking in public places?"
-   - Essay about: General health effects of smoking → MISSES KEY ASPECT (government bans)
-   
-   ✅ ON-TOPIC (80-100% relevance):
-   - Topic: "University education should be free for all students"
-   - Essay about: Arguments for/against free university education → DIRECTLY ADDRESSES TOPIC
-
-2. CRITICAL: If essay discusses a completely different subject from the topic, it's OFF-TOPIC regardless of quality.
-   - OFF-TOPIC essays MUST receive 0/3 for Content and relevanceScore under 20%.
-   - Maximum overall score for OFF-TOPIC essays: 25/90
-
-3. Be EXTREMELY strict - even well-written essays on wrong topics are failures in PTE.
-4. Only essays that DIRECTLY respond to the specific question/statement should score above 70% relevance.
-
-Please evaluate the essay using the official PTE Academic scoring criteria (total 14 points scaled to 90):
-1. Content (3 points): Topic relevance, idea development, and completeness
-2. Form (2 points): Essay structure, paragraphing, and word count compliance (200-300 words)
-3. Grammar (2 points): Grammatical accuracy and sentence structure
-4. Vocabulary (2 points): Range and accuracy of vocabulary used
-5. Spelling (1 point): Spelling accuracy
-6. Development & Coherence (2 points): Logical flow, cohesion, and paragraph development
-7. Linguistic Range (2 points): Variety in sentence patterns and linguistic structures
-
-IMPORTANT: The reference essays above use the official PTE scoring. Compare this essay's quality to the reference essays and ensure your scores are consistent with the official scoring patterns shown.
-
-CRITICAL: Provide your response as a valid JSON object. Do NOT use markdown formatting, code blocks, or any other formatting. Return ONLY the JSON object starting with { and ending with }. Here is the required format:
-{
-  "topicRelevance": {
-    "isOnTopic": <true/false>,
-    "relevanceScore": <0-100>,
-    "explanation": "<brief explanation of why the essay is on/off topic>"
-  },
-  "pteScores": {
-    "content": <0-3>,
-    "form": <0-2>,
-    "grammar": <0-2>,
-    "vocabulary": <0-2>,
-    "spelling": <0-1>,
-    "developmentCoherence": <0-2>,
-    "linguisticRange": <0-2>
-  },
-  "scaledScores": {
-    "content": <scaled to 90>,
-    "form": <scaled to 90>,
-    "grammar": <scaled to 90>,
-    "vocabulary": <scaled to 90>,
-    "spelling": <scaled to 90>,
-    "developmentCoherence": <scaled to 90>,
-    "linguisticRange": <scaled to 90>
-  },
-  "feedback": {
-    "summary": "<overall assessment>",
-    "strengths": ["<strength1>", "<strength2>", ...],
-    "improvements": ["<improvement1>", "<improvement2>", ...],
-    "detailedFeedback": {
-      "content": "<detailed feedback>",
-      "form": "<detailed feedback>",
-      "grammar": "<detailed feedback>",
-      "vocabulary": "<detailed feedback>",
-      "spelling": "<detailed feedback>",
-      "developmentCoherence": "<detailed feedback>",
-      "linguisticRange": "<detailed feedback>"
-    }
-  },
-  "suggestions": ["<suggestion1>", "<suggestion2>", ...],
-  "highlightedErrors": [
-    {
-      "text": "<EXACT error text from essay>",
-      "type": "grammar|vocabulary|coherence|spelling",
-      "suggestion": "<specific correction>",
-      "explanation": "<why this is wrong>",
-      "startIndex": <character position where error starts>,
-      "endIndex": <character position where error ends>
-    }
-  ],
-  "comparisonNote": "<brief note comparing this essay to the reference essays>"
-}
-
-CRITICAL REQUIREMENTS FOR ERROR DETECTION:
-1. Quote the EXACT text from the essay (character-perfect matching)
-2. Calculate precise character positions by counting from the start of essay content
-3. Provide specific corrections, not general advice  
-4. Find minimum 3-5 specific errors with exact locations
-5. Count characters carefully: startIndex is where error begins, endIndex is where it ends
-6. Example: If essay starts "The AI technology is very good..." and "very good" (positions 23-32) should be "excellent", then:
-   - text: "very good"
-   - startIndex: 23
-   - endIndex: 32
-   - suggestion: "excellent"`;
+  // Create realistic RAG-enhanced prompt
+  const enhancedPrompt = createRealisticRAGPrompt(topic, content, wordCount, ragContext);
   
   return {
     prompt: enhancedPrompt,
@@ -753,7 +697,8 @@ CRITICAL REQUIREMENTS FOR ERROR DETECTION:
   };
 }
 
-function createAnalysisPrompt(topic: string, content: string): string {
+// Create fallback prompt when RAG is not available
+function createFallbackPrompt(topic: string, content: string, wordCount: number): string {
   return `You are an expert PTE Academic essay evaluator. Analyze the following essay and provide detailed scoring and feedback based on official PTE criteria.
 
 Topic: ${topic}
@@ -854,9 +799,11 @@ CRITICAL REQUIREMENTS FOR ERROR DETECTION:
 1. Quote the EXACT text from the essay (character-perfect matching)
 2. Calculate precise character positions by counting from the start of essay content
 3. Provide specific corrections, not general advice  
-4. Find minimum 3-5 specific errors with exact locations
+4. Find minimum 5-10 specific errors with exact locations
 5. Count characters carefully: startIndex is where error begins, endIndex is where it ends
-6. Example: If essay starts "The AI technology is very good..." and "very good" (positions 23-32) should be "excellent", then:
+6. IMPORTANT: You MUST analyze the ENTIRE essay from beginning to end, including the conclusion paragraph
+7. CRITICAL: Make sure to find errors throughout the essay - beginning, middle AND end sections
+8. Example: If essay starts "The AI technology is very good..." and "very good" (positions 23-32) should be "excellent", then:
    - text: "very good"
    - startIndex: 23
    - endIndex: 32
@@ -879,8 +826,8 @@ async function callBedrockAI(prompt: string): Promise<any> {
     // Claude format
     requestBody = {
       anthropic_version: "bedrock-2023-05-31",
-      max_tokens: 4000,
-      temperature: 0.2,
+      max_tokens: 8000,
+      temperature: 0.0,
       messages: [
         {
           role: "user",
@@ -894,7 +841,7 @@ async function callBedrockAI(prompt: string): Promise<any> {
     requestBody = {
       prompt: prompt,
       max_gen_len: 4000,
-      temperature: 0.2,
+      temperature: 0.0,
       top_p: 0.9
     };
   } else {
@@ -903,7 +850,7 @@ async function callBedrockAI(prompt: string): Promise<any> {
       inputText: prompt,
       textGenerationConfig: {
         maxTokenCount: 4000,
-        temperature: 0.2,
+        temperature: 0.0,
         topP: 0.9
       }
     };
@@ -1058,16 +1005,104 @@ async function callBedrockAI(prompt: string): Promise<any> {
   }
 }
 
-function parseAIResponse(aiResponse: any, wordCount: number): ScoringResult {
+// Realistic score scaling function - matches actual PTE distributions
+function getPhoenixScaledScore(rawScore: number, maxScore: number): number {
+  return getRealisticScaledScore(rawScore, maxScore);
+}
+
+// Industry-standard error enhancement
+function enhanceHighlightedErrors(aiErrors: any[], content: string, wordCount: number): any[] {
+  const combinedErrors = [...(aiErrors || [])];
+  
+  // Check if AI errors cover the full essay
+  const maxAIErrorEnd = aiErrors && aiErrors.length > 0 
+    ? Math.max(...aiErrors.map(e => parseInt(e.endIndex) || 0)) 
+    : 0;
+  
+  const coveragePercent = content.length > 0 ? (maxAIErrorEnd / content.length) * 100 : 0;
+  
+  console.log(`AI error coverage: ${maxAIErrorEnd}/${content.length} characters (${coveragePercent.toFixed(1)}%)`);
+  console.log(`AI provided ${aiErrors?.length || 0} errors`);
+  
+  // If AI errors don't cover at least 80% of the essay OR we have fewer than 5 errors, add fallback detection
+  if (coveragePercent < 80 || combinedErrors.length < 5) {
+    console.log(`Insufficient coverage or too few errors. Adding fallback detection...`);
+    
+    const fallbackErrors = detectFallbackErrors(content);
+    
+    // Add fallback errors that don't overlap with AI errors
+    fallbackErrors.forEach(fallbackError => {
+      const isDuplicate = combinedErrors.some(aiError => 
+        (aiError.startIndex === fallbackError.startIndex) ||
+        (Math.abs(aiError.startIndex - fallbackError.startIndex) < 5 && aiError.type === fallbackError.type)
+      );
+      
+      // Prioritize errors in uncovered areas
+      const isInUncoveredArea = fallbackError.startIndex > maxAIErrorEnd;
+      
+      if (!isDuplicate && (combinedErrors.length < 15 || isInUncoveredArea)) {
+        combinedErrors.push(fallbackError);
+      }
+    });
+  }
+  
+  // Sort by position
+  combinedErrors.sort((a, b) => a.startIndex - b.startIndex);
+  
+  // Log final coverage
+  const finalMaxEnd = combinedErrors.length > 0 
+    ? Math.max(...combinedErrors.map(e => parseInt(e.endIndex) || 0))
+    : 0;
+  const finalCoverage = content.length > 0 ? (finalMaxEnd / content.length) * 100 : 0;
+  
+  console.log(`Final error coverage: ${finalMaxEnd}/${content.length} characters (${finalCoverage.toFixed(1)}%)`);
+  console.log(`Total errors: ${combinedErrors.length}`);
+  
+  return combinedErrors;
+}
+
+function parseAIResponse(aiResponse: any, wordCount: number, content: string): ScoringResult {
   let overallScore: number;
   let result: ScoringResult;
   
-  // CRITICAL: Check for off-topic essays first
+  // Check if this is a failed analysis response
+  if (aiResponse.analysisStatus === 'failed' || aiResponse.requiresResubmission) {
+    // Return minimal scores for failed analysis
+    return {
+      overallScore: 0,
+      taskResponseScore: 0,
+      coherenceScore: 0,
+      vocabularyScore: 0,
+      grammarScore: 0,
+      pteScores: {
+        content: 0,
+        form: 0,
+        grammar: 0,
+        vocabulary: 0,
+        spelling: 0,
+        developmentCoherence: 0,
+        linguisticRange: 0
+      },
+      topicRelevance: aiResponse.topicRelevance || { isOnTopic: false, relevanceScore: 0 },
+      feedback: aiResponse.feedback || {
+        summary: aiResponse.errorMessage || 'Analysis failed',
+        strengths: [],
+        improvements: ['Essay analysis could not be completed'],
+        detailedFeedback: {}
+      },
+      suggestions: aiResponse.suggestions || ['Please resubmit your essay'],
+      highlightedErrors: [],
+      errorStatus: 'analysis_failed',
+      errorMessage: aiResponse.failureReason || 'Technical error'
+    };
+  }
+  
+  // CRITICAL: Check for off-topic essays first (Phoenix's First Law)
   if (aiResponse.topicRelevance) {
     const relevanceScore = aiResponse.topicRelevance.relevanceScore || 100;
     const isOnTopic = aiResponse.topicRelevance.isOnTopic !== false;
     
-    structuredLog('INFO', 'Topic relevance check', {
+    structuredLog('INFO', 'Topic Relevance Check', {
       isOnTopic,
       relevanceScore,
       explanation: aiResponse.topicRelevance.explanation
@@ -1111,11 +1146,11 @@ function parseAIResponse(aiResponse: any, wordCount: number): ScoringResult {
       }
       
       if (relevanceScore < 50) {
-        aiResponse.feedback.summary = `CRITICAL: This essay is off-topic and does not address the given prompt. In PTE Academic, off-topic essays receive very low scores regardless of language quality. ${aiResponse.feedback.summary || ''}`;
+        aiResponse.feedback.summary = `🚨 PHOENIX ALERT: This essay is OFF-TOPIC and does not address the given prompt. In PTE Academic, off-topic essays receive automatic failure (max 25/90) regardless of language quality. ${aiResponse.feedback.summary || ''}`;
       } else if (relevanceScore < 70) {
-        aiResponse.feedback.summary = `WARNING: This essay only partially addresses the topic. Some key aspects of the prompt are missing or underdeveloped. ${aiResponse.feedback.summary || ''}`;
+        aiResponse.feedback.summary = `⚠️ PHOENIX WARNING: This essay only partially addresses the topic. Key aspects of the prompt are missing. Maximum achievable score is limited to 65/90. ${aiResponse.feedback.summary || ''}`;
       } else if (relevanceScore < 90) {
-        aiResponse.feedback.summary = `NOTE: While this essay addresses the topic, some minor aspects could be more directly related to the prompt. ${aiResponse.feedback.summary || ''}`;
+        aiResponse.feedback.summary = `📝 PHOENIX NOTE: While this essay addresses the topic, some aspects could be more directly related to the prompt. ${aiResponse.feedback.summary || ''}`;
       }
     }
   }
@@ -1153,8 +1188,18 @@ function parseAIResponse(aiResponse: any, wordCount: number): ScoringResult {
       aiResponse.pteScores.developmentCoherence +
       aiResponse.pteScores.linguisticRange;
     
-    // Scale to 90
+    // Scale to 90 with realistic scoring
+    // Most essays score 8-11 out of 14 (57-79%)
     overallScore = Math.round((rawTotal / 14) * 90);
+    
+    // Validation: Perfect scores are extremely rare
+    if (overallScore >= 85 && rawTotal < 13) {
+      structuredLog('WARN', 'Score adjustment - perfect scores require exceptional writing', {
+        rawTotal,
+        calculatedScore: overallScore,
+        adjustedScore: Math.round((rawTotal / 14) * 90)
+      });
+    }
     
     // Apply relevance-based caps
     const relevanceScore = aiResponse.topicRelevance?.relevanceScore || 100;
@@ -1177,35 +1222,70 @@ function parseAIResponse(aiResponse: any, wordCount: number): ScoringResult {
       });
     }
     
+    // Generate realistic feedback
+    const enhancedErrors = enhanceHighlightedErrors(aiResponse.highlightedErrors || [], content, wordCount);
+    const realisticFeedback = generateRealisticFeedback(
+      overallScore,
+      aiResponse.pteScores,
+      aiResponse.topicRelevance,
+      enhancedErrors,
+      aiResponse.feedback?.strengths || [],
+      aiResponse.feedback?.improvements || []
+    );
+    
+    // Generate realistic score projection
+    const projection = generateRealisticScoreProjection(overallScore, enhancedErrors.length);
+    
     // Map new scores to legacy format for backward compatibility
     result = {
       overallScore,
       // Map roughly to old system
-      taskResponseScore: aiResponse.scaledScores?.content || Math.round((aiResponse.pteScores.content / 3) * 90),
-      coherenceScore: aiResponse.scaledScores?.developmentCoherence || Math.round((aiResponse.pteScores.developmentCoherence / 2) * 90),
-      vocabularyScore: aiResponse.scaledScores?.vocabulary || Math.round((aiResponse.pteScores.vocabulary / 2) * 90),
-      grammarScore: aiResponse.scaledScores?.grammar || Math.round((aiResponse.pteScores.grammar / 2) * 90),
+      // Realistic scoring: Raw scores mapped accurately
+      taskResponseScore: Math.round(getPhoenixScaledScore(aiResponse.pteScores.content, 3)),
+      coherenceScore: Math.round(getPhoenixScaledScore(aiResponse.pteScores.developmentCoherence, 2)),
+      vocabularyScore: Math.round(getPhoenixScaledScore(aiResponse.pteScores.vocabulary, 2)),
+      grammarScore: Math.round(getPhoenixScaledScore(aiResponse.pteScores.grammar, 2)),
       pteScores: aiResponse.scaledScores || {
-        content: Math.round((aiResponse.pteScores.content / 3) * 90),
-        form: Math.round((aiResponse.pteScores.form / 2) * 90),
-        grammar: Math.round((aiResponse.pteScores.grammar / 2) * 90),
-        vocabulary: Math.round((aiResponse.pteScores.vocabulary / 2) * 90),
-        spelling: Math.round((aiResponse.pteScores.spelling / 1) * 90),
-        developmentCoherence: Math.round((aiResponse.pteScores.developmentCoherence / 2) * 90),
-        linguisticRange: Math.round((aiResponse.pteScores.linguisticRange / 2) * 90)
+        // Phoenix realistic scaling with stricter interpretation
+        // 0/max = 0-30, 1/max = 35-55, 2/max = 60-75, max/max = 80-90
+        content: Math.round(getPhoenixScaledScore(aiResponse.pteScores.content, 3)),
+        form: Math.round(getPhoenixScaledScore(aiResponse.pteScores.form, 2)),
+        grammar: Math.round(getPhoenixScaledScore(aiResponse.pteScores.grammar, 2)),
+        vocabulary: Math.round(getPhoenixScaledScore(aiResponse.pteScores.vocabulary, 2)),
+        spelling: Math.round(getPhoenixScaledScore(aiResponse.pteScores.spelling, 1)),
+        developmentCoherence: Math.round(getPhoenixScaledScore(aiResponse.pteScores.developmentCoherence, 2)),
+        linguisticRange: Math.round(getPhoenixScaledScore(aiResponse.pteScores.linguisticRange, 2))
       },
       topicRelevance: aiResponse.topicRelevance,
+      aiInsights: aiResponse.aiInsights || {
+        aiPreferences: ['Sentence length 15-20 words', 'Academic vocabulary preferred', 'Clear paragraph structure'],
+        commonPitfalls: enhancedErrors.slice(0, 3).map(e => e.explanation),
+        quickWins: realisticFeedback.priorityActions.slice(0, 3)
+      },
+      scoreProjection: aiResponse.scoreProjection || {
+        currentBand: `${Math.floor(overallScore / 5) * 5}-${Math.floor(overallScore / 5) * 5 + 5}`,
+        potentialBand: `${projection.potential - 5}-${projection.potential}`,
+        timeToTarget: projection.timeframe
+      },
       feedback: {
-        ...aiResponse.feedback,
+        summary: realisticFeedback.executiveSummary,
+        strengths: aiResponse.feedback?.strengths || [],
+        improvements: realisticFeedback.priorityActions,
         detailedFeedback: {
-          taskResponse: aiResponse.feedback?.detailedFeedback?.content || 'No specific feedback available.',
-          coherence: aiResponse.feedback?.detailedFeedback?.developmentCoherence || 'No specific feedback available.',
-          vocabulary: aiResponse.feedback?.detailedFeedback?.vocabulary || 'No specific feedback available.',
-          grammar: aiResponse.feedback?.detailedFeedback?.grammar || 'No specific feedback available.'
+          ...realisticFeedback.detailedBreakdown,
+          // Legacy fields
+          taskResponse: realisticFeedback.detailedBreakdown.content || aiResponse.feedback?.detailedFeedback?.content || 'No specific feedback available.',
+          coherence: realisticFeedback.detailedBreakdown.developmentCoherence || aiResponse.feedback?.detailedFeedback?.developmentCoherence || 'No specific feedback available.',
+          vocabulary: realisticFeedback.detailedBreakdown.vocabulary || aiResponse.feedback?.detailedFeedback?.vocabulary || 'No specific feedback available.',
+          grammar: realisticFeedback.detailedBreakdown.grammar || aiResponse.feedback?.detailedFeedback?.grammar || 'No specific feedback available.'
         }
       },
-      suggestions: aiResponse.suggestions || [],
-      highlightedErrors: aiResponse.highlightedErrors || []
+      suggestions: [
+        ...realisticFeedback.priorityActions,
+        realisticFeedback.studyPlan.split('\n')[0], // First line of study plan
+        realisticFeedback.realityCheck
+      ].filter(Boolean).slice(0, 5),
+      highlightedErrors: enhancedErrors
     };
   } else {
     // Fallback to old format
@@ -1232,7 +1312,7 @@ function parseAIResponse(aiResponse: any, wordCount: number): ScoringResult {
         }
       },
       suggestions: aiResponse.suggestions || [],
-      highlightedErrors: aiResponse.highlightedErrors || []
+      highlightedErrors: enhanceHighlightedErrors(aiResponse.highlightedErrors || [], content, wordCount)
     };
   }
   
@@ -1321,6 +1401,9 @@ async function saveResults(
           similarEssaysFound: performanceMetrics.similarEssaysFound,
           confidenceScore: performanceMetrics.confidenceScore
         }),
+        // Phoenix insights
+        phoenixMethodVersion: '1.0',
+        analysisEngine: 'Phoenix PTE Expert System',
         createdAt: timestamp,
         updatedAt: timestamp
       }

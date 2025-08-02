@@ -2,7 +2,7 @@
 
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Sparkles, Clock, Target, Brain, ArrowRight, CheckCircle, Zap } from "lucide-react";
-import { ModernButton } from "./modern-button";
+import { Button } from "./button";
 import { useEffect } from "react";
 
 interface WelcomeModalProps {
@@ -163,14 +163,14 @@ export function WelcomeModal({ isOpen, onClose, userName, essaysRemaining = 5 }:
                   transition={{ delay: 0.7 }}
                   className="flex justify-center"
                 >
-                  <ModernButton
+                  <Button
                     variant="glow"
                     size="lg"
                     onClick={onClose}
                     icon={<ArrowRight className="w-5 h-5" />}
                   >
                     Start Writing My First Essay
-                  </ModernButton>
+                  </Button>
                 </motion.div>
               </div>
             </div>

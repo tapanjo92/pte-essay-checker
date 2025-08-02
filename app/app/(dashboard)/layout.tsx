@@ -7,12 +7,9 @@ import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { FileText, PenTool, List, User, Menu, X, LogOut, ChevronDown } from 'lucide-react';
 import { initializeUserIfNeeded } from '@/lib/user-init';
-import { createTracedClient } from '@/lib/xray-client';
+import { getGraphQLClient } from '@/lib/xray-client';
 import { GradientBackground } from '@/components/ui/gradient-background';
 import { useAuth } from '@/lib/auth-provider';
-
-// Client is created once globally
-const client = createTracedClient();
 
 export default function DashboardGroupLayout({
   children,
@@ -21,30 +18,21 @@ export default function DashboardGroupLayout({
 }) {
   const router = useRouter();
   const pathname = usePathname();
-  const { user, loading, error, isAuthenticated, retry } = useAuth();
+  const { user } = useAuth();
   const [userData, setUserData] = useState<any>(null);
   const [initialized, setInitialized] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [userSubscription, setUserSubscription] = useState<any>(null);
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
 
-  // 🔐 Cipher's L10 Gen 2 Auth Pattern - No race conditions
+  // 🔐 Aurora's L10 Fix: AppAuthenticator handles auth, we just initialize
   useEffect(() => {
-    console.log('🔍 Cipher: Auth state check:', { loading, isAuthenticated, hasUser: !!user, error: !!error });
-    
-    // Only make decisions when auth state is stable (not loading)
-    if (!loading) {
-      if (!user) {
-        // No user found after loading complete - redirect to auth
-        console.log('🔒 Cipher: No authenticated user, redirecting to auth');
-        router.push('/auth');
-      } else if (!initialized) {
-        // User is authenticated but not initialized yet - initialize once
-        console.log('✅ Cipher: User authenticated, initializing...');
-        initializeUser();
-      }
+    // User is already authenticated by AppAuthenticator - just initialize
+    if (user && !initialized) {
+      console.log('✅ Aurora: User authenticated, initializing...');
+      initializeUser();
     }
-  }, [loading, user, initialized, router]); // Add initialized to dependencies
+  }, [user, initialized]); // Simplified dependencies
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -89,6 +77,7 @@ export default function DashboardGroupLayout({
       
       // Fetch user data from DynamoDB
       try {
+        const client = await getGraphQLClient();
         const userResult = await client.models.User.get({ id: user.userId });
         if (userResult.data) {
           setUserData(userResult.data);
@@ -122,41 +111,8 @@ export default function DashboardGroupLayout({
     }
   };
 
-  // Show loading or error states
-  if (loading) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-purple-950 via-violet-900 to-pink-950">
-        <div className="text-center space-y-4">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-400 mx-auto"></div>
-          <div className="text-lg text-white">🔧 Aurora: Initializing authentication...</div>
-        </div>
-      </div>
-    );
-  }
-  
-  if (error) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-purple-950 via-violet-900 to-pink-950">
-        <div className="text-center space-y-4 max-w-md mx-auto p-6">
-          <div className="text-red-400 text-lg font-semibold">🚨 Authentication Error</div>
-          <p className="text-gray-300">{error}</p>
-          <div className="space-x-4">
-            <Button onClick={retry} variant="outline">Retry</Button>
-            <Button onClick={() => router.push('/auth')}>Sign In</Button>
-          </div>
-        </div>
-      </div>
-    );
-  }
-  
-  // 🔐 Cipher's L10 Gen 2 Pattern - Only show content when user is present
-  if (!user) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-purple-950 via-violet-900 to-pink-950">
-        <div className="text-lg text-white">🔒 Cipher: Redirecting to authentication...</div>
-      </div>
-    );
-  }
+  // 🚀 Aurora's fix: Trust AppAuthenticator - no duplicate loading states
+  // The user prop is guaranteed to exist here because AppAuthenticator wraps us
 
   return (
     <GradientBackground variant="subtle">
